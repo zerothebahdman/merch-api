@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  cognohub-api:
+    build: .
+    image: cognohub-api
+    ports:
+      - '4000:4000'
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/usr/src/cognohub-api
+    networks:
+      - cognohub-network
+
+  mongodb:
+    build: 
+      context: ./mongodb
+      dockerfile: Dockerfile.mongo
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+      - MONGO_USERNAME=${MONGO_USERNAME}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_DATABASE=${MONGO_DATABASE}
+    volumes:
+      - dbdata:/data/db
+    networks:
+      - cognohub-network
+
+volumes:
+  dbdata:
+
+networks:
+  beam-network:
+    driver: bridge

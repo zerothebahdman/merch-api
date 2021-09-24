@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  cognohub:
+    build: .
+    image: cognohub
+    container_name: cognohub-test
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongodb-test
+    volumes:
+      - .:/usr/src/cognohub
+    command: yarn test
+    networks:
+      - cognohub-network
+
+  mongodb-test:
+    image: mongo:4.2.1-bionic
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata-test:/data/db
+    networks:
+      - cognohub-network
+
+volumes:
+  dbdata-test:
+
+networks:
+  cognohub-network:
+    driver: bridge

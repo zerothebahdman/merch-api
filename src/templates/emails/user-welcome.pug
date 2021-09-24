@@ -1,0 +1,28 @@
+head
+  meta(charset='UTF-8')
+  meta(http-equiv='X-UA-Compatible' content='IE=edge')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title User Welcome
+body(style="margin: 5% 20% 0 20%; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif")
+header
+  a(href='https://merchro.netlify.com')
+    img(src='https://merchro.netlify.app/img/logo.8dfeb500.svg' style='float: left;' alt='Merchro')
+  ul
+    li(style='float: left; list-style: none; padding: 7px 0 0 5px;')
+      | Merchro
+    li(style='float: right; color:#5E5E73; list-style: none; padding: 7px 0 0;')
+      | #{currentDate}
+main(style='padding-top: 40px;')
+  h1(style='color: #1E1E2F;') Welcome to Merchro
+  p(style='color:#5E5E73; margin: 10px 0; padding-top: 10px; line-height: 160%;')
+    | Thank you for signing up on Merchro. We&apos;re excited to have you on board.
+  p(style='color: #5E5E73; padding-bottom: 10px;') We&apos;ll help you find beautiful merch.
+  div(style='display: flex; justify-content: center; background-color: #D3EEE3; margin: 10px 0;')
+    img(src='https://res.cloudinary.com/dla0k5ne6/image/upload/v1613724026/email-templates/14_p3xzvf.png' alt='image' width='410px' height='400px' style='background-color: #D3EEE3;')
+  div(style=' margin: 20px 0 60px 0; width: 100%; display: flex;')
+    - var url = 'https://merchro.netlify.com/explore';
+    a(href=url style='background: #585ADF;text-decoration: none; text-align: center; color: white; width: 100%; border-radius: 10px; padding: 12px; border: #585ADF 1px solid;') Explore
+footer(style='background-color: #F6F6F8; margin-top: 30px; border-radius: 5px')
+  div(style='text-align: center; padding: 5px')
+    p(style='color: #5E5E73;') 
+      strong With &#10084;&#65039; from Merchro.

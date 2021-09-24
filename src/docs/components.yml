@@ -1,0 +1,235 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [user, creator]
+        emailVerified:
+          type: boolean
+        status:
+          type: string
+          enum: [invited, confirmed, deactivated, compromised]
+        store:
+          type: string
+        phoneNumber:
+          type: string
+        industry:
+          type: string
+        timezone:
+          type: string
+        avatar:
+          type: string
+      example:
+        id: 5ebac534954b54139806c112
+        email: johndoe@merhro.com
+        firstName: John
+        lastName: Doe
+        role: creator
+        emailVerified: true
+        status: confirmed
+        store: 5ebac534954b54139806c113
+        phoneNumber: 09044928493
+        industry: ICT
+        avatar: https://merchro.netlify.app/img/logo.8dfeb500.svg
+        timezone: (GMT+01:00) Lagos
+        
+    Store:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        user:
+          type: User
+        slug:
+          type: string
+        createdBy:
+          type: User
+        updatedBy:
+          type: User
+        avatar:
+          type: string
+        coverImage:
+          type: string
+      example:
+        {
+          "name": "New store",
+          "user": "614cc426b1183e2de8a9500c",
+          "createdBy": "614cc426b1183e2de8a9500c",
+          "slug": "new-store",
+          "createdAt": "2021-09-23T23:38:29.347Z",
+          "updatedAt": "2021-09-23T23:38:29.347Z",
+          "id": "614d0ff5c5d8b07020a899d1"
+        }
+
+    Stores:
+      type: array,
+      example:
+        [
+          {
+            "name": "New store",
+            "user": "614cc426b1183e2de8a9500c",
+            "createdBy": "614cc426b1183e2de8a9500c",
+            "slug": "new-store",
+            "createdAt": "2021-09-23T23:38:29.347Z",
+            "updatedAt": "2021-09-23T23:38:29.347Z",
+            "id": "614d0ff5c5d8b07020a899d1"
+          },
+          ...
+        ]
+
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        store:
+          type: string
+        amount:
+          type: object
+        quantity:
+          type: number
+        published:
+          type: boolean
+        isPromo:
+          type: boolean
+        createdBy:
+          type: User
+        updatedBy:
+          type: User
+        avatar:
+          type: string
+        images:
+          type: array
+      example:
+        {
+            "amount": {
+                "currency": "NGN",
+                "price": 5500
+            },
+            "images": [],
+            "quantity": 28,
+            "isPromo": false,
+            "published": false,
+            "name": "T Shirt",
+            "store": "614d0ff5c5d8b07020a899d1",
+            "createdBy": "614cc426b1183e2de8a9500c",
+            "createdAt": "2021-09-24T07:57:24.373Z",
+            "updatedAt": "2021-09-24T07:57:24.373Z",
+            "id": "614d84e4dba4c158dc2aa687"
+        }
+
+    Items:
+      type: array
+      example:
+        [ {
+            "amount": {
+                "currency": "NGN",
+                "price": 5500
+            },
+            "images": [],
+            "quantity": 28,
+            "isPromo": false,
+            "published": false,
+            "name": "T Shirt",
+            "store": "614d0ff5c5d8b07020a899d1",
+            "createdBy": "614cc426b1183e2de8a9500c",
+            "createdAt": "2021-09-24T07:57:24.373Z",
+            "updatedAt": "2021-09-24T07:57:24.373Z",
+            "id": "614d84e4dba4c158dc2aa687"
+        }, ... ]
+
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+        expires:
+          type: string
+          format: date-time
+      example:
+        token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        expires: 2020-05-12T16:18:04.793Z
+
+    AuthTokens:
+      type: object
+      properties:
+        access:
+          $ref: '#/components/schemas/Token'
+        refresh:
+          $ref: '#/components/schemas/Token'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: number
+        message:
+          type: string
+
+  responses:
+    DuplicateEmail:
+      description: Email already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Email already taken
+    DuplicateName:
+      description: Name already taken
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 400
+            message: Name already taken
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 401
+            message: You are not logged in. Please authenticate
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 403
+            message: Forbidden
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 404
+            message: Not found
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

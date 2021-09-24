@@ -1,0 +1,29 @@
+head
+  meta(charset='UTF-8')
+  meta(http-equiv='X-UA-Compatible' content='IE=edge')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title Hub Invite
+body(style="margin: 5% 20% 0 20%; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif")
+header
+  a(href='/')
+    img(src='https://res.cloudinary.com/dla0k5ne6/image/upload/v1613639642/email-templates/Logo_iex1dg.png' style='float: left;' alt='logo')
+  ul
+    li(style='float: left; list-style: none; padding: 7px 0 0 5px;')
+      | CognoHub
+    li(style='float: right; color:#5E5E73; list-style: none; padding: 7px 0 0;')
+      | #{currentDate}
+main(style='padding-top: 40px;')
+  h1(style='color: #1E1E2F;') You are invited to join #{hubName} on CognoHub
+  p(style='color:#5E5E73; margin: 10px 0; padding-top: 10px;') Hi, &#x1F389; You&rsquo;ve been added to CognoHub.
+  p(style='color: #5E5E73; padding-bottom: 10px;')
+    | #{adminName} has invited you to join #{hubName} on CognoHub. CognoHub helps you keep track of your goals, productivity, and state of mind. We&apos;re here to help you reach your goals at work.
+  div(style='display: flex; justify-content: center; background-color: #FEF8F2; margin: 10px 0;')
+    img(src='https://res.cloudinary.com/dla0k5ne6/image/upload/v1613724025/email-templates/11_m7alct.png' alt='image' width='410px' height='400px' style='background-color: #FEF8F2;')
+  div(style=' margin: 20px 0 60px 0; width: 100%; display: flex;')
+    - var url = userInvitationUrl;
+    a(href=url style='background: #585ADF;text-decoration: none; text-align: center; color: white; width: 100%; border-radius: 10px; padding: 12px; border: #585ADF 1px solid;') Join your team
+footer(style='background-color: #F6F6F8;')
+  div(style='text-align: center; padding-top: 20px;')
+    p(style='color: #5E5E73;') Made by CognoHub Technologies.
+  div(style='text-align: center; padding-bottom: 20px; color: #5F5F8C;')
+      p(style='margin: 0 5px;') Lagos.

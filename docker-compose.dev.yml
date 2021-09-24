@@ -1,0 +1,6 @@
+version: '3'
+
+services:
+  beam-api:
+    container_name: cognohub-api-dev
+    command: yarn dev -L

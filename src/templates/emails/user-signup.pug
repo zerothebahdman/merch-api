@@ -1,0 +1,28 @@
+head
+  meta(charset='UTF-8')
+  meta(http-equiv='X-UA-Compatible' content='IE=edge')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title Welcome to Merchro!
+body(style="margin: 5% 2.5%; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif; border: 1px solid #eee; border-radius: 10px; padding: 30px 10px;")
+header
+  a(href='https://merchro.netlify.com')
+    img(src='https://merchro.netlify.app/img/logo.8dfeb500.svg' height="25px" style='float: left;' alt='Merchro')
+  ul
+    li(style='float: right; color:#5E5E73; list-style: none; padding: 7px 0 0;')
+      | #{currentDate}
+main(style='padding-top: 40px;')
+  h2
+    strong Welcome to Merchro!
+  p(style='color: #5E5E73; padding-bottom: 12px;')
+    | We are excited to have you on board. You&rsquo;re one step closer to harnessing our great platform.
+  p(style='color:#5E5E73;') Here's your email verification code: 
+  h3
+    strong #{token}
+  p(style='color:#5E5E73; font-size: 12px')
+    | Thank you so much for joining 
+    span(style='color:  #585ADF;') Merchro.
+    
+footer(style='background-color: #F6F6F8; margin-top: 30px; border-radius: 5px')
+  div(style='text-align: center; padding: 5px')
+    p(style='color: #5E5E73;') 
+      strong With &#10084;&#65039; from Merchro.
