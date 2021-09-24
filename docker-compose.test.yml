@@ -1,19 +1,19 @@
 version: '3'
 
 services:
-  cognohub:
+  merchro:
     build: .
-    image: cognohub
-    container_name: cognohub-test
+    image: merchro
+    container_name: merchro-test
     ports:
       - '3000:3000'
     depends_on:
       - mongodb-test
     volumes:
-      - .:/usr/src/cognohub
+      - .:/usr/src/merchro
     command: yarn test
     networks:
-      - cognohub-network
+      - merchro-network
 
   mongodb-test:
     image: mongo:4.2.1-bionic
@@ -22,11 +22,11 @@ services:
     volumes:
       - dbdata-test:/data/db
     networks:
-      - cognohub-network
+      - merchro-network
 
 volumes:
   dbdata-test:
 
 networks:
-  cognohub-network:
+  merchro-network:
     driver: bridge

@@ -1,11 +1,11 @@
 {
-  "name": "create-nodejs-express-app",
+  "name": "merchro-api",
   "version": "1.6.0",
   "description": "Create a Node.js app for building production-ready RESTful APIs using Express, by running one command",
   "bin": "bin/createNodejsApp.js",
   "main": "src/index.js",
-  "repository": "https://github.com/cognohub/cognohub-api.git",
-  "author": "Beam Developers <dev@cognohub.com>",
+  "repository": "https://github.com/merchro/merchro-api.git",
+  "author": "Merchro Developers <dev@merchro.com>",
   "license": "MIT",
   "engines": {
     "node": ">=12.0.0"

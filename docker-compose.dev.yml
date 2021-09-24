@@ -2,5 +2,5 @@ version: '3'
 
 services:
   beam-api:
-    container_name: cognohub-api-dev
+    container_name: merchro-api-dev
     command: yarn dev -L

@@ -1,6 +1,6 @@
-# RESTFul API for the CognoHub Application
+# RESTFul API for the Merchro Application
 
-[![Build Status](https://travis-ci.com/cognohub/cognohub-api.svg?token=NDv6yhT4Z8qoTzehcF9x&branch=main)](https://travis-ci.com/cognohub/cognohub-api)
+[![Build Status](https://travis-ci.com/merchro/merchro-api.svg?token=NDv6yhT4Z8qoTzehcF9x&branch=main)](https://travis-ci.com/merchro/merchro-api)
 
 Introduction: WIP
 
@@ -9,8 +9,8 @@ Introduction: WIP
 Clone the repo:
 
 ```bash
-git clone https://github.com/cognohub/cognohub-api.git
-cd cognohub-api
+git clone https://github.com/merchro/merchro-api.git
+cd merchro-api
 ```
 
 Install the dependencies:

@@ -1,17 +1,17 @@
 version: '3'
 
 services:
-  cognohub-api:
+  merchro-api:
     build: .
-    image: cognohub-api
+    image: merchro-api
     ports:
-      - '4000:4000'
+      - '4004:4004'
     depends_on:
       - mongodb
     volumes:
-      - .:/usr/src/cognohub-api
+      - .:/usr/src/merchro-api
     networks:
-      - cognohub-network
+      - merchro-network
 
   mongodb:
     build: 
@@ -29,7 +29,7 @@ services:
     volumes:
       - dbdata:/data/db
     networks:
-      - cognohub-network
+      - merchro-network
 
 volumes:
   dbdata:
