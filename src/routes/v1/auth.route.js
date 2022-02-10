@@ -335,7 +335,7 @@ module.exports = router;
  *                userId:
  *                  type: string
  *              example:
- *                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+ *                token: 912754
  *                userId: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
  *            description: The email verification code
  *      responses:

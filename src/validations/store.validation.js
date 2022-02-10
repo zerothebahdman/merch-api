@@ -3,10 +3,12 @@ const { objectId } = require('./custom.validation');
 
 const createStore = {
   body: Joi.object().keys({
-    name: Joi.string().required(),
-    user: Joi.string(),
+    name: Joi.string().min(4).required(),
     avatar: Joi.string(),
-    description: Joi.string(),
+    metadata: Joi.object().keys({
+      description: Joi.string(),
+      intro: Joi.string(),
+    }),
     coverImage: Joi.string(),
   }),
 };

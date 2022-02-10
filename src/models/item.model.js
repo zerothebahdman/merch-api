@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate, auditableFields } = require('./plugins');
+const { toJSON, paginate } = require('./plugins');
 const { CURRENCIES } = require('../config/constants');
 
 const itemSchema = mongoose.Schema(
@@ -14,11 +14,11 @@ const itemSchema = mongoose.Schema(
       type: Array,
       required: false,
     },
-    quantity: {
-      type: Number,
-      default: 0,
+    avatar: {
+      type: String,
+      required: false,
     },
-    amount: {
+    baseAmount: {
       currency: {
         type: String,
         enum: Object.values(CURRENCIES),
@@ -34,23 +34,14 @@ const itemSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
-    isPromo: {
+    color: {
+      type: String,
+      default: 'white',
+    },
+    available: {
       type: Boolean,
-      default: false,
+      default: true,
     },
-    discount: {
-      type: Number,
-    },
-    published: {
-      type: Boolean,
-      default: false,
-    },
-    store: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Store',
-      required: true,
-    },
-    ...auditableFields,
   },
   {
     timestamps: true,

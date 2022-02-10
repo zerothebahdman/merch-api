@@ -74,7 +74,7 @@ const userSchema = mongoose.Schema(
     },
     store: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Hub',
+      ref: 'Store',
       required: false,
     },
     industry: {
@@ -109,6 +109,20 @@ const userSchema = mongoose.Schema(
     avatar: {
       type: String,
       required: false,
+    },
+    shippingAddress: {
+      city: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
+      country: {
+        type: String,
+      },
+      address: {
+        type: String,
+      },
     },
   },
   {

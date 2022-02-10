@@ -14,21 +14,6 @@ const getUsers = {
   }),
 };
 
-const getUserReviewees = {
-  query: Joi.object().keys({
-    firstName: Joi.string(),
-    lastName: Joi.string(),
-    role: Joi.string(),
-    goalStartDateBegin: Joi.string(),
-    goalStartDateEnd: Joi.string(),
-    include: Joi.array().items(Joi.string()),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
-    paginate: Joi.boolean().default(true),
-  }),
-};
-
 const getUser = {
   params: Joi.object().keys({
     userId: Joi.string().custom(objectId),
@@ -49,10 +34,6 @@ const updateUser = {
       department: Joi.string(),
       timezone: Joi.string(),
       reviewer: Joi.string().custom(objectId),
-      reporting: Joi.object({
-        schedule: Joi.string(),
-        weekDay: Joi.string(),
-      }),
     })
     .min(1),
 };
@@ -77,5 +58,4 @@ module.exports = {
   updateUser,
   uploadUserAvatar,
   changeUserPassword,
-  getUserReviewees,
 };

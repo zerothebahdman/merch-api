@@ -1,5 +1,6 @@
 module.exports.authController = require('./auth.controller');
 module.exports.userController = require('./user.controller');
 module.exports.itemController = require('./item.controller');
+module.exports.merchController = require('./merch.controller');
 module.exports.storeController = require('./store.controller');
 module.exports.orderController = require('./order.controller');

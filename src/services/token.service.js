@@ -59,7 +59,13 @@ const verifyToken = async (token, type, uid = false) => {
   } else {
     payload.sub = uid;
   }
-  const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
+  const tokenDoc = await Token.findOne({
+    token,
+    type,
+    user: payload.sub,
+    blacklisted: false,
+    expires: { $gte: moment().format() },
+  });
   if (!tokenDoc) {
     throw new Error(ERROR_MESSAGES.TOKEN_NOT_FOUND);
   }

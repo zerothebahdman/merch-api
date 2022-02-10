@@ -17,7 +17,7 @@ const ERROR_MESSAGES = {
   NOT_ALLOWED_TO_UPDATE_FIELDS: 'You are not allowed to update some of the fields here. Remove email',
   STORE_NOT_FOUND: 'Store not found',
   STORE_NAME_EXIST: 'Store with name already exist',
-  STORE_CREATED_ALREADY: 'You have already created the maximum of 1 store',
+  STORE_CREATED_ALREADY: 'You have already created a store',
   ITEM_NOT_FOUND: 'Item not found',
   INVALID_NAME: 'Name should start with alphabets and should not contain special characters',
   TOKEN_NOT_FOUND: 'Token not found',

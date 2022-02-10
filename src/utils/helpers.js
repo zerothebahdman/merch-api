@@ -24,6 +24,17 @@ const nameValidator = function (string) {
   }
 };
 
+const storeNameValidator = function (string) {
+  /**
+            Ensure it only starts with alphabets, can have numbers and can only contain '-', '_' special characters.
+        */
+  const strongRegex = new RegExp(/^[ A-Za-z0-9_-]*$/);
+
+  if (!strongRegex.test(string)) {
+    throw new Error('Invalid character in name. Only hiphen (-) and underscore (_) are allowed');
+  }
+};
+
 /**
  * Generate random characters with specified length
  * @param {Int16Array} length
@@ -62,6 +73,7 @@ module.exports = {
   titleCase,
   capitalCase,
   nameValidator,
+  storeNameValidator,
   generateRandomChar,
   slugify,
 };

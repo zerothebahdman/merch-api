@@ -1,39 +1,39 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const { itemValidation } = require('../../validations');
-const { itemController } = require('../../controllers');
+const { merchValidation } = require('../../validations');
+const { merchController } = require('../../controllers');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(auth('admin'), validate(itemValidation.createItem), itemController.createItem)
-  .get(validate(itemValidation.getItem), itemController.getItems);
+  .post(auth('creator'), validate(merchValidation.createMerch), merchController.createMerch)
+  .get(validate(merchValidation.getMerches), merchController.getMerches);
 
 router
-  .route('/:itemId')
-  .get(validate(itemValidation.getItem), itemController.getItem)
-  .patch(auth('admin'), validate(itemValidation.updateItem), itemController.updateItem)
-  .delete(auth('admin'), validate(itemValidation.deleteItem), itemController.deleteItem);
+  .route('/:merchId')
+  .get(validate(merchValidation.getMerch), merchController.getMerch)
+  .patch(auth('creator'), validate(merchValidation.updateMerch), merchController.updateMerch)
+  .delete(auth('creator'), validate(merchValidation.deleteMerch), merchController.deleteMerch);
 
 module.exports = router;
 
 /**
  * @swagger
  * tags:
- *   name: Items
- *   description: Items management
+ *   name: Merches
+ *   description: Merch management
  */
 
 /**
  * @swagger
  * path:
- *  /items:
+ *  /merches:
  *    post:
- *      summary: Create an Item
- *      description: Only creators can create a Item.
- *      tags: [Items]
+ *      summary: Create a Merch
+ *      description: Only creators can create a Merch.
+ *      tags: [Merches]
  *      security:
  *        - bearerAuth: []
  *      requestBody:
@@ -68,11 +68,11 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /items:
+ *  /merches:
  *    get:
  *      summary: Get all available Items
  *      description: website users can fetch all available Items.
- *      tags: [Items]
+ *      tags: [Merches]
  *      requestBody:
  *        required: true
  *        content:
@@ -85,7 +85,7 @@ module.exports = router;
  *          content:
  *            application/json:
  *              schema:
- *                 $ref: '#/components/schemas/Items'
+ *                 $ref: '#/components/schemas/merches'
  *        "400":
  *          $ref: '#/components/responses/DuplicateName'
  *        "401":
@@ -97,11 +97,11 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /items/{id}:
+ *  /merches/{id}:
  *    get:
  *      summary: Get an Item by ID
  *      description: Available for all users
- *      tags: [Items]
+ *      tags: [Merches]
  *      parameters:
  *        - in: path
  *          name: id
@@ -131,7 +131,7 @@ module.exports = router;
  *    patch:
  *      summary: Update an Item
  *      description:  Only creators can update their Item information
- *      tags: [Items]
+ *      tags: [Merches]
  *      security:
  *        - bearerAuth: []
  *      parameters:
@@ -172,7 +172,7 @@ module.exports = router;
  *    delete:
  *      summary: Delete an Item
  *      description:  Only creators can delete an Item
- *      tags: [Items]
+ *      tags: [Merches]
  *      security:
  *        - bearerAuth: []
  *      parameters:

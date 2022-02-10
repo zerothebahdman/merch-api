@@ -46,14 +46,10 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
    * Check if the user already has a hub assigned. If not, reject the request
    * excluded endpoints POST /hubs
    */
-  const EXCLUDED_ADMIN_URLS = ['/v1/hubs'];
+  const EXCLUDED_ADMIN_URLS = ['/v1/admin'];
 
-  if (req.user.role === ROLES.USER && req.user.hubs === undefined) {
-    return reject(new ApiError(httpStatus.UNAUTHORIZED, ERROR_MESSAGES.CONTACT_ADMINISTRATOR));
-  }
-
-  if (req.user.role === ROLES.ADMIN && req.user.hubs === undefined && EXCLUDED_ADMIN_URLS.indexOf(req.originalUrl) < 0) {
-    return reject(new ApiError(httpStatus.UNAUTHORIZED, ERROR_MESSAGES.USER_WITHOUT_HUB));
+  if (req.user.role === ROLES.CREATOR && req.user.store === undefined && EXCLUDED_ADMIN_URLS.indexOf(req.originalUrl) < 0) {
+    return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Creator without store'));
   }
 
   resolve();

@@ -4,12 +4,21 @@ const catchAsync = require('../utils/catchAsync');
 const { storeService, userService, itemService } = require('../services');
 const { ERROR_MESSAGES } = require('../config/messages');
 const { ROLES } = require('../config/roles');
+const { RESERVED_NAMES } = require('../config/reservedNames');
 const pick = require('../utils/pick');
+const { storeNameValidator } = require('../utils/helpers');
 
 const createStore = catchAsync(async (req, res) => {
-  if (!req.body.user) req.body.user = req.user.id;
-  const storeCreated = await storeService.queryStores({ user: req.body.user }, {}, '', true);
-  if (storeCreated && storeCreated.length > 0) {
+  req.body.owner = req.user.id;
+  // Reserved names
+  if (RESERVED_NAMES.includes(req.body.name)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Store name unavailable, please choose another name');
+  }
+
+  storeNameValidator(req.body.name);
+
+  const storeCreated = await storeService.queryStores({ owner: req.user.id }, {}, '', true);
+  if (storeCreated.length > 0) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.STORE_CREATED_ALREADY);
   }
   req.body.createdBy = req.user.id;
@@ -40,7 +49,7 @@ const getStoreItems = catchAsync(async (req, res) => {
 const getStoreBySlug = catchAsync(async (req, res) => {
   const filter = { slug: req.params.slug };
   const store = await storeService.queryStores(filter, {}, req.query.include, true);
-  if (!store) {
+  if (store.length === 0) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.STORE_NOT_FOUND);
   }
   res.send(store);

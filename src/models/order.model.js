@@ -13,16 +13,20 @@ const orderSchema = mongoose.Schema(
         quantity: {
           type: Number,
         },
-        price: {
-          type: Number,
+        amount: {
+          unitPrice: {
+            type: Number,
+            required: true,
+          },
+          currency: {
+            type: String,
+            enum: Object.values(CURRENCIES),
+            default: CURRENCIES.NAIRA,
+          },
         },
       },
     ],
-    quantity: {
-      type: Number,
-      default: 0,
-    },
-    amount: {
+    totalAmount: {
       currency: {
         type: String,
         enum: Object.values(CURRENCIES),
@@ -32,10 +36,6 @@ const orderSchema = mongoose.Schema(
         type: Number,
         required: true,
       },
-    },
-    isPromo: {
-      type: Boolean,
-      default: false,
     },
     discount: {
       type: Number,
