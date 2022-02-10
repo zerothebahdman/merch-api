@@ -24,7 +24,7 @@ Set the environment variables:
 ```bash
 cp .env.example .env
 
-# open .env and modify the environment variables (You can reach out to Olaoluwa if you need any specific variable information)
+# open .env and modify the environment variables
 ```
 
 ## Commands
