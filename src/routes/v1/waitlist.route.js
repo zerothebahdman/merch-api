@@ -75,7 +75,7 @@ module.exports = router;
  *    get:
  *      summary: Verify email
  *      description: To check if email already exist
- *      tags: [Items]
+ *      tags: [Waitlist]
  *      parameters:
  *        - in: path
  *          name: email
