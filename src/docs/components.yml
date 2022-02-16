@@ -153,6 +153,34 @@ components:
             "id": "614d84e4dba4c158dc2aa687"
         }, ... ]
 
+    Waitlists:
+      type: object
+      example: 
+        [
+          {
+            "email": "email@waitlist.com",
+            "createdAt": "2021-09-24T07:57:24.373Z",
+            "updatedAt": "2021-09-24T07:57:24.373Z",
+            "id": "614d84e4dba4c158dc2aa687"
+          },
+          {
+            "email": "email@waitlist.com",
+            "createdAt": "2021-09-24T07:57:24.373Z",
+            "updatedAt": "2021-09-24T07:57:24.373Z",
+            "id": "614d84e4dba4c158dc2aa687"
+          }
+        ]
+
+    Waitlist:
+      type: object
+      example: 
+        {
+          "email": "email@waitlist.com",
+          "createdAt": "2021-09-24T07:57:24.373Z",
+          "updatedAt": "2021-09-24T07:57:24.373Z",
+          "id": "614d84e4dba4c158dc2aa687"
+        }
+
     Token:
       type: object
       properties:

@@ -1,0 +1,24 @@
+head
+  meta(charset='UTF-8')
+  meta(http-equiv='X-UA-Compatible' content='IE=edge')
+  meta(name='viewport' content='width=device-width, initial-scale=1.0')
+  title You are on our waitlist!
+body(style="margin: 5% 2.5%; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Roboto','Oxygen','Ubuntu','Cantarell','Fira Sans','Droid Sans','Helvetica Neue',sans-serif; border: 1px solid #eee; border-radius: 10px; padding: 30px 10px;")
+header
+  a(href=`${workSpaceHomePageUrl}`)
+    img(src='https://merchro.netlify.app/img/logo.8dfeb500.svg' height="25px" style='float: left;' alt='Merchro')
+  ul
+    li(style='float: right; color:#5E5E73; list-style: none; padding: 7px 0 0;')
+      | #{currentDate}
+main(style='padding-top: 40px;')
+  h2
+    strong Hi @#{`${email.split('@')[0]}`},
+  p(style='color: #5E5E73; padding-bottom: 12px;')
+    | We are building a powerful product with the sole aim of empowering creators just like you to maximize profit without some third party suffocating their earning. We are excited about your interest and we'll keep you inform about our progress.
+  p(style='color:#5E5E73; font-size: 12px')
+    | Thanks for choosing to be a part of us in our early stage!
+    
+footer(style='background-color: #F6F6F8; margin-top: 30px; border-radius: 5px')
+  div(style='text-align: center; padding: 5px')
+    p(style='color: #5E5E73;') 
+      strong With &#10084;&#65039; from Merchro.

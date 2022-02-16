@@ -4,3 +4,4 @@ module.exports.storeValidation = require('./store.validation');
 module.exports.itemValidation = require('./item.validation');
 module.exports.merchValidation = require('./merch.validation');
 module.exports.orderValidation = require('./order.validation');
+module.exports.waitlistValidation = require('./waitlist.validation');

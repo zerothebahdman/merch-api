@@ -8,3 +8,4 @@ module.exports.merchService = require('./merch.service');
 module.exports.orderService = require('./order.service');
 module.exports.storeService = require('./store.service');
 module.exports.onboardingService = require('./onboarding.service');
+module.exports.waitlistService = require('./waitlist.service');

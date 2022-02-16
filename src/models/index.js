@@ -5,3 +5,4 @@ module.exports.Merch = require('./merch.model');
 module.exports.Onboarding = require('./onboarding.model');
 module.exports.Store = require('./store.model');
 module.exports.Order = require('./order.model');
+module.exports.Waitlist = require('./waitlist.model');

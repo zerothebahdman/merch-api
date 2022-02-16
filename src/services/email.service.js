@@ -86,6 +86,19 @@ const sendUserWelcomeEmail = async (to) => {
   await sendEmail(to, subject, null, html);
 };
 
+/**
+ * Send waitlist email
+ * @param {string} to
+ * @returns {Promise}
+ */
+const waitlistEmail = async (to) => {
+  const subject = 'You are on our waitlist!';
+  const workSpaceHomePageUrl = `${config.workSpaceHomePageUrl}`;
+  const currentDate = moment().format('dddd, MMM DD, YYYY');
+  const html = renderFile('waitlist', { workSpaceHomePageUrl, currentDate, email: to });
+  await sendEmail(to, subject, null, html);
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -93,4 +106,5 @@ module.exports = {
   sendUserSignUpEmail,
   sendUserInvitationEmail,
   sendUserWelcomeEmail,
+  waitlistEmail,
 };

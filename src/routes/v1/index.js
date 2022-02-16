@@ -5,6 +5,7 @@ const storeRoute = require('./store.route');
 const itemRoute = require('./item.route');
 const merchRoute = require('./merch.route');
 const orderRoute = require('./order.route');
+const waitlistRoute = require('./waitlist.route');
 const docsRoute = require('./docs.route');
 const config = require('../../config/config');
 
@@ -34,6 +35,10 @@ const defaultRoutes = [
   {
     path: '/orders',
     route: orderRoute,
+  },
+  {
+    path: '/waitlist',
+    route: waitlistRoute,
   },
 ];
 
