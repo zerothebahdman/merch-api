@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate, auditableFields } = require('./plugins');
 
-const storeSchema = mongoose.Schema(
+const creatorPageSchema = mongoose.Schema(
   {
     name: {
       type: String,
@@ -37,6 +37,16 @@ const storeSchema = mongoose.Schema(
         required: false,
         trim: true,
       },
+      socialLinks: [
+        {
+          platform: {
+            type: String,
+          },
+          url: {
+            type: String,
+          },
+        },
+      ],
     },
     ...auditableFields,
   },
@@ -46,15 +56,15 @@ const storeSchema = mongoose.Schema(
 );
 
 // add plugin that converts mongoose to json
-storeSchema.plugin(toJSON);
-storeSchema.plugin(paginate);
+creatorPageSchema.plugin(toJSON);
+creatorPageSchema.plugin(paginate);
 
-// Add Index to support Store search
-storeSchema.index({ name: 'text' });
+// Add Index to support creator page search
+creatorPageSchema.index({ name: 'text' });
 
 /**
- * @typedef Store
+ * @typedef creatorPage
  */
-const Store = mongoose.model('Store', storeSchema);
+const CreatorPage = mongoose.model('CreatorPage', creatorPageSchema);
 
-module.exports = Store;
+module.exports = CreatorPage;

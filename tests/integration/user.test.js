@@ -6,7 +6,6 @@ const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
 const { User } = require('../../src/models');
 const { userOne, userTwo, userThree, admin, insertUsers } = require('../fixtures/user.fixture');
-const { workspaceOne, workspaceTwo, insertWorkspaces } = require('../fixtures/workspace.fixture');
 const { userOneAccessToken, userTwoAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const { ROLES } = require('../../src/config/roles');
 const { capitalCase } = require('../../src/utils/helpers');
@@ -16,18 +15,14 @@ setupTestDB();
 describe('User routes', () => {
   describe.skip('GET /v1/users', () => {
     beforeEach(async () => {
-      await insertWorkspaces([workspaceOne, workspaceTwo]);
       const adminCopy = {};
       Object.assign(adminCopy, admin);
-      adminCopy.workspace = workspaceOne._id;
 
       const userOneCopy = {};
       Object.assign(userOneCopy, userOne);
-      userOneCopy.workspace = workspaceOne._id;
 
       const userTwoCopy = {};
       Object.assign(userTwoCopy, userTwo);
-      userTwoCopy.workspace = workspaceTwo._id;
 
       await insertUsers([userOneCopy, userTwoCopy, adminCopy]);
     });
@@ -56,7 +51,6 @@ describe('User routes', () => {
         emailVerified: userOne.emailVerified,
         timezone: '(GMT+01:00) Lagos',
         status: userOne.status,
-        workspace: workspaceOne._id.toString(),
       });
     });
 
@@ -234,18 +228,13 @@ describe('User routes', () => {
 
   describe.skip('GET /v1/users/:userId', () => {
     beforeEach(async () => {
-      await insertWorkspaces([workspaceOne, workspaceTwo]);
       const adminCopy = {};
       Object.assign(adminCopy, admin);
-      adminCopy.workspace = workspaceOne._id;
 
       const userOneCopy = {};
       Object.assign(userOneCopy, userOne);
-      userOneCopy.workspace = workspaceOne._id;
 
       const userTwoCopy = {};
-      Object.assign(userTwoCopy, userTwo);
-      userTwoCopy.workspace = workspaceTwo._id;
 
       await insertUsers([userOneCopy, userTwoCopy, adminCopy]);
     });
@@ -266,7 +255,6 @@ describe('User routes', () => {
         emailVerified: userOne.emailVerified,
         timezone: '(GMT+01:00) Lagos',
         status: userOne.status,
-        workspace: workspaceOne._id.toString(),
       });
     });
 
@@ -318,17 +306,13 @@ describe('User routes', () => {
   describe('PATCH /v1/users/:userId', () => {
     const userTwoCopy = {};
     beforeEach(async () => {
-      await insertWorkspaces([workspaceOne, workspaceTwo]);
       const adminCopy = {};
       Object.assign(adminCopy, admin);
-      adminCopy.workspace = workspaceOne._id;
 
       const userOneCopy = {};
       Object.assign(userOneCopy, userOne);
-      userOneCopy.workspace = workspaceOne._id;
 
       Object.assign(userTwoCopy, userTwo);
-      userTwoCopy.workspace = workspaceTwo._id;
 
       await insertUsers([userOneCopy, userTwoCopy, adminCopy]);
     });
@@ -355,11 +339,6 @@ describe('User routes', () => {
         isReviewer: false,
         timezone: '(GMT+01:00) Lagos',
         status: userTwo.status,
-        workspace: userTwoCopy.workspace._id.toString(),
-        reporting: {
-          schedule: 'weekly',
-          weekDay: 'friday',
-        },
       });
 
       const dbUser = await User.findById(userTwo._id);
@@ -539,17 +518,13 @@ describe('User routes', () => {
   describe.skip('POST /v1/users/:userId/upload-avatar', () => {
     const userTwoCopy = {};
     beforeEach(async () => {
-      await insertWorkspaces([workspaceOne, workspaceTwo]);
       const adminCopy = {};
       Object.assign(adminCopy, admin);
-      adminCopy.workspace = workspaceOne._id;
 
       const userOneCopy = {};
       Object.assign(userOneCopy, userOne);
-      userOneCopy.workspace = workspaceOne._id;
 
       Object.assign(userTwoCopy, userTwo);
-      userTwoCopy.workspace = workspaceTwo._id;
 
       await insertUsers([userOneCopy, userTwoCopy, adminCopy]);
     });

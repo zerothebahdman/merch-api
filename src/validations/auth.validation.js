@@ -5,8 +5,8 @@ const userSignUp = {
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().custom(password),
-    firstName: Joi.string().required(),
-    lastName: Joi.string().required(),
+    firstName: Joi.string(),
+    lastName: Joi.string(),
     role: Joi.string(),
   }),
 };
@@ -68,7 +68,7 @@ const userInvitationVerify = {
 const googleAuthentication = {
   body: Joi.object().keys({
     token: Joi.string().required(),
-    isAdmin: Joi.boolean(),
+    isCreator: Joi.boolean(),
   }),
 };
 

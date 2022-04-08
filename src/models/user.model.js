@@ -72,9 +72,9 @@ const userSchema = mongoose.Schema(
       enum: Object.values(ROLES),
       default: ROLES.USER,
     },
-    store: {
+    creatorPage: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Store',
+      ref: 'CreatorPage',
       required: false,
     },
     industry: {

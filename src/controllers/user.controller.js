@@ -2,9 +2,9 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { userService, imageService, goalService, tokenService, emailService } = require('../services');
+const { userService, fileService, goalService, tokenService, emailService } = require('../services');
 const { ERROR_MESSAGES } = require('../config/messages');
-const { USER_STATUSES, IMAGE_CLOUD_PROVIDERS } = require('../config/constants');
+const { USER_STATUSES } = require('../config/constants');
 const { ROLES } = require('../config/roles');
 
 const getUsers = catchAsync(async (req, res) => {
@@ -80,15 +80,8 @@ const updateUser = catchAsync(async (req, res) => {
 
 const uploadUserAvatar = catchAsync(async (req, res) => {
   const actor = req.user;
-  const response = await imageService.uploadBase64Image(req.body.avatar, 'users-avatar');
-  const payload = {
-    avatar: {
-      source: IMAGE_CLOUD_PROVIDERS.CLOUDINARY,
-      url: response.secure_url,
-      meta: response,
-    },
-  };
-  const user = await userService.updateUserById(req.params.userId, payload, actor);
+  const response = await fileService.uploadBase64File(req.body.avatar, 'users-avatar');
+  const user = await userService.updateUserById(req.params.userId, { avatar: response.secure_url }, actor);
   res.send(user);
 });
 

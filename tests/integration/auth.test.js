@@ -14,7 +14,6 @@ const { User, Token } = require('../../src/models');
 const { ROLES, roleRights } = require('../../src/config/roles');
 const { tokenTypes } = require('../../src/config/tokens');
 const { userOne, userTwo, userThree, admin, insertUsers } = require('../fixtures/user.fixture');
-const { workspaceOne, workspaceTwo, insertWorkspaces } = require('../fixtures/workspace.fixture');
 const { userOneAccessToken, userTwoAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 const { USER_STATUSES } = require('../../src/config/constants');
 const { ERROR_MESSAGES } = require('../../src/config/messages');
@@ -509,14 +508,11 @@ describe('Auth routes', () => {
 
 describe('Auth middleware', () => {
   beforeEach(async () => {
-    await insertWorkspaces([workspaceOne, workspaceTwo]);
     const adminCopy = {};
     Object.assign(adminCopy, admin);
-    adminCopy.workspace = workspaceOne._id;
 
     const userOneCopy = {};
     Object.assign(userOneCopy, userOne);
-    userOneCopy.workspace = workspaceOne._id;
 
     await insertUsers([userOneCopy, adminCopy]);
   });

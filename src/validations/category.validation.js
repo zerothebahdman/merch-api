@@ -1,7 +1,7 @@
 const Joi = require('joi');
 const { objectId } = require('./custom.validation');
 
-const createItem = {
+const createCategory = {
   body: Joi.object().keys({
     name: Joi.string().required(),
     quantity: Joi.number(),
@@ -15,15 +15,15 @@ const createItem = {
     avatar: Joi.string(),
   }),
 };
-const getItem = {
+const getCategory = {
   params: Joi.object().keys({
-    itemId: Joi.string().custom(objectId),
+    categoryId: Joi.string().custom(objectId),
   }),
 };
 
-const updateItem = {
+const updateCategory = {
   params: Joi.object().keys({
-    itemId: Joi.required().custom(objectId),
+    categoryId: Joi.required().custom(objectId),
   }),
   body: Joi.object()
     .keys({
@@ -40,15 +40,15 @@ const updateItem = {
     .min(1),
 };
 
-const deleteItem = {
+const deleteCategory = {
   params: Joi.object().keys({
-    itemId: Joi.required().custom(objectId),
+    categoryId: Joi.required().custom(objectId),
   }),
 };
 
 module.exports = {
-  getItem,
-  updateItem,
-  createItem,
-  deleteItem,
+  getCategory,
+  updateCategory,
+  createCategory,
+  deleteCategory,
 };

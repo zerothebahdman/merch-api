@@ -15,10 +15,10 @@ const ERROR_MESSAGES = {
   WRONG_PASSWORD: 'Your current password is incorrect',
   FORBIDDEN: 'You are forbidden to perform this action',
   NOT_ALLOWED_TO_UPDATE_FIELDS: 'You are not allowed to update some of the fields here. Remove email',
-  STORE_NOT_FOUND: 'Store not found',
-  STORE_NAME_EXIST: 'Store with name already exist',
-  STORE_CREATED_ALREADY: 'You have already created a store',
-  ITEM_NOT_FOUND: 'Item not found',
+  PAGE_NOT_FOUND: 'Creator page not found',
+  PAGE_NAME_EXIST: 'Creator page with name already exist',
+  PAGE_CREATED_ALREADY: 'You have already created your landing page',
+  CATEGORY_NOT_FOUND: 'Category not found',
   INVALID_NAME: 'Name should start with alphabets and should not contain special characters',
   TOKEN_NOT_FOUND: 'Token not found',
   JWT_INVALID_TOKEN_TYPE: 'Invalid token type',
@@ -36,8 +36,8 @@ const ERROR_MESSAGES = {
 };
 
 const SUCCESS_MESSAGES = {
-  STORE_CREATED: 'You have succesfully created store',
-  CREATOR_ACCOUNT_CREATED: 'Welcome on board, you can go ahead and create your store',
+  PAGE_CREATED: 'You have succesfully created your landing page',
+  CREATOR_ACCOUNT_CREATED: 'Welcome on board, you can go ahead and create your landing page',
 };
 
 module.exports = {

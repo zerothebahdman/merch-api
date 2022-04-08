@@ -1,39 +1,39 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const { itemValidation } = require('../../validations');
-const { itemController } = require('../../controllers');
+const { categoryValidation } = require('../../validations');
+const { categoryController } = require('../../controllers');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(auth('admin'), validate(itemValidation.createItem), itemController.createItem)
-  .get(validate(itemValidation.getItem), itemController.getItems);
+  .post(auth('admin'), validate(categoryValidation.createCategory), categoryController.createCategory)
+  .get(validate(categoryValidation.getCategory), categoryController.getCategories);
 
 router
-  .route('/:itemId')
-  .get(validate(itemValidation.getItem), itemController.getItem)
-  .patch(auth('admin'), validate(itemValidation.updateItem), itemController.updateItem)
-  .delete(auth('admin'), validate(itemValidation.deleteItem), itemController.deleteItem);
+  .route('/:categoryId')
+  .get(validate(categoryValidation.getCategory), categoryController.getCategory)
+  .patch(auth('admin'), validate(categoryValidation.updateCategory), categoryController.updateCategory)
+  .delete(auth('admin'), validate(categoryValidation.deleteCategory), categoryController.deleteCategory);
 
 module.exports = router;
 
 /**
  * @swagger
  * tags:
- *   name: Items
- *   description: Items management
+ *   name: Categories
+ *   description: Categories management
  */
 
 /**
  * @swagger
  * path:
- *  /items:
+ *  /categories:
  *    post:
- *      summary: Create an Item
- *      description: Only creators can create a Item.
- *      tags: [Items]
+ *      summary: Create a category
+ *      description: Only creators can create a category.
+ *      tags: [Categories]
  *      security:
  *        - bearerAuth: []
  *      requestBody:
@@ -47,7 +47,7 @@ module.exports = router;
  *              example:
  *                name: T-shirt
  *                quantity: 10
- *                amount: {price: 5000, currency: NGN}
+ *                price: {amount: 5000, currency: NGN}
  *                store: 614d0ff5c5d8b07020a899d1
  *                images: [url1, url2, url3]
  *      responses:
@@ -56,7 +56,7 @@ module.exports = router;
  *          content:
  *            application/json:
  *              schema:
- *                 $ref: '#/components/schemas/Item'
+ *                 $ref: '#/components/schemas/Category'
  *        "400":
  *          $ref: '#/components/responses/DuplicateName'
  *        "401":
@@ -68,11 +68,11 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /items:
+ *  /categories:
  *    get:
- *      summary: Get all available Items
- *      description: website users can fetch all available Items.
- *      tags: [Items]
+ *      summary: Get all available Categories
+ *      description: website users can fetch all available Categories.
+ *      tags: [Categories]
  *      requestBody:
  *        required: true
  *        content:
@@ -85,7 +85,7 @@ module.exports = router;
  *          content:
  *            application/json:
  *              schema:
- *                 $ref: '#/components/schemas/Items'
+ *                 $ref: '#/components/schemas/Categories'
  *        "400":
  *          $ref: '#/components/responses/DuplicateName'
  *        "401":
@@ -97,30 +97,30 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /items/{id}:
+ *  /categories/{categoryId}:
  *    get:
- *      summary: Get an Item by ID
+ *      summary: Get a Category by ID
  *      description: Available for all users
- *      tags: [Items]
+ *      tags: [Categories]
  *      parameters:
  *        - in: path
  *          name: id
  *          required: true
  *          schema:
  *            type: string
- *          description: Item id
+ *          description: Category id
  *        - in: query
  *          name: include
  *          schema:
  *            type: string
- *          description: Comma separated list of foreign fields to be populated
+ *            description: Comma separated list of foreign fields to be populated
  *      responses:
  *        "200":
  *          description: OK
  *          content:
  *            application/json:
  *              schema:
- *                 $ref: '#/components/schemas/Item'
+ *                 $ref: '#/components/schemas/Category'
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":
@@ -129,9 +129,9 @@ module.exports = router;
  *          $ref: '#/components/responses/NotFound'
  *
  *    patch:
- *      summary: Update an Item
- *      description:  Only creators can update their Item information
- *      tags: [Items]
+ *      summary: Update a Category
+ *      description:  Only creators can update a Category information
+ *      tags: [Categories]
  *      security:
  *        - bearerAuth: []
  *      parameters:
@@ -140,7 +140,7 @@ module.exports = router;
  *          required: true
  *          schema:
  *            type: string
- *          description: Item id
+ *          description: Category id
  *      requestBody:
  *        required: true
  *        content:
@@ -159,7 +159,7 @@ module.exports = router;
  *          content:
  *            application/json:
  *              schema:
- *                 $ref: '#/components/schemas/Item'
+ *                 $ref: '#/components/schemas/Category'
  *        "400":
  *          $ref: '#/components/responses/DuplicateName'
  *        "401":
@@ -170,9 +170,9 @@ module.exports = router;
  *          $ref: '#/components/responses/NotFound'
  *
  *    delete:
- *      summary: Delete an Item
- *      description:  Only creators can delete an Item
- *      tags: [Items]
+ *      summary: Delete an Category
+ *      description:  Only creators can delete an Category
+ *      tags: [Categories]
  *      security:
  *        - bearerAuth: []
  *      parameters:
@@ -181,7 +181,7 @@ module.exports = router;
  *          required: true
  *          schema:
  *            type: string
- *          description: Item id
+ *          description: Category id
  *      responses:
  *        "200":
  *          description: OK

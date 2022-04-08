@@ -28,13 +28,13 @@ const merchSchema = mongoose.Schema(
     endDate: {
       type: Date,
     },
-    amount: {
+    price: {
       currency: {
         type: String,
         enum: Object.values(CURRENCIES),
         default: CURRENCIES.NAIRA,
       },
-      price: {
+      amount: {
         type: Number,
         required: true,
       },
@@ -51,18 +51,14 @@ const merchSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    item: {
+    category: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Item',
-      required: true,
+      ref: 'Category',
     },
-    store: {
+    creatorPage: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Store',
+      ref: 'CreatorPage',
       required: true,
-    },
-    merchLogo: {
-      type: String,
     },
     ...auditableFields,
   },

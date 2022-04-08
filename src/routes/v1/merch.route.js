@@ -48,8 +48,9 @@ module.exports = router;
  *                name: T-shirt
  *                quantity: 10
  *                amount: {price: 5000, currency: NGN}
- *                store: 614d0ff5c5d8b07020a899d1
+ *                creatorPage: 614d0ff5c5d8b07020a899d1
  *                images: [url1, url2, url3]
+ *                avatar: image.jpg
  *      responses:
  *        "201":
  *          description: Created

@@ -1,8 +1,9 @@
 const express = require('express');
 const authRoute = require('./auth.route');
 const userRoute = require('./user.route');
-const storeRoute = require('./store.route');
-const itemRoute = require('./item.route');
+const creatorPageRoute = require('./creatorPage.route');
+const categoryRoute = require('./category.route');
+const fileRoute = require('./file.route');
 const merchRoute = require('./merch.route');
 const orderRoute = require('./order.route');
 const waitlistRoute = require('./waitlist.route');
@@ -21,12 +22,16 @@ const defaultRoutes = [
     route: userRoute,
   },
   {
-    path: '/stores',
-    route: storeRoute,
+    path: '/creator-page',
+    route: creatorPageRoute,
   },
   {
-    path: '/items',
-    route: itemRoute,
+    path: '/categories',
+    route: categoryRoute,
+  },
+  {
+    path: '/file-upload',
+    route: fileRoute,
   },
   {
     path: '/merches',

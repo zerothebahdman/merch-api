@@ -9,15 +9,15 @@ cloudinary.config({
 
 /**
  * Upload base64 image
- * @param {string} base64Image
+ * @param {string} base64File
  * @param {string} folder
  * @returns {Promise}
  */
-const uploadBase64Image = async (base64Image, folder) => {
-  const response = await cloudinary.uploader.upload(base64Image, { folder });
+const uploadBase64File = async (base64File, folder = 'uploads') => {
+  const response = await cloudinary.uploader.upload(base64File, { folder });
   return response;
 };
 
 module.exports = {
-  uploadBase64Image,
+  uploadBase64File,
 };

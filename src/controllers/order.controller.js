@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { merchService, imageService } = require('../services');
+const { merchService, fileService } = require('../services');
 const { ERROR_MESSAGES } = require('../config/messages');
 
 const createMerch = catchAsync(async (req, res) => {
@@ -27,14 +27,14 @@ const getMerches = catchAsync(async (req, res) => {
 });
 
 const updateMerch = catchAsync(async (req, res) => {
-  // Only the createdBy of a hub that should be able to update it.
+  // Only the creator of a merch should be able to update it.
   req.body.updatedBy = req.user.id;
   const merch = await merchService.updateMerchById(req.params.hubId, req.body);
   res.send(merch);
 });
 
 const uploadMerchImages = catchAsync(async (req, res) => {
-  const response = await imageService.uploadBase64Image(req.body.avatar, 'merch-images');
+  const response = await fileService.uploadBase64File(req.body.avatar, 'merch-images');
   const payload = {
     avatar: {
       url: response.secure_url,
