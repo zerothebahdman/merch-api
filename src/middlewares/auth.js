@@ -1,7 +1,7 @@
 const passport = require('passport');
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
-const { roleRights, ROLES } = require('../config/roles');
+const { roleRights } = require('../config/roles');
 const { ERROR_MESSAGES } = require('../config/messages');
 const { USER_STATUSES } = require('../config/constants');
 
@@ -40,16 +40,6 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
     if (!hasRequiredRights && req.params.userId !== user.id) {
       return reject(new ApiError(httpStatus.FORBIDDEN, ERROR_MESSAGES.FORBIDDEN));
     }
-  }
-
-  /**
-   * Check if the user already has a hub assigned. If not, reject the request
-   * excluded endpoints POST /hubs
-   */
-  const EXCLUDED_ADMIN_URLS = ['/v1/admin'];
-
-  if (req.user.role === ROLES.CREATOR && req.user.store === undefined && EXCLUDED_ADMIN_URLS.indexOf(req.originalUrl) < 0) {
-    return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Creator without store'));
   }
 
   resolve();

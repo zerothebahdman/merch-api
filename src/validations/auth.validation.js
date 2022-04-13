@@ -4,10 +4,11 @@ const { password } = require('./custom.validation');
 const userSignUp = {
   body: Joi.object().keys({
     email: Joi.string().required().email(),
-    password: Joi.string().required().custom(password),
     firstName: Joi.string(),
     lastName: Joi.string(),
+    password: Joi.string(),
     role: Joi.string(),
+    shippingAddress: Joi.object(),
   }),
 };
 
