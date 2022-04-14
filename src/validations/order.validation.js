@@ -3,11 +3,22 @@ const { objectId } = require('./custom.validation');
 
 const createOrder = {
   body: Joi.object().keys({
-    name: Joi.string().required(),
-    contactEmail: Joi.string().email(),
-    timezone: Joi.string(),
+    merches: Joi.array().items({
+      merchId: Joi.string().custom(objectId),
+      quantity: Joi.number().min(1),
+      amount: Joi.object().keys({
+        unitPrice: Joi.number(),
+        currency: Joi.string(),
+      }),
+    }),
+    totalAmount: Joi.object().keys({
+      price: Joi.number(),
+      currency: Joi.string(),
+    }),
+    creatorPage: Joi.string().custom(objectId),
   }),
 };
+
 const getOrder = {
   params: Joi.object().keys({
     orderId: Joi.string().custom(objectId),
@@ -20,9 +31,7 @@ const updateOrder = {
   }),
   body: Joi.object()
     .keys({
-      name: Joi.string(),
-      timezone: Joi.string(),
-      contactEmail: Joi.string().email(),
+      status: Joi.string(),
     })
     .min(1),
 };

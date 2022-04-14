@@ -40,9 +40,13 @@ const CurrencySymbolMapping = new Map([
 
 const ORDER_STATUSES = {
   PENDING: 'pending',
-  IN_PROGRESS: 'in_progress',
-  COMPLETED: 'completed',
-  IN_COMPLETED: 'in_completed',
+  ENROUTE: 'enroute',
+  PICKUP: 'pickup',
+  COMPLETED: 'fulfilled',
+  PROCESSING: 'processing',
+  PREORDER: 'preorder',
+  UNFULFILLED: 'unfufilled',
+  FAILED: 'failed',
 };
 
 const SHIPPING_STATUSES = {

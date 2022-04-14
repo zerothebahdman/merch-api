@@ -47,6 +47,9 @@ const envVarsSchema = Joi.object()
     CLOUDINARY_CLOUD_NAME: Joi.string().description('Cloudinary Cloud Name'),
     CLOUDINARY_API_KEY: Joi.string().description('Cloudinary API Key'),
     CLOUDINARY_API_SECRET: Joi.string().description('Cloudinary API Secret'),
+    FLUTTER_API_URL: Joi.string().description('Flutter wave API Url'),
+    FLUTTER_API_REDIRECT: Joi.string().description('Flutter wave API Redirect URL'),
+    FLUTTER_API_SECRET: Joi.string().description('Flutter wave API Secret'),
   })
   .unknown();
 
@@ -104,5 +107,10 @@ module.exports = {
     cloudName: envVars.CLOUDINARY_CLOUD_NAME,
     apiKey: envVars.CLOUDINARY_API_KEY,
     apiSecret: envVars.CLOUDINARY_API_SECRET,
+  },
+  paymentInfo: {
+    url: envVars.FLUTTER_API_URL,
+    secret: envVars.FLUTTER_API_SECRET,
+    redirect_url: envVars.FLUTTER_API_REDIRECT,
   },
 };

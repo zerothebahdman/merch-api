@@ -27,7 +27,7 @@ router.get(
 
 router
   .route('/:creatorPageId/orders')
-  .get(validate(creatorPageValidation.getOrders), creatorPageController.getCreatorPageOrders);
+  .get(auth('creator'), validate(creatorPageValidation.getOrders), creatorPageController.getCreatorPageOrders);
 
 router
   .route('/:creatorPageId/items')

@@ -6,7 +6,7 @@ const orderSchema = mongoose.Schema(
   {
     merches: [
       {
-        merch: {
+        merchId: {
           type: mongoose.SchemaTypes.ObjectId,
           ref: 'Merch',
         },
@@ -49,6 +49,9 @@ const orderSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'User',
       required: true,
+    },
+    orderCode: {
+      type: String,
     },
     status: {
       type: String,

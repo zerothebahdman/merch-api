@@ -4,7 +4,6 @@ const { Order } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateRandomChar, slugify } = require('../utils/helpers');
 const { ERROR_MESSAGES } = require('../config/messages');
-const config = require('../config/config');
 
 /**
  * Create an order
@@ -12,10 +11,6 @@ const config = require('../config/config');
  * @returns {Promise<Order>}
  */
 const createOrder = async (orderBody) => {
-  // eslint-disable-next-line no-param-reassign
-  orderBody.slug = `${slugify(orderBody.name)}-${generateRandomChar(4, 'lower-num')}`;
-  // eslint-disable-next-line no-param-reassign
-  orderBody.url = `${config.frontendAppUrl}/invite/${generateRandomChar(8, 'alpha')}`;
   const order = await Order.create(orderBody);
   return order;
 };

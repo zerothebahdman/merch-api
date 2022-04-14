@@ -41,7 +41,6 @@ const updateMerch = {
     .keys({
       name: Joi.string(),
       quantity: Joi.number(),
-      item: Joi.required().custom(objectId),
       price: Joi.object().keys({
         currency: Joi.string(),
         amount: Joi.number(),

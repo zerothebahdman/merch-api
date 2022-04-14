@@ -17,6 +17,7 @@ router
   .patch(auth('creator'), validate(merchValidation.updateMerch), merchController.updateMerch)
   .delete(auth('creator'), validate(merchValidation.deleteMerch), merchController.deleteMerch);
 
+// eslint-disable-next-line jest/no-export
 module.exports = router;
 
 /**

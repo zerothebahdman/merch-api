@@ -6,6 +6,7 @@ module.exports.userService = require('./user.service');
 module.exports.categoryService = require('./category.service');
 module.exports.merchService = require('./merch.service');
 module.exports.orderService = require('./order.service');
+module.exports.paymentService = require('./payment.service');
 module.exports.creatorPageService = require('./creatorPage.service');
 module.exports.onboardingService = require('./onboarding.service');
 module.exports.waitlistService = require('./waitlist.service');

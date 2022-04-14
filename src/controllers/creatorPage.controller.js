@@ -47,7 +47,10 @@ const getCreatorPageMerches = catchAsync(async (req, res) => {
 });
 
 const getCreatorPageOrders = catchAsync(async (req, res) => {
-  const orders = await orderService.queryOrders({ creatorPage: req.params.creatorPageId }, {}, req.query.include);
+  const filter = pick(req.query, ['status']);
+  filter.creatorPage = req.params.creatorPageId;
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const orders = await orderService.getOrders(filter, options, req.user, !req.query.paginate);
   if (!orders) {
     throw new ApiError(httpStatus.NOT_FOUND, `Something went wrong. Couldn't fetch orders`);
   }
