@@ -47,6 +47,9 @@ const merchSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    paymentLink: {
+      type: String,
+    },
     creatorPage: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'CreatorPage',

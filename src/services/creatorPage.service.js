@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const moment = require('moment');
-const { CreatorPage } = require('../models');
+const { CreatorPage, CreatorPageItem } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { slugify } = require('../utils/helpers');
 const { ERROR_MESSAGES } = require('../config/messages');
@@ -30,6 +30,19 @@ const queryCreatorPages = async (filter, options, eagerLoadFields = '', ignorePa
     ? await CreatorPage.find(filter).populate(options.populate)
     : await CreatorPage.paginate(filter, options);
   return creatorPages;
+};
+
+/**
+ * Get creator page items
+ * @param {ObjectId} ids
+ * @returns {Promise<Items>}
+ */
+const getItems = async (filter, options, actor, ignorePagination = false) => {
+  filter.deletedBy = null;
+  const creatorPageItems = ignorePagination
+    ? await CreatorPageItem.find(filter).populate(options.populate)
+    : await CreatorPageItem.paginate(filter, options);
+  return creatorPageItems;
 };
 
 /**
@@ -95,4 +108,5 @@ module.exports = {
   queryCreatorPageById,
   updateCreatorPageById,
   deleteCreatorPageById,
+  getItems,
 };

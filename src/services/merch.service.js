@@ -43,7 +43,7 @@ const queryMerchById = async (id, eagerLoadFields = false) => {
   //     { deletedBy: { $eq: null }, _id: { $eq: id }, published: { $eq: true } },
   //   ],
   // };
-  return eagerLoadFields ? Merch.findOne().populate(eagerLoadFields) : Merch.findOne();
+  return eagerLoadFields ? Merch.findOne({ _id: id }).populate(eagerLoadFields) : Merch.findOne({ _id: id });
 };
 
 /**

@@ -68,8 +68,8 @@ const getCreatorPageBySlug = catchAsync(async (req, res) => {
 
 const getCreatorPages = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'creatorPageId']);
-  const options = pick(req.query, ['page', 'limit']);
-  const creatorPages = await creatorPageService.queryCreatorPages(filter, options, req.query.include);
+  const options = pick(req.query, ['page', 'limit', 'sort']);
+  const creatorPages = await creatorPageService.queryCreatorPages(filter, options, req.user, !req.query.paginate);
   if (!creatorPages) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_NOT_FOUND);
   }
@@ -95,8 +95,9 @@ const addItem = catchAsync(async (req, res) => {
 
 const getItems = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'isPublic', 'isFeatured']);
+  const options = pick(req.query, ['page', 'limit', 'sort']);
   filter.creatorPage = req.params.creatorPageId;
-  const items = creatorPageService.getItems(filter, req.user);
+  const items = creatorPageService.getItems(filter, options, req.user, !req.query.paginate);
   res.send(items);
 });
 

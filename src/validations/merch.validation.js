@@ -15,6 +15,7 @@ const createMerch = {
     published: Joi.boolean(),
     description: Joi.string(),
     images: Joi.array(),
+    paymentLink: Joi.string(),
   }),
 };
 
@@ -51,6 +52,7 @@ const updateMerch = {
       startDate: Joi.date(),
       endDate: Joi.date(),
       merchLogo: Joi.string(),
+      paymentLink: Joi.string(),
     })
     .min(1),
 };
