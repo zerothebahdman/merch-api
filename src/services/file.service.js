@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const config = require('../config/config');
+const ApiError = require('../utils/ApiError');
 // set cloudinary configuration
 cloudinary.config({
   cloud_name: config.cloudinary.cloudName,
@@ -14,8 +15,12 @@ cloudinary.config({
  * @returns {Promise}
  */
 const uploadBase64File = async (base64File, folder = 'uploads') => {
-  const response = await cloudinary.uploader.upload(base64File, { folder });
-  return response;
+  try {
+    const response = await cloudinary.uploader.upload(base64File, { folder });
+    return response;
+  } catch (err) {
+    throw ApiError(err);
+  }
 };
 
 module.exports = {

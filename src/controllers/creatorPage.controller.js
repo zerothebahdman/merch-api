@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { creatorPageService, userService, merchService } = require('../services');
+const { creatorPageService, userService, merchService, orderService } = require('../services');
 const { ERROR_MESSAGES } = require('../config/messages');
 const { ROLES } = require('../config/roles');
 const { RESERVED_NAMES } = require('../config/reservedNames');
@@ -44,6 +44,14 @@ const getCreatorPageMerches = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_NOT_FOUND);
   }
   res.send(merches);
+});
+
+const getCreatorPageOrders = catchAsync(async (req, res) => {
+  const orders = await orderService.queryOrders({ creatorPage: req.params.creatorPageId }, {}, req.query.include);
+  if (!orders) {
+    throw new ApiError(httpStatus.NOT_FOUND, `Something went wrong. Couldn't fetch orders`);
+  }
+  res.send(orders);
 });
 
 const getCreatorPageBySlug = catchAsync(async (req, res) => {
@@ -101,6 +109,7 @@ module.exports = {
   createCreatorPage,
   getCreatorPage,
   getCreatorPageMerches,
+  getCreatorPageOrders,
   getCreatorPageBySlug,
   getCreatorPages,
   updateCreatorPage,

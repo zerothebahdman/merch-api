@@ -1,55 +1,43 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { merchService, fileService } = require('../services');
-const { ERROR_MESSAGES } = require('../config/messages');
+const { orderService } = require('../services');
+const pick = require('../utils/pick');
 
-const createMerch = catchAsync(async (req, res) => {
+const createOrder = catchAsync(async (req, res) => {
   req.body.createdBy = req.user.id;
-  const merch = await merchService.createMerch(req.body);
-  res.status(httpStatus.CREATED).send(merch);
+  const order = await orderService.createOrder(req.body);
+  res.status(httpStatus.CREATED).send(order);
 });
 
-const getMerch = catchAsync(async (req, res) => {
-  const hub = await merchService.getMerchById(req.params.hubId, req.query.include);
-  if (!hub) {
-    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.HUB_NOT_FOUND);
+const getOrder = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderById(req.params.orderId, req.query.include);
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Requested order not found');
   }
-  res.send(hub);
+  res.send(order);
 });
 
-const getMerches = catchAsync(async (req, res) => {
-  const merches = await merchService.queryMerches(req.params.merchId, req.query.include);
-  if (!merches) {
-    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.HUB_NOT_FOUND);
+const getOrders = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['creatorPage', 'status']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const orders = await orderService.queryOrders(filter, options, req.user, !req.query.paginate);
+  if (!orders) {
+    throw new ApiError(httpStatus.NOT_FOUND, `Something went wrong! Couldn't retrieve orders`);
   }
-  res.send(merches);
+  res.send(orders);
 });
 
-const updateMerch = catchAsync(async (req, res) => {
+const updateOrderStatus = catchAsync(async (req, res) => {
   // Only the creator of a merch should be able to update it.
   req.body.updatedBy = req.user.id;
-  const merch = await merchService.updateMerchById(req.params.hubId, req.body);
-  res.send(merch);
-});
-
-const uploadMerchImages = catchAsync(async (req, res) => {
-  const response = await fileService.uploadBase64File(req.body.avatar, 'merch-images');
-  const payload = {
-    avatar: {
-      url: response.secure_url,
-      meta: response,
-    },
-    updatedBy: req.user.id,
-  };
-  const merch = await merchService.updateMerchById(req.params.merchId, payload);
-  res.send(merch);
+  const order = await orderService.updateOrderById(req.params.orderId, req.body);
+  res.send(order);
 });
 
 module.exports = {
-  createMerch,
-  getMerch,
-  getMerches,
-  updateMerch,
-  uploadMerchImages,
+  createOrder,
+  getOrder,
+  getOrders,
+  updateOrderStatus,
 };

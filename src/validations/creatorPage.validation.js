@@ -10,6 +10,11 @@ const createCreatorPage = {
       intro: Joi.string(),
     }),
     coverImage: Joi.string(),
+    storeInfo: Joi.object().keys({
+      name: Joi.string(),
+      description: Joi.string(),
+      banner: Joi.string(),
+    }),
   }),
 };
 const getCreatorPage = {
@@ -29,6 +34,11 @@ const updateCreatorPage = {
       avatar: Joi.string(),
       description: Joi.string(),
       coverImage: Joi.string(),
+      storeInfo: Joi.object().keys({
+        name: Joi.string(),
+        description: Joi.string(),
+        banner: Joi.string(),
+      }),
     })
     .min(1),
 };
@@ -89,6 +99,16 @@ const deleteItem = {
   }),
 };
 
+const getOrders = {
+  query: Joi.object().keys({
+    creatorPage: Joi.string(),
+    status: Joi.string(),
+    paginate: Joi.boolean().default(true),
+    page: Joi.number(),
+    sortBy: Joi.string(),
+  }),
+};
+
 module.exports = {
   getCreatorPage,
   updateCreatorPage,
@@ -98,4 +118,5 @@ module.exports = {
   getItems,
   updateItem,
   deleteItem,
+  getOrders,
 };

@@ -8,10 +8,10 @@ const pick = require('../utils/pick');
 
 const createMerch = catchAsync(async (req, res) => {
   req.body.user = req.user.id;
-  req.body.store = req.user.store;
+  req.body.creatorPage = req.user.creatorPage;
   req.body.createdBy = req.user.id;
   if (req.user.role !== ROLES.CREATOR) {
-    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.USER_CANNOT_CREATE_MERCH);
+    throw new ApiError(httpStatus.NOT_FOUND, 'User does not have permission to create Merch');
   }
   const merch = await merchService.createMerch(req.body);
   res.status(httpStatus.CREATED).send(merch);

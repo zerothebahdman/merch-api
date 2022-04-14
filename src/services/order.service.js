@@ -1,71 +1,76 @@
+/* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
-const { Hub } = require('../models');
+const { Order } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { generateRandomChar, slugify } = require('../utils/helpers');
 const { ERROR_MESSAGES } = require('../config/messages');
 const config = require('../config/config');
 
 /**
- * Create a hub
- * @param {Object} hubBody
- * @returns {Promise<Hub>}
+ * Create an order
+ * @param {Object} orderBody
+ * @returns {Promise<Order>}
  */
-const createHub = async (hubBody) => {
+const createOrder = async (orderBody) => {
   // eslint-disable-next-line no-param-reassign
-  hubBody.slug = `${slugify(hubBody.name)}-${generateRandomChar(4, 'lower-num')}`;
+  orderBody.slug = `${slugify(orderBody.name)}-${generateRandomChar(4, 'lower-num')}`;
   // eslint-disable-next-line no-param-reassign
-  hubBody.url = `${config.frontendAppUrl}/invite/${generateRandomChar(8, 'alpha')}`;
-  const hub = await Hub.create(hubBody);
-  return hub;
+  orderBody.url = `${config.frontendAppUrl}/invite/${generateRandomChar(8, 'alpha')}`;
+  const order = await Order.create(orderBody);
+  return order;
 };
 
 /**
- * Get hub by id
+ * Get orders by creator page
  * @param {ObjectId} ids
- * @returns {Promise<Hub>}
+ * @returns {Promise<Order>}
  */
-const getHubs = async (ids, actor, eagerLoadFields = false) => {
-  return eagerLoadFields
-    ? Hub.find({ id: ids, createdBy: actor.id }).populate(eagerLoadFields)
-    : Hub.find({ id: ids, createdBy: actor.id });
+const getOrders = async (filter, options, actor, ignorePagination = false) => {
+  filter.deletedBy = null;
+  filter.creatorPage = actor.creatorPage;
+
+  const orders = ignorePagination
+    ? await Order.find(filter).populate(options.populate)
+    : await Order.paginate(filter, options);
+  return orders;
 };
 
 /**
- * Get hub by id
+ * Get Order by id
  * @param {ObjectId} id
- * @returns {Promise<Hub>}
+ * @returns {Promise<Order>}
  */
-const getHubById = async (id, eagerLoadFields = false) => {
-  return eagerLoadFields ? Hub.findById(id).populate(eagerLoadFields) : Hub.findById(id);
+const getOrderById = async (id, eagerLoadFields = false) => {
+  return eagerLoadFields ? Order.findById(id).populate(eagerLoadFields) : Order.findById(id);
 };
 
 /**
- * Update hub by id
- * @param {ObjectId} hubId
+ * Update order by id
+ * @param {ObjectId} orderId
  * @param {Object} updateBody
- * @returns {Promise<Hub>}
+ * @returns {Promise<Order>}
  */
-const updateHubById = async (hubId, updateBody) => {
-  const hub = await getHubById(hubId);
-  if (!hub) {
-    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.HUB_NOT_FOUND);
+const updateOrderById = async (orderId, updateBody, actor) => {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'The order was not found');
   }
-  if (updateBody.name !== hub.name) {
+  if (updateBody.name !== order.name) {
     // eslint-disable-next-line no-param-reassign
     updateBody.slug = `${slugify(updateBody.name)}-${generateRandomChar(4, 'lower-num')}`;
   }
-  if (Hub.createdBy._id.toString() !== updateBody.updatedBy) {
+  if (order.creatorPage.toString() !== actor.creatorPage) {
     throw new ApiError(httpStatus.FORBIDDEN, ERROR_MESSAGES.FORBIDDEN);
   }
 
-  Object.assign(hub, updateBody);
-  await Hub.save();
-  return hub;
+  Object.assign(order, updateBody);
+  await order.save();
+  return order;
 };
 
 module.exports = {
-  createHub,
-  getHubs,
-  getHubById,
-  updateHubById,
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrderById,
 };

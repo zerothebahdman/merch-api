@@ -14,10 +14,6 @@ const merchSchema = mongoose.Schema(
       type: Array,
       required: false,
     },
-    avatar: {
-      type: String,
-      required: false,
-    },
     quantity: {
       type: Number,
       default: 0,
@@ -49,11 +45,7 @@ const merchSchema = mongoose.Schema(
     },
     published: {
       type: Boolean,
-      default: false,
-    },
-    category: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Category',
+      default: true,
     },
     creatorPage: {
       type: mongoose.SchemaTypes.ObjectId,

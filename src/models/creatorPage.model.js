@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { CURRENCIES } = require('../config/constants');
 const { toJSON, paginate, auditableFields } = require('./plugins');
 
 const creatorPageSchema = mongoose.Schema(
@@ -25,6 +26,31 @@ const creatorPageSchema = mongoose.Schema(
     coverImage: {
       type: String,
       required: false,
+    },
+    storeInfo: {
+      name: {
+        type: String,
+      },
+      description: {
+        type: String,
+      },
+      banner: {
+        type: String,
+      },
+      country: {
+        type: String,
+      },
+      currency: {
+        type: String,
+        enum: Object.values(CURRENCIES),
+        default: CURRENCIES.NAIRA,
+      },
+      address: {
+        type: String,
+      },
+      phone: {
+        type: String,
+      },
     },
     metadata: {
       description: {

@@ -4,11 +4,11 @@ const { CURRENCIES, ORDER_STATUSES } = require('../config/constants');
 
 const orderSchema = mongoose.Schema(
   {
-    items: [
+    merches: [
       {
-        item: {
+        merch: {
           type: mongoose.SchemaTypes.ObjectId,
-          ref: 'Item',
+          ref: 'Merch',
         },
         quantity: {
           type: Number,
@@ -41,6 +41,11 @@ const orderSchema = mongoose.Schema(
       type: Number,
     },
     user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    creatorPage: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'User',
       required: true,

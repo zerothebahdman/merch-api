@@ -26,6 +26,10 @@ router.get(
 );
 
 router
+  .route('/:creatorPageId/orders')
+  .get(validate(creatorPageValidation.getOrders), creatorPageController.getCreatorPageOrders);
+
+router
   .route('/:creatorPageId/items')
   .post(auth('creator'), validate(creatorPageValidation.addItem), creatorPageController.addItem)
   .get(validate(creatorPageValidation.getItems), creatorPageController.getItems);
@@ -89,7 +93,7 @@ module.exports = router;
  *    get:
  *      summary: Get all available creator pages
  *      description: website users can fetch all available creator pages.
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      requestBody:
  *        required: true
  *        content:
@@ -120,7 +124,7 @@ module.exports = router;
  *    get:
  *      summary: Get a creator page by ID
  *      description: Available for all users
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      parameters:
  *        - in: path
  *          name: id
@@ -150,7 +154,7 @@ module.exports = router;
  *    patch:
  *      summary: Update a creator page
  *      description:  Only creators can update their creator page information
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      security:
  *        - bearerAuth: []
  *      parameters:
@@ -196,7 +200,7 @@ module.exports = router;
  *    delete:
  *      summary: Delete a creator page
  *      description:  Only creators can delete their page
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      security:
  *        - bearerAuth: []
  *      parameters:
@@ -223,7 +227,7 @@ module.exports = router;
  *  /creator-page/{id}/items:
  *    get:
  *      summary: Get all items (links...) in creator page.
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      description: Get all the merches that are available in the creator store
  *      parameters:
  *        - in: path
@@ -273,7 +277,7 @@ module.exports = router;
  *  /creator-page/{id}/merches:
  *    get:
  *      summary: Get all merches in creator store.
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      description: Get all the merches that are available in the creator store
  *      parameters:
  *        - in: path
@@ -315,10 +319,55 @@ module.exports = router;
 /**
  * @swagger
  * path:
+ *  /creator-page/{id}/orders:
+ *    get:
+ *      summary: Get all orders history in creator store.
+ *      tags: [Creator Page]
+ *      description: Get history of orders in the creator store
+ *      parameters:
+ *        - in: path
+ *          name: id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: creator page id
+ *        - in: query
+ *          name: status
+ *          schema:
+ *            type: string
+ *          description: Shows the status of the order []
+ *        - in: query
+ *          type: include
+ *          schema:
+ *            type: string
+ *          description: Comma separated list of foreign fields to be populated
+ *        - in: query
+ *          type: include
+ *          schema:
+ *            type: string
+ *          description: Comma separated list of foreign fields to be populated
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Orders'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *        "404":
+ *          $ref: '#/components/responses/NotFound'
+ */
+
+/**
+ * @swagger
+ * path:
  *  /creator-page/slug/{slug}:
  *    get:
  *      summary: Get a creator-page by the slug of it's name.
- *      tags: [Creator page]
+ *      tags: [Creator Page]
  *      description: Apart from getting creator page information by it's slug, this is also designed to cater for verifying if name of creator page already exists
  *      parameters:
  *        - in: path
@@ -339,27 +388,6 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/creatorPage'
- *        "401":
- *          $ref: '#/components/responses/Unauthorized'
- *        "403":
- *          $ref: '#/components/responses/Forbidden'
- *        "404":
- *          $ref: '#/components/responses/NotFound'
- */
-
-/**
- * @swagger
- * path:
- *  /creator-page/complete-setup:
- *    post:
- *      summary: Complete the creator page setup
- *      description: Logged in creators completes the setup of their creator page.
- *      tags: [creatorPages]
- *      security:
- *        - bearerAuth: []
- *      responses:
- *        "204":
- *          description: No Content
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":

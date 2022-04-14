@@ -9,11 +9,19 @@ const { ERROR_MESSAGES } = require('../config/messages');
 const { ONBOARDING_STAGES, USER_STATUSES } = require('../config/constants');
 
 const userSignUp = catchAsync(async (req, res) => {
-  const user = await userService.createUser(req.body);
-  const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.email);
-  onboardingService.createOnboarding({ user: user.id, stages: [ONBOARDING_STAGES.SIGNED_UP] });
-  emailService.sendUserSignUpEmail(user.email, emailVerificationToken);
-  res.status(httpStatus.CREATED).send(user);
+  const isCreator = req.body.role === ROLES.CREATOR;
+  if (isCreator) {
+    const user = await userService.createUser(req.body);
+    const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.email);
+    onboardingService.createOnboarding({ user: user.id, stages: [ONBOARDING_STAGES.SIGNED_UP] });
+    emailService.sendUserSignUpEmail(user.email, emailVerificationToken);
+    return res.status(httpStatus.CREATED).send(user);
+  }
+  let user = await userService.getUserByEmail(req.body.email);
+  if (user) return res.send(user);
+
+  user = await userService.createUser(req.body);
+  res.send(user);
 });
 
 const verifyEmail = catchAsync(async (req, res) => {
@@ -39,7 +47,7 @@ const resendEmailVerification = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, ERROR_MESSAGES.USER_EMAIL_VERIFIED);
   }
   const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.email);
-  emailService.sendCreatorSignUpEmail(user.email, emailVerificationToken);
+  emailService.sendUserSignUpEmail(user.email, emailVerificationToken);
   res.send(user);
 });
 
@@ -60,7 +68,7 @@ const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   let user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
-  user = await userService.getUserById(user.id, ['hub']);
+  user = await userService.getUserById(user.id);
   res.send({ user, tokens });
 });
 

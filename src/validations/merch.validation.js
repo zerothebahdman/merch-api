@@ -5,10 +5,9 @@ const createMerch = {
   body: Joi.object().keys({
     name: Joi.string().required(),
     quantity: Joi.number(),
-    item: Joi.required().custom(objectId),
-    amount: Joi.object().keys({
+    price: Joi.object().keys({
       currency: Joi.string(),
-      price: Joi.number().required(),
+      amount: Joi.number().required(),
     }),
     startDate: Joi.date(),
     endDate: Joi.date(),
@@ -43,9 +42,9 @@ const updateMerch = {
       name: Joi.string(),
       quantity: Joi.number(),
       item: Joi.required().custom(objectId),
-      amount: Joi.object().keys({
+      price: Joi.object().keys({
         currency: Joi.string(),
-        price: Joi.number(),
+        amount: Joi.number(),
       }),
       published: Joi.boolean(),
       description: Joi.string(),
