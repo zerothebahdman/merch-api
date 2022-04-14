@@ -18,10 +18,13 @@ const userSignUp = catchAsync(async (req, res) => {
     return res.status(httpStatus.CREATED).send(user);
   }
   let user = await userService.getUserByEmail(req.body.email);
-  if (user) return res.send(user);
-
+  if (user) {
+    const tokens = await tokenService.generateAuthTokens(user);
+    return res.send({ user, tokens });
+  }
   user = await userService.createUser(req.body);
-  res.send(user);
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.send({ user, tokens });
 });
 
 const verifyEmail = catchAsync(async (req, res) => {
