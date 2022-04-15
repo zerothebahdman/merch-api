@@ -8,12 +8,20 @@ const createCreatorPage = {
     metadata: Joi.object().keys({
       description: Joi.string(),
       intro: Joi.string(),
+      socialLinks: Joi.array().items({
+        platform: Joi.string(),
+        url: Joi.string(),
+      }),
     }),
     coverImage: Joi.string(),
     storeInfo: Joi.object().keys({
       name: Joi.string(),
       description: Joi.string(),
       banner: Joi.string(),
+      currency: Joi.string(),
+      country: Joi.string(),
+      address: Joi.string(),
+      phone: Joi.string(),
     }),
   }),
 };
@@ -32,12 +40,23 @@ const updateCreatorPage = {
     .keys({
       name: Joi.string(),
       avatar: Joi.string(),
-      description: Joi.string(),
+      metadata: Joi.object().keys({
+        description: Joi.string(),
+        intro: Joi.string(),
+        socialLinks: Joi.array().items({
+          platform: Joi.string(),
+          url: Joi.string(),
+        }),
+      }),
       coverImage: Joi.string(),
       storeInfo: Joi.object().keys({
         name: Joi.string(),
         description: Joi.string(),
         banner: Joi.string(),
+        currency: Joi.string(),
+        country: Joi.string(),
+        address: Joi.string(),
+        phone: Joi.string(),
       }),
     })
     .min(1),
