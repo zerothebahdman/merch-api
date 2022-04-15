@@ -9,7 +9,7 @@ const router = express.Router();
 router
   .route('/')
   .post(auth('creator'), validate(creatorPageValidation.createCreatorPage), creatorPageController.createCreatorPage)
-  .get(validate(creatorPageValidation.getCreatorPage), creatorPageController.getCreatorPages);
+  .get(auth('admin'), validate(creatorPageValidation.getCreatorPage), creatorPageController.getCreatorPages);
 
 router.route('/slug/:slug').get(validate(creatorPageValidation.getCreatorPage), creatorPageController.getCreatorPageBySlug);
 
@@ -36,6 +36,7 @@ router
 
 router
   .route('/:creatorPageId/items/:itemId')
+  .get(auth('creator'), validate(creatorPageValidation.getItem), creatorPageController.getItem)
   .patch(auth('creator'), validate(creatorPageValidation.updateItem), creatorPageController.updateItem)
   .delete(validate(creatorPageValidation.deleteItem), creatorPageController.deleteItem);
 

@@ -89,7 +89,12 @@ const deleteCreatorPage = catchAsync(async (req, res) => {
 });
 
 const addItem = catchAsync(async (req, res) => {
-  const item = creatorPageService.addItem(req.body, req.user);
+  const item = await creatorPageService.addItem(req.body, req.user);
+  res.send(item);
+});
+
+const getItem = catchAsync(async (req, res) => {
+  const item = await creatorPageService.getItem(req.params.itemId, req.query.include);
   res.send(item);
 });
 
@@ -97,16 +102,18 @@ const getItems = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'isPublic', 'isFeatured']);
   const options = pick(req.query, ['page', 'limit', 'sort']);
   filter.creatorPage = req.params.creatorPageId;
-  const items = creatorPageService.getItems(filter, options, req.user, !req.query.paginate);
+  const items = await creatorPageService.getItems(filter, options, req.user, !req.query.paginate);
   res.send(items);
 });
 
 const updateItem = catchAsync(async (req, res) => {
-  res.send(null);
+  const item = await creatorPageService.updateItem(req.params.itemId, req.body, req.user);
+  res.send(item);
 });
 
 const deleteItem = catchAsync(async (req, res) => {
-  res.send(null);
+  await creatorPageService.deleteItem(req.params.itemId, req.user);
+  res.status(httpStatus.NO_CONTENT).send();
 });
 
 module.exports = {
@@ -119,6 +126,7 @@ module.exports = {
   updateCreatorPage,
   deleteCreatorPage,
   addItem,
+  getItem,
   getItems,
   updateItem,
   deleteItem,

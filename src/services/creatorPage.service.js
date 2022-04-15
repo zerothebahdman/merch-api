@@ -33,19 +33,6 @@ const queryCreatorPages = async (filter, options, eagerLoadFields = '', ignorePa
 };
 
 /**
- * Get creator page items
- * @param {ObjectId} ids
- * @returns {Promise<Items>}
- */
-const getItems = async (filter, options, actor, ignorePagination = false) => {
-  filter.deletedBy = null;
-  const creatorPageItems = ignorePagination
-    ? await CreatorPageItem.find(filter).populate(options.populate)
-    : await CreatorPageItem.paginate(filter, options);
-  return creatorPageItems;
-};
-
-/**
  * Get creator page by id
  * @param {ObjectId} id
  * @returns {Promise<CreatorPage>}
@@ -102,6 +89,84 @@ const deleteCreatorPageById = async (creatorPageId, actor) => {
   return creatorPage;
 };
 
+/**
+ * Get creator page add item
+ * @param {ObjectId} ids
+ * @returns {Promise<Item>}
+ */
+const addItem = async (itemBody, actor) => {
+  itemBody.creatorPage = actor.creatorPage;
+  itemBody.createdBy = actor.id;
+  const item = await CreatorPageItem.create(itemBody);
+  return item;
+};
+
+/**
+ * Get creator page item
+ * @param {ObjectId} ids
+ * @returns {Promise<Items>}
+ */
+const getItem = async (itemId, eagerLoadFields) => {
+  const item = eagerLoadFields
+    ? await CreatorPageItem.findOne({ _id: itemId }).populate(eagerLoadFields)
+    : await CreatorPageItem.findOne({ _id: itemId });
+  return item;
+};
+
+/**
+ * Get creator page items
+ * @param {ObjectId} ids
+ * @returns {Promise<Items>}
+ */
+const getItems = async (filter, options, actor, ignorePagination = false) => {
+  filter.deletedBy = null;
+  const creatorPageItems = ignorePagination
+    ? await CreatorPageItem.find(filter).populate(options.populate)
+    : await CreatorPageItem.paginate(filter, options);
+  return creatorPageItems;
+};
+
+/**
+ * Get creator page item
+ * @param {ObjectId} ids
+ * @returns {Promise<Items>}
+ */
+const updateItem = async (itemId, updateBody, actor) => {
+  const item = await getItem(itemId);
+  if (!item) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Creator page item not found');
+  }
+
+  if (item.createdBy.toString() !== actor.id.toString()) {
+    throw new ApiError(httpStatus.FORBIDDEN, ERROR_MESSAGES.FORBIDDEN);
+  }
+
+  Object.assign(item, updateBody);
+  await item.save();
+  return item;
+};
+
+/**
+ * Delete creator page by id
+ * @param {ObjectId} creatorPageId
+ * @returns {Promise<CreatorPage>}
+ */
+const deleteItem = async (itemId, actor) => {
+  const item = await getItem(itemId);
+  if (!item || item.length > 0) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Creator page item not found');
+  }
+
+  const deleteBody = {
+    deletedBy: actor.id,
+    deletedAt: moment().toISOString(),
+  };
+
+  Object.assign(item, deleteBody);
+  await item.save();
+  return true;
+};
+
 module.exports = {
   createCreatorPage,
   queryCreatorPages,
@@ -109,4 +174,8 @@ module.exports = {
   updateCreatorPageById,
   deleteCreatorPageById,
   getItems,
+  addItem,
+  getItem,
+  updateItem,
+  deleteItem,
 };
