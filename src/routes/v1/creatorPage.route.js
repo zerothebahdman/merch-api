@@ -38,7 +38,7 @@ router
   .route('/:creatorPageId/items/:itemId')
   .get(auth('creator'), validate(creatorPageValidation.getItem), creatorPageController.getItem)
   .patch(auth('creator'), validate(creatorPageValidation.updateItem), creatorPageController.updateItem)
-  .delete(validate(creatorPageValidation.deleteItem), creatorPageController.deleteItem);
+  .delete(auth('creator'), validate(creatorPageValidation.deleteItem), creatorPageController.deleteItem);
 
 module.exports = router;
 

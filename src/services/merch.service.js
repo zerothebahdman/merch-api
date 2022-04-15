@@ -37,13 +37,8 @@ const queryMerches = async (filter, options = {}, actor, ignorePagination = fals
  * @returns {Promise<Merch>}
  */
 const queryMerchById = async (id, eagerLoadFields = false) => {
-  // const filter = {
-  //   $or: [
-  //     { deletedBy: { $eq: null }, _id: { $eq: id }, createdBy: actor.id },
-  //     { deletedBy: { $eq: null }, _id: { $eq: id }, published: { $eq: true } },
-  //   ],
-  // };
-  return eagerLoadFields ? Merch.findOne({ _id: id }).populate(eagerLoadFields) : Merch.findOne({ _id: id });
+  const filter = { _id: id, deletedBy: null };
+  return eagerLoadFields ? Merch.findOne(filter).populate(eagerLoadFields) : Merch.findOne(filter);
 };
 
 /**

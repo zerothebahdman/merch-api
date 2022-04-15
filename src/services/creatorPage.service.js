@@ -107,9 +107,10 @@ const addItem = async (itemBody, actor) => {
  * @returns {Promise<Items>}
  */
 const getItem = async (itemId, eagerLoadFields) => {
+  const filter = { deletedAt: null, _id: itemId };
   const item = eagerLoadFields
-    ? await CreatorPageItem.findOne({ _id: itemId }).populate(eagerLoadFields)
-    : await CreatorPageItem.findOne({ _id: itemId });
+    ? await CreatorPageItem.findOne(filter).populate(eagerLoadFields)
+    : await CreatorPageItem.findOne(filter);
   return item;
 };
 
@@ -140,6 +141,8 @@ const updateItem = async (itemId, updateBody, actor) => {
   if (item.createdBy.toString() !== actor.id.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, ERROR_MESSAGES.FORBIDDEN);
   }
+
+  updateBody.updatedBy = actor.id;
 
   Object.assign(item, updateBody);
   await item.save();
