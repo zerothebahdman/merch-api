@@ -140,6 +140,7 @@ const getOrders = {
     page: Joi.number(),
     limit: Joi.number(),
     sortBy: Joi.string(),
+    include: Joi.array(),
   }),
 };
 
