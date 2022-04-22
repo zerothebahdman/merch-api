@@ -9,14 +9,17 @@ cloudinary.config({
 });
 
 /**
- * Upload base64 image
+ * Upload base64 file
  * @param {string} base64File
  * @param {string} folder
  * @returns {Promise}
  */
 const uploadBase64File = async (base64File, folder = 'uploads') => {
   try {
-    const response = await cloudinary.uploader.upload(base64File, { folder });
+    const response = await cloudinary.uploader.upload(base64File, {
+      folder,
+      resource_type: 'auto',
+    });
     return response;
   } catch (err) {
     throw ApiError(err);

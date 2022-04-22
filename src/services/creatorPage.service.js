@@ -54,10 +54,10 @@ const updateCreatorPageById = async (creatorPageId, updateBody) => {
   if (!creatorPage) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_NOT_FOUND);
   }
-
-  if (updateBody.name !== creatorPage.name) {
-    updateBody.slug = `${slugify(updateBody.name)}`;
-  }
+  // Todo: Decide whether or not to allow slug update and the terms of such updates
+  // if (updateBody.name !== creatorPage.name) {
+  //   updateBody.slug = `${slugify(updateBody.name)}`;
+  // }
 
   if (creatorPage.createdBy.toString() !== updateBody.updatedBy) {
     throw new ApiError(httpStatus.FORBIDDEN, ERROR_MESSAGES.FORBIDDEN);
