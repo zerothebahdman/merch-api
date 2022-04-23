@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -46,15 +47,31 @@ const getCreatorPageMerches = catchAsync(async (req, res) => {
   res.send(merches);
 });
 
+const getCreatorCustomers = catchAsync(async (req, res) => {
+  const filter = { creatorPage: req.params.creatorPageId };
+  const options = { populate: ['user'].toString() };
+  const orders = await orderService.getOrders(filter, options, req.user, true);
+  const users = [];
+  orders.forEach((order) => {
+    order = order.toJSON();
+    const index = users.findIndex((x) => x.id === order.user.id);
+    if (index > -1) {
+      order.user = order.user.id;
+      users[index].orders.push(order);
+    } else {
+      const user = { ...order.user };
+      order.user = order.user.id;
+      users.push({ ...user, orders: [order] });
+    }
+  });
+  res.send(users);
+});
+
 const getCreatorPageOrders = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['status']);
-  filter.creatorPage = req.params.creatorPageId;
+  const filter = pick(req.query, ['status', 'user']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
-  if (req.query) options.populate = req.query.toString();
+  if (req.query.include) options.populate = req.query.include.toString();
   const orders = await orderService.getOrders(filter, options, req.user, !req.query.paginate);
-  if (!orders) {
-    throw new ApiError(httpStatus.NOT_FOUND, `Something went wrong. Couldn't fetch orders`);
-  }
   res.send(orders);
 });
 
@@ -122,6 +139,7 @@ module.exports = {
   getCreatorPage,
   getCreatorPageMerches,
   getCreatorPageOrders,
+  getCreatorCustomers,
   getCreatorPageBySlug,
   getCreatorPages,
   updateCreatorPage,

@@ -136,6 +136,7 @@ const getOrders = {
   query: Joi.object().keys({
     creatorPage: Joi.string(),
     status: Joi.string(),
+    user: Joi.custom(objectId),
     paginate: Joi.boolean().default(true),
     page: Joi.number(),
     limit: Joi.number(),

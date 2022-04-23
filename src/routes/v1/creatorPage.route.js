@@ -14,6 +14,14 @@ router
 router.route('/slug/:slug').get(validate(creatorPageValidation.getCreatorPage), creatorPageController.getCreatorPageBySlug);
 
 router
+  .route('/orders')
+  .get(auth('creator'), validate(creatorPageValidation.getOrders), creatorPageController.getCreatorPageOrders);
+
+router
+  .route('/customers')
+  .get(auth('creator'), validate(creatorPageValidation.getOrders), creatorPageController.getCreatorCustomers);
+
+router
   .route('/:creatorPageId')
   .get(validate(creatorPageValidation.getCreatorPage), creatorPageController.getCreatorPage)
   .patch(auth('creator'), validate(creatorPageValidation.updateCreatorPage), creatorPageController.updateCreatorPage)
@@ -24,10 +32,6 @@ router.get(
   validate(creatorPageValidation.getCreatorPage),
   creatorPageController.getCreatorPageMerches
 );
-
-router
-  .route('/:creatorPageId/orders')
-  .get(auth('creator'), validate(creatorPageValidation.getOrders), creatorPageController.getCreatorPageOrders);
 
 router
   .route('/:creatorPageId/items')
