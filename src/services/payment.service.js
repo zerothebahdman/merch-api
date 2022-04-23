@@ -28,7 +28,7 @@ const getPaymentLink = async (paymentBody) => {
       }),
     });
     const data = await response.json();
-    return data;
+    return data.data.link;
   } catch (err) {
     // eslint-disable-next-line no-console
     console.log(err);
