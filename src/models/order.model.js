@@ -53,6 +53,9 @@ const orderSchema = mongoose.Schema(
     orderCode: {
       type: String,
     },
+    paymentUrl: {
+      type: String,
+    },
     status: {
       type: String,
       enum: Object.values(ORDER_STATUSES),

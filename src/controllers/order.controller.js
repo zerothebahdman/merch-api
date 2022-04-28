@@ -1,13 +1,14 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { orderService, paymentService, merchService } = require('../services');
+const { orderService, paymentService, merchService, creatorPageService } = require('../services');
 const pick = require('../utils/pick');
 const { ORDER_STATUSES } = require('../config/constants');
 const { generateRandomChar } = require('../utils/helpers');
 
 const createOrder = catchAsync(async (req, res) => {
   req.body.createdBy = req.user.id;
+  const pageInfo = await creatorPageService.queryCreatorPageById(req.body.creatorPage);
   const check = req.body.merches.map(async (merch) => {
     const merchData = await merchService.queryMerchById(merch.merchId);
     if (merch.quantity > merchData.quantity)
@@ -20,19 +21,22 @@ const createOrder = catchAsync(async (req, res) => {
   req.body.status = ORDER_STATUSES.PENDING;
   req.body.orderCode = `#${generateRandomChar(9, 'num')}`;
   req.body.user = req.user.id;
+  req.body.paymentUrl = await paymentService.getPaymentLink(
+    {
+      customer: {
+        email: req.user.email,
+      },
+      amount: req.body.totalAmount.price,
+      currency: req.body.totalAmount.currency,
+      tx_ref: req.body.orderCode,
+    },
+    pageInfo.slug
+  );
   const order = await orderService.createOrder(req.body);
   const orderJson = order.toJSON();
   orderJson.merches.forEach(async (merch) => {
     const merchData = await merchService.queryMerchById(merch.merchId);
     merchService.updateMerchById(merch.merchId, { quantity: merchData.quantity - merch.quantity });
-  });
-  orderJson.paymentUrl = await paymentService.getPaymentLink({
-    customer: {
-      email: req.user.email,
-    },
-    amount: orderJson.totalAmount.price,
-    currency: orderJson.totalAmount.currency,
-    tx_ref: orderJson.orderCode,
   });
   res.status(httpStatus.CREATED).send(orderJson);
 });

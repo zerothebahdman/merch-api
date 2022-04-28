@@ -10,7 +10,8 @@ const { paymentInfo } = require('../config/config');
  * @param {string} folder
  * @returns {Promise}
  */
-const getPaymentLink = async (paymentBody) => {
+const getPaymentLink = async (paymentBody, pageSlug) => {
+  const redirectUrl = paymentInfo.redirect_url.replace('{slug}', pageSlug);
   try {
     const response = await fetch(`${paymentInfo.url}/payments`, {
       headers: {
@@ -20,7 +21,7 @@ const getPaymentLink = async (paymentBody) => {
       method: 'POST',
       body: JSON.stringify({
         ...paymentBody,
-        redirect_url: paymentInfo.redirect_url,
+        redirect_url: redirectUrl,
         customizations: {
           title: 'Merchro Pay',
           logo: 'https://www.merchro.com/logo-black.svg',
