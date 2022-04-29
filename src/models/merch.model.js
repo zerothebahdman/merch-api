@@ -40,6 +40,14 @@ const merchSchema = mongoose.Schema(
       required: false,
       trim: true,
     },
+    metadata: {
+      colors: {
+        type: Array,
+      },
+      sizes: {
+        type: Array,
+      },
+    },
     discount: {
       type: Number,
     },

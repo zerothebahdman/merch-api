@@ -9,6 +9,10 @@ const createMerch = {
       currency: Joi.string(),
       amount: Joi.number().required(),
     }),
+    matadata: Joi.object().keys({
+      sizes: Joi.array(),
+      colors: Joi.array(),
+    }),
     startDate: Joi.date(),
     endDate: Joi.date(),
     merchLogo: Joi.string(),
