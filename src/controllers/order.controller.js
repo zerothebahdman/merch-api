@@ -60,20 +60,18 @@ const getOrders = catchAsync(async (req, res) => {
 });
 
 const paymentSuccessful = catchAsync(async (req, res) => {
-  req.body.updatedBy = req.user.id;
-  const order = await orderService.updateOrderById(req.params.orderId, { status: ORDER_STATUSES.PROCESSING });
+  const order = await orderService.updateOrderById(req.params.orderId, { status: ORDER_STATUSES.PROCESSING }, req.user);
   res.send(order);
 });
 
 const paymentFailed = catchAsync(async (req, res) => {
-  const order = await orderService.updateOrderById(req.params.orderId, { status: ORDER_STATUSES.FAILED });
+  const order = await orderService.updateOrderById(req.params.orderId, { status: ORDER_STATUSES.FAILED }, req.user);
   res.send(order);
 });
 
 const updateOrderStatus = catchAsync(async (req, res) => {
   // Only the creator of a merch should be able to update it.
-  req.body.updatedBy = req.user.id;
-  const order = await orderService.updateOrderById(req.params.orderId, req.body);
+  const order = await orderService.updateOrderById(req.params.orderId, req.body, req.user);
   res.send(order);
 });
 

@@ -54,7 +54,8 @@ const updateOrderById = async (orderId, updateBody, actor) => {
     // eslint-disable-next-line no-param-reassign
     updateBody.slug = `${slugify(updateBody.name)}-${generateRandomChar(4, 'lower-num')}`;
   }
-  if (order.creatorPage.toString() !== actor.creatorPage) {
+  updateBody.updatedBy = actor.id;
+  if (order.creatorPage.toString() !== actor.creatorPage.toString()) {
     throw new ApiError(httpStatus.FORBIDDEN, ERROR_MESSAGES.FORBIDDEN);
   }
 
