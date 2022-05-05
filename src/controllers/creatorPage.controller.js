@@ -40,7 +40,11 @@ const getCreatorPage = catchAsync(async (req, res) => {
 });
 
 const getCreatorPageMerches = catchAsync(async (req, res) => {
-  const merches = await merchService.queryMerches({ creatorPage: req.params.creatorPageId }, {}, req.query.include);
+  const filter = pick(req.query, ['status', 'public']);
+  filter.creatorPage = req.params.creatorPageId;
+  const options = pick(req.query, ['sortBy', 'page', 'limit']);
+  if (req.query.include) options.populate = req.query.include.toString();
+  const merches = await merchService.queryMerches(filter, options, req.query.include);
   if (!merches) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_NOT_FOUND);
   }
@@ -119,6 +123,7 @@ const getItem = catchAsync(async (req, res) => {
 const getItems = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'isPublic', 'isFeatured']);
   const options = pick(req.query, ['page', 'limit', 'sort']);
+  if (req.query.include) options.populate = req.query.include.toString();
   filter.creatorPage = req.params.creatorPageId;
   const items = await creatorPageService.getItems(filter, options, req.user, !req.query.paginate);
   res.send(items);

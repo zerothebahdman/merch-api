@@ -9,7 +9,7 @@ const createMerch = {
       currency: Joi.string(),
       amount: Joi.number().required(),
     }),
-    matadata: Joi.object().keys({
+    metadata: Joi.object().keys({
       sizes: Joi.array(),
       colors: Joi.array(),
     }),
@@ -35,6 +35,11 @@ const getMerches = {
     slug: Joi.string(),
     name: Joi.string(),
     published: Joi.boolean(),
+    page: Joi.number(),
+    paginate: Joi.boolean().default(true),
+    limit: Joi.number(),
+    sortBy: Joi.string(),
+    include: Joi.array(),
   }),
 };
 
@@ -49,6 +54,10 @@ const updateMerch = {
       price: Joi.object().keys({
         currency: Joi.string(),
         amount: Joi.number(),
+      }),
+      metadata: Joi.object().keys({
+        sizes: Joi.array(),
+        colors: Joi.array(),
       }),
       published: Joi.boolean(),
       description: Joi.string(),

@@ -95,6 +95,7 @@ const getItems = {
     page: Joi.number(),
     limit: Joi.number(),
     sortBy: Joi.string(),
+    include: Joi.array(),
   }),
 };
 

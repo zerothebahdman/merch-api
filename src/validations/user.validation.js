@@ -34,6 +34,13 @@ const updateUser = {
       department: Joi.string(),
       timezone: Joi.string(),
       reviewer: Joi.string().custom(objectId),
+      shippingAddress: Joi.object().keys({
+        city: Joi.string(),
+        state: Joi.string(),
+        country: Joi.string(),
+        Address: Joi.string(),
+        zipCode: Joi.string(),
+      }),
     })
     .min(1),
 };
