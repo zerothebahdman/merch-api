@@ -38,7 +38,7 @@ const updateUser = {
         city: Joi.string(),
         state: Joi.string(),
         country: Joi.string(),
-        Address: Joi.string(),
+        address: Joi.string(),
         zipCode: Joi.string(),
       }),
     })
