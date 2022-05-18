@@ -29,9 +29,10 @@ const updateUser = {
       firstName: Joi.string(),
       lastName: Joi.string(),
       phoneNumber: Joi.string(),
+      countryCode: Joi.string(),
       email: Joi.string().email(),
-      jobTitle: Joi.string(),
-      department: Joi.string(),
+      industry: Joi.string(),
+      occupation: Joi.string(),
       timezone: Joi.string(),
       reviewer: Joi.string().custom(objectId),
       shippingAddress: Joi.object().keys({

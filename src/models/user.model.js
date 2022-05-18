@@ -72,12 +72,21 @@ const userSchema = mongoose.Schema(
       enum: Object.values(ROLES),
       default: ROLES.USER,
     },
+    referralCode: {
+      type: String,
+      required: false,
+    },
     creatorPage: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'CreatorPage',
       required: false,
     },
     industry: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    occupation: {
       type: String,
       required: false,
       trim: true,
@@ -93,6 +102,9 @@ const userSchema = mongoose.Schema(
           throw new Error(ERROR_MESSAGES.INVALID_PHONE_NUMBER);
         }
       },
+    },
+    countryCode: {
+      type: String,
     },
     googleId: {
       type: String,

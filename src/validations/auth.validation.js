@@ -8,6 +8,10 @@ const userSignUp = {
     lastName: Joi.string(),
     password: Joi.string(),
     role: Joi.string(),
+    referralCode: Joi.string(),
+    phoneNumber: Joi.string(),
+    occupation: Joi.string(),
+    countryCode: Joi.string(),
     shippingAddress: Joi.object(),
   }),
 };
