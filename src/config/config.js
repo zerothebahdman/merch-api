@@ -50,6 +50,7 @@ const envVarsSchema = Joi.object()
     FLUTTER_API_URL: Joi.string().description('Flutter wave API Url'),
     FLUTTER_API_REDIRECT: Joi.string().description('Flutter wave API Redirect URL'),
     FLUTTER_API_SECRET: Joi.string().description('Flutter wave API Secret'),
+    REFERRAL_CODE: Joi.string().description('Default referral code, restricted use'),
   })
   .unknown();
 
@@ -112,5 +113,8 @@ module.exports = {
     url: envVars.FLUTTER_API_URL,
     secret: envVars.FLUTTER_API_SECRET,
     redirect_url: envVars.FLUTTER_API_REDIRECT,
+  },
+  backdoorAccess: {
+    referralCode: envVars.REFERRAL_CODE,
   },
 };

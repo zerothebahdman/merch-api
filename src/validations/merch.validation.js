@@ -30,8 +30,11 @@ const getMerch = {
 };
 
 const getMerches = {
+  params: Joi.object().keys({
+    creatorPageId: Joi.string().custom(objectId),
+  }),
   query: Joi.object().keys({
-    store: Joi.string().custom(objectId),
+    creatorPage: Joi.string().custom(objectId),
     slug: Joi.string(),
     name: Joi.string(),
     published: Joi.boolean(),

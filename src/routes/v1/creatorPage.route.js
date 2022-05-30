@@ -1,7 +1,7 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
-const { creatorPageValidation } = require('../../validations');
+const { creatorPageValidation, merchValidation } = require('../../validations');
 const { creatorPageController } = require('../../controllers');
 
 const router = express.Router();
@@ -27,11 +27,7 @@ router
   .patch(auth('creator'), validate(creatorPageValidation.updateCreatorPage), creatorPageController.updateCreatorPage)
   .delete(auth('creator'), validate(creatorPageValidation.deleteCreatorPage), creatorPageController.deleteCreatorPage);
 
-router.get(
-  '/:creatorPageId/merches',
-  validate(creatorPageValidation.getCreatorPage),
-  creatorPageController.getCreatorPageMerches
-);
+router.get('/:creatorPageId/merches', validate(merchValidation.getMerches), creatorPageController.getCreatorPageMerches);
 
 router
   .route('/:creatorPageId/items')

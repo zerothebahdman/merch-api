@@ -40,7 +40,7 @@ const getCreatorPage = catchAsync(async (req, res) => {
 });
 
 const getCreatorPageMerches = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['status', 'public']);
+  const filter = pick(req.query, ['published', 'name', 'slug']);
   filter.creatorPage = req.params.creatorPageId;
   const options = pick(req.query, ['sortBy', 'page', 'limit']);
   if (req.query.include) options.populate = req.query.include.toString();

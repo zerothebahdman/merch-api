@@ -26,10 +26,10 @@ const getMerch = catchAsync(async (req, res) => {
 });
 
 const getMerches = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'store', 'slug']);
-  const options = pick(req.query, ['page', 'limit']);
-  options.populate = req.query.include;
-  const merchs = await merchService.queryMerches(filter, options, req.user);
+  const filter = pick(req.query, ['name', 'creatorPage', 'slug', 'published']);
+  const options = pick(req.query, ['page', 'limit', 'sortBy']);
+  if (req.query.include) options.populate = req.query.include;
+  const merchs = await merchService.queryMerches(filter, options, req.user, !req.query.paginate);
   if (!merchs) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.MERCH_NOT_FOUND);
   }
