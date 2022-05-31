@@ -21,7 +21,7 @@ const createMerch = async (merchBody) => {
  */
 const queryMerches = async (filter, options = {}, actor, ignorePagination = false) => {
   filter.deletedBy = null;
-  if (!(actor && filter.store && actor.store === filter.store)) {
+  if (!(actor && filter.creatorPage && actor.creatorPage === filter.creatorPage)) {
     filter.published = true;
   }
   if (!options.populate) options.populate = '';

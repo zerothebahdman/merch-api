@@ -44,7 +44,7 @@ const getCreatorPageMerches = catchAsync(async (req, res) => {
   filter.creatorPage = req.params.creatorPageId;
   const options = pick(req.query, ['sortBy', 'page', 'limit']);
   if (req.query.include) options.populate = req.query.include.toString();
-  const merches = await merchService.queryMerches(filter, options, req.query.include);
+  const merches = await merchService.queryMerches(filter, options, req.query.user, !req.query.paginate);
   if (!merches) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_NOT_FOUND);
   }
