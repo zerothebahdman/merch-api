@@ -6,10 +6,10 @@ const userController = require('../../controllers/user.controller');
 
 const router = express.Router();
 
+router.route('/').get(auth('admin'), validate(userValidation.getUsers), userController.getUsers);
 router.route('/invited').get(auth('creator'), validate(userValidation.getUsers), userController.getInvitedUsers);
 router.route('/deactivated').get(auth('admin'), validate(userValidation.getUsers), userController.getDeactivatedUsers);
 router.route('/confirmed').get(auth('admin'), validate(userValidation.getUsers), userController.getConfirmedUsers);
-router.route('/').get(auth('admin'), validate(userValidation.getUsers), userController.getUsers);
 
 router.route('/me').get(auth('user'), userController.getMe);
 

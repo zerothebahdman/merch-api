@@ -68,6 +68,23 @@ const ONBOARDING_STAGES = {
   COMPLETED_SETUP: 'userCompletedSetup',
 };
 
+const TRANSACTION_TYPES = {
+  CREDIT: 'credit',
+  DEBIT: 'debit',
+  LOAN: 'loan',
+  REFUND: 'refund',
+  STASH: 'stash',
+};
+
+const TRANSACTION_SOURCES = {
+  BANK_TRANSFER: 'bank_transfer',
+  CARD_DEPOSIT: 'card_deposit',
+  STORE: 'store',
+  INVOICE: 'invoice',
+  SAVINGS: 'savings',
+  STASH: 'stash',
+};
+
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -77,5 +94,7 @@ module.exports = {
   SHIPPING_STATUSES,
   ONBOARDING_STAGES,
   CURRENCIES,
+  TRANSACTION_TYPES,
+  TRANSACTION_SOURCES,
   CurrencySymbolMapping,
 };

@@ -50,6 +50,9 @@ const envVarsSchema = Joi.object()
     FLUTTER_API_URL: Joi.string().description('Flutter wave API Url'),
     FLUTTER_API_REDIRECT: Joi.string().description('Flutter wave API Redirect URL'),
     FLUTTER_API_SECRET: Joi.string().description('Flutter wave API Secret'),
+    PAGA_API_SECRET: Joi.string().description('PAGA API Secret'),
+    PAGA_API_KEY: Joi.string().description('PAGA API key'),
+    PAGA_API_PUBLIC_KEY: Joi.string().description('PAGA API public key'),
     REFERRAL_CODE: Joi.string().description('Default referral code, restricted use'),
   })
   .unknown();
@@ -109,10 +112,13 @@ module.exports = {
     apiKey: envVars.CLOUDINARY_API_KEY,
     apiSecret: envVars.CLOUDINARY_API_SECRET,
   },
-  paymentInfo: {
-    url: envVars.FLUTTER_API_URL,
-    secret: envVars.FLUTTER_API_SECRET,
-    redirect_url: envVars.FLUTTER_API_REDIRECT,
+  paymentData: {
+    flutter_url: envVars.FLUTTER_API_URL,
+    flutter_secret: envVars.FLUTTER_API_SECRET,
+    flutter_redirect_url: envVars.FLUTTER_API_REDIRECT,
+    paga_secret: envVars.PAGA_API_SECRET,
+    paga_key: envVars.PAGA_API_KEY,
+    paga_public_key: envVars.PAGA_API_PUBLIC_KEY,
   },
   backdoorAccess: {
     referralCode: envVars.REFERRAL_CODE,

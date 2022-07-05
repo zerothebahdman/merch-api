@@ -89,7 +89,14 @@ components:
           },
           ...
         ]
-
+    Notifications:
+      type: array,
+      example:
+        [
+          'Your bank account was updated',
+          'You have a new order',
+          'You updated your profile'
+        ]
     Item:
       type: object
       properties:

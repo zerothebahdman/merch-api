@@ -2,10 +2,14 @@ const express = require('express');
 const validate = require('../../middlewares/validate');
 const { waitlistValidation } = require('../../validations');
 const { waitlistController } = require('../../controllers');
+const auth = require('../../middlewares/auth');
 
 const router = express.Router();
 
-router.route('/').post(validate(waitlistValidation.addEmail), waitlistController.addEmail).get(waitlistController.getEmails);
+router
+  .route('/')
+  .post(validate(waitlistValidation.addEmail), waitlistController.addEmail)
+  .get(auth('admin'), waitlistController.getEmails);
 
 router.route('/:email').get(validate(waitlistValidation.verifyEmail), waitlistController.checkIfEmailExist);
 module.exports = router;

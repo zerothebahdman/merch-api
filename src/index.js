@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const PeriodicEmails = require('./crontab');
 
 let server;
 mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
@@ -21,6 +22,9 @@ const exitHandler = () => {
     process.exit(1);
   }
 };
+
+// Trigger the cron jobs
+PeriodicEmails();
 
 const unexpectedErrorHandler = (error) => {
   logger.error(error);

@@ -5,6 +5,7 @@ const { CreatorPage, CreatorPageItem } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { slugify } = require('../utils/helpers');
 const { ERROR_MESSAGES } = require('../config/messages');
+const { paymentService } = require('.');
 
 /**
  * Create creator page
@@ -15,6 +16,8 @@ const createCreatorPage = async (creatorPageBody, actor) => {
   creatorPageBody.slug = `${slugify(creatorPageBody.name)}`;
   creatorPageBody.createdBy = actor.id;
   const creatorPage = await CreatorPage.create(creatorPageBody);
+  // Add custom account number for creator
+  await paymentService.setupAccount(actor);
   return creatorPage;
 };
 

@@ -1,13 +1,15 @@
 const express = require('express');
 const authRoute = require('./auth.route');
-const userRoute = require('./user.route');
-const creatorPageRoute = require('./creatorPage.route');
 const categoryRoute = require('./category.route');
+const creatorPageRoute = require('./creatorPage.route');
+const docsRoute = require('./docs.route');
 const fileRoute = require('./file.route');
 const merchRoute = require('./merch.route');
+const notificationRoute = require('./notification.route');
 const orderRoute = require('./order.route');
+const paymentRoute = require('./payment.route');
+const userRoute = require('./user.route');
 const waitlistRoute = require('./waitlist.route');
-const docsRoute = require('./docs.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -44,6 +46,14 @@ const defaultRoutes = [
   {
     path: '/waitlist',
     route: waitlistRoute,
+  },
+  {
+    path: '/notifications',
+    route: notificationRoute,
+  },
+  {
+    path: '/payments',
+    route: paymentRoute,
   },
 ];
 
