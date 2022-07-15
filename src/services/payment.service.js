@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');
 const { paymentInfo } = require('../config/config');
@@ -105,8 +106,10 @@ const updateDebt = async (balance, user) => {
   return accountInfo;
 };
 
-const withdrawMoney = async () => {
-  const withdrawal = await Paga.withdraw();
+const withdrawMoney = async (body, actor) => {
+  body.firstName = actor.firstName;
+  body.lastName = actor.lastName;
+  const withdrawal = await Paga.withdraw(body);
   return withdrawal;
 };
 

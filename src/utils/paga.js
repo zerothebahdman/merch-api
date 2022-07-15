@@ -52,22 +52,22 @@ const Paga = {
     const response = await paga.airtimePurchase(data.reference, data.amount, data.currency, data.phoneNumber, data.source);
     return response;
   },
-  withdraw: async () => {
+  withdraw: async (data) => {
     const reference = generateRandomChar(16, 'num');
     const paga = await Paga.initPagaBusiness();
     const response = await paga.depositToBank(
       reference,
-      '100.00',
+      data.amount,
       'NGN',
-      '8B9CCA8B-F092-4704-82FD-B82D2B9A1993',
-      '3064380707',
+      data.bankId,
+      data.accountNumber,
       '',
       '',
       'heclassy@gmail.com',
       '',
       '',
       'true',
-      `Merchro/Adebowale Adebusuyi/${reference}`,
+      `Merchro/${data.firstName} ${data.lastName}/${reference}`,
       ''
     );
     return response;

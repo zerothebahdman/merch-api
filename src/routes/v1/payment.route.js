@@ -1,16 +1,14 @@
 const express = require('express');
 const { paymentController } = require('../../controllers');
 const auth = require('../../middlewares/auth');
-const { Paga } = require('../../utils/paga');
+const validate = require('../../middlewares/validate');
+const { paymentValidation } = require('../../validations');
 
 const router = express.Router();
 
 router.route('/account-info').get(auth('user'), paymentController.getAccountInfo);
 router.route('/bank-list').get(auth('user'), paymentController.getBanks);
-router.route('/withdraw').get(auth('user'), async (req, res) => {
-  const resp = await Paga.withdraw();
-  res.send(resp);
-});
+router.route('/withdraw').get(auth('user'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
 router.route('/funding/:reference').get(paymentController.creditAccount);
 
 module.exports = router;

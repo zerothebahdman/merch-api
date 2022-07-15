@@ -61,7 +61,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
   if (Number(req.body.amount) <= accountInfo.balance) {
     const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
-    const withdrawResponse = await paymentService.withdrawMoney(req.body);
+    const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
     // Store transaction
     await paymentService.createTransactionRecord({
       user: accountInfo.user,

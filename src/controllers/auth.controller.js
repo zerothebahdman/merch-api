@@ -30,7 +30,7 @@ const userSignUp = catchAsync(async (req, res) => {
     const user = await userService.createUser(req.body);
     const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.email);
     onboardingService.createOnboarding({ user: user.id, stages: [ONBOARDING_STAGES.SIGNED_UP] });
-    emailService.sendUserSignUpEmail(user.email, emailVerificationToken);
+    emailService.sendUserSignUpEmail(user.email, emailVerificationToken, user.firstName);
     return res.status(httpStatus.CREATED).send(user);
   }
   let user = await userService.getUserByEmail(req.body.email);
@@ -47,6 +47,7 @@ const verifyEmail = catchAsync(async (req, res) => {
   const user = await authService.verifyEmail(req.body.token, req.body.userId);
   const tokens = await tokenService.generateAuthTokens(user);
   onboardingService.updateOnboardingNextStages(user.id, [ONBOARDING_STAGES.EMAIL_VERIFIED]);
+  emailService.sendUserWelcomeEmail(user.email, user.firstName);
   res.send({ user, tokens });
 });
 
@@ -66,7 +67,7 @@ const resendEmailVerification = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, ERROR_MESSAGES.USER_EMAIL_VERIFIED);
   }
   const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.email);
-  emailService.sendUserSignUpEmail(user.email, emailVerificationToken);
+  emailService.sendUserSignUpEmail(user.email, emailVerificationToken, user.firstName);
   res.send(user);
 });
 
@@ -104,7 +105,12 @@ const refreshTokens = catchAsync(async (req, res) => {
 const forgotPassword = catchAsync(async (req, res) => {
   try {
     const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
-    emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
+    const user = await userService.getUserByEmail(req.body.email);
+    emailService.sendUserWelcomeEmail(
+      req.body.email,
+      resetPasswordToken,
+      user.firstName ? user.firstName : user.email.split('@')[0]
+    );
   } catch (error) {
     // TODO: Log error to sentry
   }

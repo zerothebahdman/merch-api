@@ -5,7 +5,7 @@ const { Paga } = require('./utils/paga');
 
 const PeriodicEmails = async () => {
   const addAccountInfo = cron.schedule(
-    '0 0 * * *',
+    '1 0 * * *',
     async () => {
       const filter = { deletedBy: null };
       let accountHolders = await Account.find().select('-_id user');
@@ -26,18 +26,16 @@ const PeriodicEmails = async () => {
           data.accountName = `${data.firstName} ${data.lastName}`;
           const accountInfo = await Paga.generatePermanentAccount(data);
           if (!accountInfo.error) {
-            await creator.updateOne(
-              { _id: creator.id },
-              {
-                accountInfo: {
-                  accountNumber: accountInfo.response.accountNumber,
-                  referenceNumber: accountInfo.response.referenceNumber,
-                  accountReference: accountInfo.response.accountReference,
-                  accountName: data.accountName,
-                  bankName: 'Paga',
-                },
-              }
-            );
+            await Account.create({
+              user: creator.id,
+              accountInfo: {
+                accountNumber: accountInfo.response.accountNumber,
+                referenceNumber: accountInfo.response.referenceNumber,
+                accountReference: accountInfo.response.accountReference,
+                accountName: data.accountName,
+                bankName: 'Paga',
+              },
+            });
             addNotification('A dedicated bank account was activated for you.', creator.id);
             addNotification(
               'You can now fund your Merchro wallet, receive money and send money through your personal bank account',
@@ -56,14 +54,15 @@ const PeriodicEmails = async () => {
   );
   addAccountInfo.start();
 
-  const updateBanks = cron.schedule(
-    '0 12 * * 2',
-    async () => {
-      Paga.getBanks();
-    },
-    { timezone: 'Africa/Lagos' }
-  );
-  updateBanks.start();
+  // const cleanUp = cron.schedule(
+  //   '45 22 * * *',
+  //   async () => {
+  //     const creatorPages = await CreatorPage.updateMany({ accountInfo: { $ne: null } }, { $unset: { accountInfo: '' } });
+  //     console.log(creatorPages);
+  //   },
+  //   { timezone: 'Africa/Lagos' }
+  // );
+  // cleanUp.start();
 };
 
 module.exports = PeriodicEmails;

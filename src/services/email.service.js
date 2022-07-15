@@ -38,11 +38,9 @@ const sendEmail = async (to, subject, text, html) => {
  * @param {string} token
  * @returns {Promise}
  */
-const sendResetPasswordEmail = async (to, token) => {
+const sendResetPasswordEmail = async (to, token, firstName) => {
   const subject = 'Reset password';
-  const resetPasswordUrl = `${config.resetPasswordPageUrl}?token=${token}`;
-  const currentDate = moment().format('dddd, MMM DD, YYYY');
-  const html = renderFile('reset-password', { resetPasswordUrl, currentDate });
+  const html = renderFile('reset-password', { token, firstName });
   await sendEmail(to, subject, null, html);
 };
 
@@ -52,10 +50,9 @@ const sendResetPasswordEmail = async (to, token) => {
  * @param {string} token
  * @returns {Promise}
  */
-const sendUserSignUpEmail = async (to, token) => {
-  const subject = 'Invitation Email';
-  const currentDate = moment().format('dddd, MMM DD, YYYY');
-  const html = renderFile('user-signup', { token, currentDate });
+const sendUserSignUpEmail = async (to, token, firstName) => {
+  const subject = 'Merchro - Verify your email';
+  const html = renderFile('user-signup', { token, firstName });
   await sendEmail(to, subject, null, html);
 };
 
@@ -78,11 +75,9 @@ const sendUserInvitationEmail = async (to, token) => {
  * @param {string} to
  * @returns {Promise}
  */
-const sendUserWelcomeEmail = async (to) => {
+const sendUserWelcomeEmail = async (to, firstName) => {
   const subject = 'Welcome Email';
-  const workSpaceHomePageUrl = `${config.workSpaceHomePageUrl}`;
-  const currentDate = moment().format('dddd, MMM DD, YYYY');
-  const html = renderFile('user-welcome', { workSpaceHomePageUrl, currentDate });
+  const html = renderFile('user-welcome', { firstName });
   await sendEmail(to, subject, null, html);
 };
 
