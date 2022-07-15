@@ -106,7 +106,7 @@ const forgotPassword = catchAsync(async (req, res) => {
   try {
     const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
     const user = await userService.getUserByEmail(req.body.email);
-    emailService.sendUserWelcomeEmail(
+    emailService.sendResetPasswordEmail(
       req.body.email,
       resetPasswordToken,
       user.firstName ? user.firstName : user.email.split('@')[0]
