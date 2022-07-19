@@ -6,6 +6,7 @@ const withdrawal = {
     amount: Joi.string().required(),
     bankId: Joi.string().required(),
     accountNumber: Joi.string().required(),
+    purpose: Joi.string(),
   }),
 };
 

@@ -68,6 +68,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
       source: TRANSACTION_SOURCES.SAVINGS,
       type: TRANSACTION_TYPES.DEBIT,
       amount: Number(req.body.amount),
+      purpose: req.body.purpose || null,
       createdBy: accountInfo.user,
       meta: { ...withdrawResponse },
     });

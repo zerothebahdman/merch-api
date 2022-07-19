@@ -22,8 +22,12 @@ const transactionSchema = mongoose.Schema(
       type: String,
       enum: Object.values(TRANSACTION_SOURCES),
     },
-    meta: {
+    purpose: {
       type: String,
+      required: false,
+    },
+    meta: {
+      type: Object,
     },
     ...auditableFields,
   },
