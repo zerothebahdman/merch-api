@@ -18,9 +18,9 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, ERROR_MESSAGES.INCORRECT_USERNAME_AND_PASSWORD);
   }
-  if (!user.emailVerified) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, ERROR_MESSAGES.USER_EMAIL_NOT_VERIFIED);
-  }
+  // if (!user.emailVerified) {
+  //   throw new ApiError(httpStatus.UNAUTHORIZED, ERROR_MESSAGES.USER_EMAIL_NOT_VERIFIED);
+  // }
   if (user.status === USER_STATUSES.DEACTIVATED) {
     throw new ApiError(httpStatus.UNAUTHORIZED, ERROR_MESSAGES.USER_DEACTIVATED);
   }

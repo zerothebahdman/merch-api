@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.route('/account-info').get(auth('user'), paymentController.getAccountInfo);
 router.route('/bank-list').get(auth('user'), paymentController.getBanks);
-router.route('/withdraw').get(auth('user'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
+router.route('/withdraw').post(auth('user'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
 router.route('/funding/:reference').get(paymentController.creditAccount);
 
 module.exports = router;
