@@ -5,7 +5,7 @@ const { CreatorPage, CreatorPageItem } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { slugify } = require('../utils/helpers');
 const { ERROR_MESSAGES } = require('../config/messages');
-const { paymentService } = require('.');
+const { paymentService } = require('./payment.service');
 
 /**
  * Create creator page
