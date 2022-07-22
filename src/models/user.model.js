@@ -139,6 +139,34 @@ const userSchema = mongoose.Schema(
         type: String,
       },
     },
+    dob: {
+      type: Date,
+      required: false,
+    },
+    gender: {
+      type: String,
+      required: false,
+    },
+    nationality: {
+      type: String,
+      required: false,
+    },
+    address: {
+      type: String,
+      required: false,
+    },
+    nextOfKin: {
+      type: String,
+      required: false,
+    },
+    nextOfKinPhone: {
+      type: String,
+      required: false,
+    },
+    maritalStatus: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

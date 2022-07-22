@@ -42,6 +42,13 @@ const updateUser = {
         address: Joi.string(),
         zipCode: Joi.string(),
       }),
+      gender: Joi.string(),
+      dob: Joi.string(),
+      nationality: Joi.string(),
+      address: Joi.string(),
+      nextOfKin: Joi.string(),
+      nextOfKinPhone: Joi.string(),
+      maritalStatus: Joi.string(),
     })
     .min(1),
 };
