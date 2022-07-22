@@ -76,6 +76,19 @@ const withdrawMoney = catchAsync(async (req, res) => {
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
 
+const validateAccount = catchAsync(async (req, res) => {
+  let account = await Paga.checkAccount(req.body);
+  if (account.error) throw new ApiError(httpStatus.BAD_REQUEST, account.response.message);
+  else
+    account = {
+      accountNumber: req.body.accountNumber,
+      accountName: account.response.destinationAccountHolderNameAtBank,
+      fee: account.response.fee,
+      vat: account.response.vat,
+    };
+  res.send(account);
+});
+
 const billPayment = catchAsync(async (req, res) => {
   const bill = await paymentService.billPayment();
   res.send(bill);
@@ -91,6 +104,7 @@ module.exports = {
   getBanks,
   creditAccount,
   withdrawMoney,
+  validateAccount,
   billPayment,
   buyAirtime,
 };

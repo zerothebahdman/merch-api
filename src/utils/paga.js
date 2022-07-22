@@ -52,6 +52,12 @@ const Paga = {
     const response = await paga.airtimePurchase(data.reference, data.amount, data.currency, data.phoneNumber, data.source);
     return response;
   },
+  checkAccount: async (data) => {
+    const reference = generateRandomChar(16, 'num');
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.validateDepositToBank(reference, '1', 'NGN', data.bankId, data.accountNumber);
+    return response;
+  },
   withdraw: async (data) => {
     const reference = generateRandomChar(16, 'num');
     const paga = await Paga.initPagaBusiness();

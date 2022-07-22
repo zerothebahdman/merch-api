@@ -6,9 +6,12 @@ const { paymentValidation } = require('../../validations');
 
 const router = express.Router();
 
-router.route('/account-info').get(auth('user'), paymentController.getAccountInfo);
-router.route('/bank-list').get(auth('user'), paymentController.getBanks);
-router.route('/withdraw').post(auth('user'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
+router.route('/account-info').get(auth('creator'), paymentController.getAccountInfo);
+router.route('/bank-list').get(auth('creator'), paymentController.getBanks);
+router.route('/withdraw').post(auth('creator'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
+router
+  .route('/validate-account')
+  .post(auth('creator'), validate(paymentValidation.validateAccount), paymentController.validateAccount);
 router.route('/funding/:reference').get(paymentController.creditAccount);
 router.route('/funding/:reference').post(paymentController.creditAccount);
 

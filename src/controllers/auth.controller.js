@@ -8,25 +8,25 @@ const {
   tokenService,
   emailService,
   onboardingService,
-  creatorPageService,
+  // creatorPageService,
 } = require('../services');
 const { ROLES } = require('../config/roles');
 const config = require('../config/config');
 const { ERROR_MESSAGES } = require('../config/messages');
 const { ONBOARDING_STAGES, USER_STATUSES } = require('../config/constants');
-const { backdoorAccess } = require('../config/config');
+// const { backdoorAccess } = require('../config/config');
 
 const userSignUp = catchAsync(async (req, res) => {
   const isCreator = req.body.role === ROLES.CREATOR;
   if (isCreator) {
-    if (!req.body.referralCode)
-      throw new ApiError(httpStatus.BAD_REQUEST, 'You need a referral code to sign up as a creator');
-    const referral = await creatorPageService.queryCreatorPages({ slug: req.body.referralCode }, {}, '', true);
-    if (referral.length < 1 && req.body.referralCode !== backdoorAccess.referralCode)
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        'Sorry, the referral code entered is invalid. Get a valid code to access Merchro'
-      );
+    // if (!req.body.referralCode)
+    //   throw new ApiError(httpStatus.BAD_REQUEST, 'You need a referral code to sign up as a creator');
+    // const referral = await creatorPageService.queryCreatorPages({ slug: req.body.referralCode }, {}, '', true);
+    // if (referral.length < 1 && req.body.referralCode !== backdoorAccess.referralCode)
+    //   throw new ApiError(
+    //     httpStatus.BAD_REQUEST,
+    //     'Sorry, the referral code entered is invalid. Get a valid code to access Merchro'
+    //   );
     const user = await userService.createUser(req.body);
     const emailVerificationToken = await tokenService.generateEmailVerificationToken(user.email);
     onboardingService.createOnboarding({ user: user.id, stages: [ONBOARDING_STAGES.SIGNED_UP] });
