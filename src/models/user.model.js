@@ -152,16 +152,41 @@ const userSchema = mongoose.Schema(
       required: false,
     },
     address: {
-      type: String,
-      required: false,
+      city: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
+      country: {
+        type: String,
+      },
+      street: {
+        type: String,
+      },
+      zipCode: {
+        type: String,
+      },
     },
     nextOfKin: {
-      type: String,
-      required: false,
-    },
-    nextOfKinPhone: {
-      type: String,
-      required: false,
+      firstName: {
+        type: String,
+      },
+      lastName: {
+        type: String,
+      },
+      relationship: {
+        type: String,
+      },
+      email: {
+        type: String,
+      },
+      phoneNumber: {
+        type: String,
+      },
+      address: {
+        type: String,
+      },
     },
     maritalStatus: {
       type: String,
