@@ -26,6 +26,9 @@ const accountSchema = mongoose.Schema(
       accountReference: {
         type: String,
       },
+      callbackUrl: {
+        type: String,
+      },
     },
     balance: {
       type: Number,

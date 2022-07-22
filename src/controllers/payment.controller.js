@@ -3,10 +3,10 @@ const catchAsync = require('../utils/catchAsync');
 const { paymentService } = require('../services');
 const { TRANSACTION_TYPES, TRANSACTION_SOURCES } = require('../config/constants');
 const { TransactionDump } = require('../models');
-const { addNotification } = require('../utils/notification');
 const ApiError = require('../utils/ApiError');
 const Bank = require('../models/bank.model');
 const { Paga } = require('../utils/paga');
+const pick = require('../utils/pick');
 
 const getAccountInfo = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
@@ -31,10 +31,10 @@ const creditAccount = catchAsync(async (req) => {
     data = { ...req.query };
   } else if (req.body && req.body.statusCode === '0') data = { ...req.body };
 
-  TransactionDump.create({ data });
+  const transactionDump = await TransactionDump.create({ data });
 
   const accountInfo = await paymentService.queryAccountInfoByReference(reference);
-  const updatedBalance = Number((Number(accountInfo.balance) + Number(data.amount)).toFixed(2));
+  const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
 
   await paymentService.updateBalance(updatedBalance, accountInfo.user);
 
@@ -43,16 +43,17 @@ const creditAccount = catchAsync(async (req) => {
     type: TRANSACTION_TYPES.CREDIT,
     source: TRANSACTION_SOURCES.BANK_TRANSFER,
     user: accountInfo.user,
+    transactionDump: transactionDump.id,
     meta: { ...data },
     createdBy: accountInfo.user,
   };
 
   await paymentService.createTransactionRecord(transactionData);
 
-  addNotification(
-    `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName}`,
-    accountInfo.user
-  );
+  // addNotification(
+  //   `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName}`,
+  //   accountInfo.user
+  // );
 });
 
 const withdrawMoney = catchAsync(async (req, res) => {
@@ -62,6 +63,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
     const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
+    const transactionDump = await TransactionDump.create({ data: withdrawResponse });
     // Store transaction
     await paymentService.createTransactionRecord({
       user: accountInfo.user,
@@ -70,6 +72,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
       amount: Number(req.body.amount),
       purpose: req.body.purpose || null,
       createdBy: accountInfo.user,
+      transactionDump: transactionDump.id,
       meta: { ...withdrawResponse },
     });
     res.send(withdrawResponse);
@@ -89,6 +92,15 @@ const validateAccount = catchAsync(async (req, res) => {
   res.send(account);
 });
 
+const getTransactions = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['user', 'type', 'source']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  if (req.query.include) options.populate = req.query.include.toString();
+  else options.populate = '';
+  const transactions = await paymentService.getTransactions(filter, options, req.user, req.query.paginate);
+  res.send(transactions);
+});
+
 const billPayment = catchAsync(async (req, res) => {
   const bill = await paymentService.billPayment();
   res.send(bill);
@@ -105,6 +117,7 @@ module.exports = {
   creditAccount,
   withdrawMoney,
   validateAccount,
+  getTransactions,
   billPayment,
   buyAirtime,
 };

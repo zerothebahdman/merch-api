@@ -29,6 +29,7 @@ const Paga = {
     data.currency = 'NGN';
     data.callbackUrl = `${baseApiUrl}/v1/payments/funding/${data.referenceNumber}`;
     const accountInfo = await paga.registerPersistentPaymentAccount(data);
+    if (!accountInfo.error) accountInfo.response.callbackUrl = data.callbackUrl;
     return accountInfo;
   },
   generateInstantPaymentAccount: async () => {

@@ -72,6 +72,7 @@ const setupAccount = async (userData) => {
         accountReference: accountInfo.response.accountReference,
         accountName: data.accountName,
         bankName: 'Paga',
+        callbackUrl: accountInfo.response.callbackUrl,
       },
     });
     addNotification('A dedicated bank account was activated for you.', userData.id);
@@ -96,6 +97,13 @@ const createTransactionRecord = async (transactionData) => {
   return true;
 };
 
+const getTransactions = async (filter, options, actor, paginate = true) => {
+  filter.user = actor.id;
+  filter.deletedBy = null;
+  const result = !paginate ? await Transaction.find(filter) : await Transaction.paginate(filter, options);
+  return result;
+};
+
 const updateBalance = async (balance, user) => {
   const accountInfo = await Account.updateOne({ user }, { balance });
   return accountInfo;
@@ -110,6 +118,7 @@ const withdrawMoney = async (body, actor) => {
   body.firstName = actor.firstName;
   body.lastName = actor.lastName;
   const withdrawal = await Paga.withdraw(body);
+  if (withdrawal.error) throw new ApiError(httpStatus.BAD_REQUEST, withdrawal.response.error);
   return withdrawal;
 };
 
@@ -119,6 +128,7 @@ module.exports = {
   getPaymentLink,
   setupAccount,
   createTransactionRecord,
+  getTransactions,
   updateBalance,
   updateDebt,
   withdrawMoney,

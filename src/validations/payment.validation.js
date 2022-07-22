@@ -17,7 +17,20 @@ const withdrawal = {
   }),
 };
 
+const getTransactions = {
+  query: Joi.object().keys({
+    type: Joi.string(),
+    user: Joi.string(),
+    source: Joi.string(),
+    page: Joi.string().default(1),
+    limit: Joi.string().default(10),
+    sortBy: Joi.string(),
+    paginate: Joi.boolean().default(true),
+  }),
+};
+
 module.exports = {
   validateAccount,
   withdrawal,
+  getTransactions,
 };

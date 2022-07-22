@@ -9,7 +9,11 @@ const transactionSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       required: true,
       ref: 'User',
-      unique: true,
+    },
+    transactionDump: {
+      type: mongoose.SchemaTypes.ObjectId,
+      required: false,
+      ref: 'TransactionDump',
     },
     type: {
       type: String,
