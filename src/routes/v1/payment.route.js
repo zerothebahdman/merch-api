@@ -18,6 +18,7 @@ router.route('/terminate-account').delete(auth('creator'), async (req, res) => {
   res.send(results);
 });
 router.route('/withdraw').post(auth('creator'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
+router.route('/buy-airtime').post(auth('creator'), validate(paymentValidation.buyAirtime), paymentController.buyAirtime);
 router
   .route('/transactions')
   .get(auth('creator'), validate(paymentValidation.getTransactions), paymentController.getTransactions);

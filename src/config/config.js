@@ -66,7 +66,9 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
-  baseApiUrl: `${envVars.ENFORCE_SSL ? 'https' : 'http'}://${envVars.API_DOMAIN}:${envVars.USE_PORT ? envVars.PORT : ''}`,
+  baseApiUrl: `${envVars.ENFORCE_SSL ? 'https' : 'http'}://${envVars.API_DOMAIN}${
+    envVars.USE_PORT ? `:${envVars.PORT}` : ''
+  }`,
   frontendAppUrl: envVars.FRONT_END_APP_URL,
   storeSetupPageUrl: envVars.STORE_SETUP_PAGE_URL,
   resetPasswordPageUrl: envVars.RESET_PASSWORD_PAGE_URL,

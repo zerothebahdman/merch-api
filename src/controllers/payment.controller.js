@@ -7,6 +7,7 @@ const ApiError = require('../utils/ApiError');
 const Bank = require('../models/bank.model');
 const { Paga } = require('../utils/paga');
 const pick = require('../utils/pick');
+const { addNotification } = require('../utils/notification');
 
 const getAccountInfo = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
@@ -44,16 +45,25 @@ const creditAccount = catchAsync(async (req) => {
     source: TRANSACTION_SOURCES.BANK_TRANSFER,
     user: accountInfo.user,
     transactionDump: transactionDump.id,
-    meta: { ...data },
     createdBy: accountInfo.user,
+    meta: {
+      payerName: data.payerDetails.payerName,
+      bankName: data.payerDetails.payerBankName,
+      reference: data.payerDetails.paymentReferenceNumber,
+      transactionReference: data.transactionReference,
+      fundingPaymentReference: data.fundingPaymentReference,
+      accountNumber: data.accountNumber,
+      accountName: data.accountName,
+    },
   };
 
   await paymentService.createTransactionRecord(transactionData);
 
-  // addNotification(
-  //   `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName}`,
-  //   accountInfo.user
-  // );
+  addNotification(
+    `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName}`,
+    accountInfo.user
+  );
+  return true;
 });
 
 const withdrawMoney = catchAsync(async (req, res) => {
@@ -61,11 +71,11 @@ const withdrawMoney = catchAsync(async (req, res) => {
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
   if (Number(req.body.amount) <= accountInfo.balance) {
     const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
-    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: withdrawResponse });
     // Store transaction
-    await paymentService.createTransactionRecord({
+    const transaction = await paymentService.createTransactionRecord({
       user: accountInfo.user,
       source: TRANSACTION_SOURCES.SAVINGS,
       type: TRANSACTION_TYPES.DEBIT,
@@ -73,9 +83,16 @@ const withdrawMoney = catchAsync(async (req, res) => {
       purpose: req.body.purpose || null,
       createdBy: accountInfo.user,
       transactionDump: transactionDump.id,
-      meta: { ...withdrawResponse },
+      meta: {
+        accountNumber: req.body.accountNumber,
+        accountName: withdrawResponse.response.destinationAccountHolderNameAtBank,
+        currency: withdrawResponse.response.currency,
+        fee: withdrawResponse.response.fee,
+        message: withdrawResponse.response.message,
+        reference: withdrawResponse.response.reference,
+      },
     });
-    res.send(withdrawResponse);
+    res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
 
@@ -107,8 +124,30 @@ const billPayment = catchAsync(async (req, res) => {
 });
 
 const buyAirtime = catchAsync(async (req, res) => {
-  const bill = await paymentService.billPayment();
-  res.send(bill);
+  const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
+  if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
+  if (Number(req.body.amount) <= accountInfo.balance) {
+    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
+    const airtimeResponse = await paymentService.buyAirtime(req.body, req.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    const transactionDump = await TransactionDump.create({ data: airtimeResponse });
+    // Store transaction
+    const transaction = await paymentService.createTransactionRecord({
+      user: accountInfo.user,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      type: TRANSACTION_TYPES.DEBIT,
+      amount: Number(req.body.amount),
+      purpose: 'Airtime purchase',
+      createdBy: accountInfo.user,
+      transactionDump: transactionDump.id,
+      meta: {
+        phoneNumber: req.body.phoneNumber,
+        message: airtimeResponse.response.message,
+        reference: airtimeResponse.response.reference,
+      },
+    });
+    res.send(transaction);
+  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
 
 module.exports = {

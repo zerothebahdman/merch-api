@@ -2,7 +2,7 @@
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');
 const { paymentInfo } = require('../config/config');
-const { Account, Transaction } = require('../models');
+const { Account, TransactionLog } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
 const { Paga } = require('../utils/paga');
@@ -93,14 +93,14 @@ const setupAccount = async (userData) => {
 };
 
 const createTransactionRecord = async (transactionData) => {
-  await Transaction.create({ ...transactionData });
+  await TransactionLog.create({ ...transactionData });
   return true;
 };
 
 const getTransactions = async (filter, options, actor, paginate = true) => {
   filter.user = actor.id;
   filter.deletedBy = null;
-  const result = !paginate ? await Transaction.find(filter) : await Transaction.paginate(filter, options);
+  const result = !paginate ? await TransactionLog.find(filter) : await TransactionLog.paginate(filter, options);
   return result;
 };
 
@@ -118,8 +118,14 @@ const withdrawMoney = async (body, actor) => {
   body.firstName = actor.firstName;
   body.lastName = actor.lastName;
   const withdrawal = await Paga.withdraw(body);
-  if (withdrawal.error) throw new ApiError(httpStatus.BAD_REQUEST, withdrawal.response.error);
+  if (withdrawal.error) throw new ApiError(httpStatus.BAD_REQUEST, withdrawal.response.message);
   return withdrawal;
+};
+
+const buyAirtime = async (body) => {
+  const airtime = await Paga.airtimeTopup(body);
+  if (airtime.error) throw new ApiError(httpStatus.BAD_REQUEST, airtime.response.message);
+  return airtime;
 };
 
 module.exports = {
@@ -132,4 +138,5 @@ module.exports = {
   updateBalance,
   updateDebt,
   withdrawMoney,
+  buyAirtime,
 };

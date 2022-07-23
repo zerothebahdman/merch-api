@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { TRANSACTION_TYPES, TRANSACTION_SOURCES } = require('../config/constants');
 const { toJSON, paginate, auditableFields } = require('./plugins');
 
-const transactionSchema = mongoose.Schema(
+const transactionLogSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.SchemaTypes.ObjectId,
@@ -41,12 +41,12 @@ const transactionSchema = mongoose.Schema(
 );
 
 // add plugin that converts mongoose to json
-transactionSchema.plugin(toJSON);
-transactionSchema.plugin(paginate);
+transactionLogSchema.plugin(toJSON);
+transactionLogSchema.plugin(paginate);
 
 /**
- * @typedef Transaction
+ * @typedef TransactionLog
  */
-const Transaction = mongoose.model('Transaction', transactionSchema);
+const TransactionLog = mongoose.model('TransactionLog', transactionLogSchema);
 
-module.exports = Transaction;
+module.exports = TransactionLog;

@@ -8,6 +8,6 @@ module.exports.Onboarding = require('./onboarding.model');
 module.exports.CreatorPage = require('./creatorPage.model');
 module.exports.CreatorPageItem = require('./creatorPageItem.model');
 module.exports.Order = require('./order.model');
-module.exports.Transaction = require('./transaction.model');
+module.exports.TransactionLog = require('./transactionLog.model');
 module.exports.TransactionDump = require('./transactionDump.model');
 module.exports.Waitlist = require('./waitlist.model');

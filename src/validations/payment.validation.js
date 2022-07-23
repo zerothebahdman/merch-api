@@ -17,6 +17,13 @@ const withdrawal = {
   }),
 };
 
+const buyAirtime = {
+  body: Joi.object().keys({
+    amount: Joi.string().required(),
+    phoneNumber: Joi.string().required(),
+  }),
+};
+
 const getTransactions = {
   query: Joi.object().keys({
     type: Joi.string(),
@@ -32,5 +39,6 @@ const getTransactions = {
 module.exports = {
   validateAccount,
   withdrawal,
+  buyAirtime,
   getTransactions,
 };
