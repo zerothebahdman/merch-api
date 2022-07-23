@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { paymentService } = require('../services');
+const { paymentService, emailService, userService } = require('../services');
 const { TRANSACTION_TYPES, TRANSACTION_SOURCES } = require('../config/constants');
 const { TransactionDump } = require('../models');
 const ApiError = require('../utils/ApiError');
@@ -25,20 +25,33 @@ const getBanks = catchAsync(async (req, res) => {
   res.send(banks);
 });
 
-const creditAccount = catchAsync(async (req) => {
+const creditAccount = catchAsync(async (req, res) => {
   const { reference } = req.params;
   let data = {};
   if (req.query && req.query.statusCode === '0') {
     data = { ...req.query };
   } else if (req.body && req.body.statusCode === '0') data = { ...req.body };
 
-  const transactionDump = await TransactionDump.create({ data });
-
   const accountInfo = await paymentService.queryAccountInfoByReference(reference);
+
+  const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
+
   const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
 
   await paymentService.updateBalance(updatedBalance, accountInfo.user);
 
+  // Confirm that there is no prior log of this particular transaction
+  const getTransactions = await paymentService.getTransactions(
+    {
+      reference: { $eq: data.transactionReference },
+    },
+    '',
+    { id: accountInfo.user },
+    true
+  );
+  if (getTransactions.results.length > 0) {
+    return res.send({ status: 'SUCCESS', message: 'Already logged' });
+  }
   const transactionData = {
     amount: Number(data.amount),
     type: TRANSACTION_TYPES.CREDIT,
@@ -46,11 +59,11 @@ const creditAccount = catchAsync(async (req) => {
     user: accountInfo.user,
     transactionDump: transactionDump.id,
     createdBy: accountInfo.user,
+    reference: data.transactionReference,
     meta: {
       payerName: data.payerDetails.payerName,
       bankName: data.payerDetails.payerBankName,
-      reference: data.payerDetails.paymentReferenceNumber,
-      transactionReference: data.transactionReference,
+      paymentReferenceNumber: data.payerDetails.paymentReferenceNumber,
       fundingPaymentReference: data.fundingPaymentReference,
       accountNumber: data.accountNumber,
       accountName: data.accountName,
@@ -59,11 +72,13 @@ const creditAccount = catchAsync(async (req) => {
 
   await paymentService.createTransactionRecord(transactionData);
 
-  addNotification(
-    `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName}`,
-    accountInfo.user
-  );
-  return true;
+  const message = `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName})`;
+  const user = await userService.getUserById(accountInfo.user);
+
+  emailService.creditEmail(user.email, user.firstName, message);
+
+  addNotification(message, accountInfo.user);
+  res.send({ status: 'SUCCESS' });
 });
 
 const withdrawMoney = catchAsync(async (req, res) => {
@@ -73,7 +88,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
     const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
-    const transactionDump = await TransactionDump.create({ data: withdrawResponse });
+    const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
       user: accountInfo.user,
@@ -83,6 +98,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
       purpose: req.body.purpose || null,
       createdBy: accountInfo.user,
       transactionDump: transactionDump.id,
+      reference: withdrawResponse.response.reference,
       meta: {
         accountNumber: req.body.accountNumber,
         accountName: withdrawResponse.response.destinationAccountHolderNameAtBank,
@@ -92,6 +108,12 @@ const withdrawMoney = catchAsync(async (req, res) => {
         reference: withdrawResponse.response.reference,
       },
     });
+    const message = `NGN${req.body.amount} was debited from your account to (${withdrawResponse.response.destinationAccountHolderNameAtBank}/${req.body.accountNumber})`;
+    const user = await userService.getUserById(accountInfo.user);
+
+    emailService.debitEmail(user.email, user.firstName, message);
+
+    addNotification(message, accountInfo.user);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -130,7 +152,7 @@ const buyAirtime = catchAsync(async (req, res) => {
     const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     const airtimeResponse = await paymentService.buyAirtime(req.body, req.user);
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
-    const transactionDump = await TransactionDump.create({ data: airtimeResponse });
+    const transactionDump = await TransactionDump.create({ data: airtimeResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
       user: accountInfo.user,

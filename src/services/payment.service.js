@@ -93,14 +93,16 @@ const setupAccount = async (userData) => {
 };
 
 const createTransactionRecord = async (transactionData) => {
-  await TransactionLog.create({ ...transactionData });
-  return true;
+  const transaction = await TransactionLog.create({ ...transactionData });
+  return transaction;
 };
 
 const getTransactions = async (filter, options, actor, paginate = true) => {
   filter.user = actor.id;
   filter.deletedBy = null;
-  const result = !paginate ? await TransactionLog.find(filter) : await TransactionLog.paginate(filter, options);
+  const result = !paginate
+    ? await TransactionLog.find(filter).populate(options.populate || '')
+    : await TransactionLog.paginate(filter, options);
   return result;
 };
 

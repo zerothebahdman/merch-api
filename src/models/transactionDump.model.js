@@ -7,6 +7,12 @@ const transactionDumpSchema = mongoose.Schema(
     data: {
       type: Object,
     },
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      required: false,
+      default: null,
+      ref: 'User',
+    },
   },
   {
     timestamps: true,

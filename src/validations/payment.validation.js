@@ -33,6 +33,7 @@ const getTransactions = {
     limit: Joi.string().default(10),
     sortBy: Joi.string(),
     paginate: Joi.boolean().default(true),
+    include: Joi.array(),
   }),
 };
 

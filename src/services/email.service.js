@@ -82,6 +82,32 @@ const sendUserWelcomeEmail = async (to, firstName) => {
 };
 
 /**
+ * Send credit email
+ * @param {string} to
+ * @param {string} firstName
+ * @param {string} message
+ * @returns {Promise}
+ */
+const creditEmail = async (to, firstName, message) => {
+  const subject = 'Your Merchro wallet was credited!';
+  const html = renderFile('credit', { firstName, message });
+  await sendEmail(to, subject, null, html);
+};
+
+/**
+ * Send debit email
+ * @param {string} to
+ * @param {string} firstName
+ * @param {string} message
+ * @returns {Promise}
+ */
+const debitEmail = async (to, firstName, message) => {
+  const subject = 'Your withdrawal was successful!';
+  const html = renderFile('debit', { firstName, message });
+  await sendEmail(to, subject, null, html);
+};
+
+/**
  * Send waitlist email
  * @param {string} to
  * @returns {Promise}
@@ -101,5 +127,7 @@ module.exports = {
   sendUserSignUpEmail,
   sendUserInvitationEmail,
   sendUserWelcomeEmail,
+  creditEmail,
+  debitEmail,
   waitlistEmail,
 };

@@ -10,7 +10,7 @@ const router = express.Router();
 router.route('/account-info').get(auth('creator'), paymentController.getAccountInfo);
 router.route('/bank-list').get(auth('creator'), paymentController.getBanks);
 router.route('/dump').get(auth('creator'), async (req, res) => {
-  const results = await TransactionDump.find();
+  const results = await TransactionDump.find({ user: req.user.id });
   res.send(results);
 });
 router.route('/terminate-account').delete(auth('creator'), async (req, res) => {

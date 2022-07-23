@@ -1,0 +1,153 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    title Merchro | Withdrawal notification
+    script(src='https://kit.fontawesome.com/13437b109b.js', crossorigin='anonymous')
+    link(rel='preconnect', href='https://fonts.googleapis.com')
+    link(rel='preconnect', href='https://fonts.gstatic.com', crossorigin='')
+    link(href='https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap', rel='stylesheet')
+    style.
+      body{
+      background: #f0f0f0;
+      font-family: 'Nunito', sans-serif;
+      }
+      table{
+      border-spacing: 0;
+      }
+      td {
+      padding:0;
+      }
+      img {
+      border:0;
+      }
+      a{
+      color:inherit;
+      }
+      .wrapper {
+      width:100%;
+      table-layout: fixed;
+      background:#f0f0f0;
+      padding-bottom:60px;
+      }
+      .main{
+      margin:0 auto;
+      width:100%;
+      max-width:600px;
+      border-spacing: 0;
+      font-family: 'Nunito', sans-serif;
+      }
+      .header{
+      text-align:Center;
+      font-weight:700;
+      padding:1rem 0;
+      }
+      .sub-main{
+      background:#ffffff;
+      padding:0.5rem 10% 2rem 10%;
+      margin:0rem 0 2rem 0;
+      }
+      .welcome-text{
+      margin:1rem 0;
+      }
+      .code{
+      text-align: center;
+      color: #2B2D41;
+      }
+      hr{
+      border: 0.5px solid rgba(196, 196, 196, 0.5);
+      transform: rotate(0.07deg);
+      }
+      .footer-text{
+      font-size:0.9rem;
+      }
+      .iconFlex{
+      display: inline-block;
+      float: right;
+      margin-top: -45px;
+      }
+      .icon-holder{
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      background:rgba(247, 247, 247, 0.5);
+      display: inline-block;
+      margin:0 0 0 20px;
+      position: relative;
+      }
+      .icon-holder a {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      }
+      .icon-holder a img{
+      width: 20px;
+      height: auto;
+      }
+      .two-column{
+      display: block;
+      }
+      .btn-holder{
+      width:100%;
+      display: block;
+      position: relative;
+      text-align: center;
+      }
+      button{
+      background: #2B2D41;
+      padding: 1rem 5%;
+      width: 70%;
+      border-radius: 5px;
+      font-weight: bold;
+      margin:0 auto;
+      border: none;
+      color:#fff;
+      font-family: Nunito, 'sans-serif;';
+      cursor: pointer;
+      }
+      button:hover{
+      opacity:0.8;
+      }
+      p span{
+      color: #D71B1B;
+      text-decoration:underline;
+      }
+  body
+    .wrapper
+      table.main(width='100%')
+        tbody
+          tr
+            td
+              a(href='http://merchro.com')
+                img(src='https://res.cloudinary.com/merchro/image/upload/v1657390722/merchro-logo_wa91d1.webp', alt='Merchro Logo', width='150')
+          tr
+            td
+              table.sub-main(width='100%')
+                tbody
+                  tr
+                    td
+                      table(width='100%')
+                        tbody
+                          tr
+                            td
+                              p Hi #{firstName} &#x270C;&#x1F3FE;,
+                              p.welcome-text
+                                | #{message}
+                              .btn-holder
+                                h1(style='font-size: 3.5rem; font-weight: 1000') #{token}
+                              p.welcome-text For enquiries or complaint about this withdrawal, contact us via hello@merchro.com 
+                              hr
+                              table(width='100%')
+                                tbody
+                                  tr.two-column(width='100%')
+                                    td
+                                      p.footer-text CONNECT WITH US
+                                    td.iconFlex
+                                      .icon-holder
+                                        a(href='https://twitter.com/merchroafrica')
+                                          img(src='https://res.cloudinary.com/merchro/image/upload/v1657393647/twitter-icon_zvnxnp.png' width='20' height='auto' alt='Twitter')
+                                      .icon-holder
+                                        a(href='https://instagram.com/merchroafrica')
+                                          img(src='https://res.cloudinary.com/merchro/image/upload/v1657393647/instagram-icon_klhlmr.png' width='20' height='auto' alt='Instagram')

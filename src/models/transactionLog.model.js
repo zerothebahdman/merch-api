@@ -26,6 +26,10 @@ const transactionLogSchema = mongoose.Schema(
       type: String,
       enum: Object.values(TRANSACTION_SOURCES),
     },
+    reference: {
+      type: String,
+      required: false,
+    },
     purpose: {
       type: String,
       required: false,
