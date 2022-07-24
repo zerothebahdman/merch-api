@@ -37,6 +37,14 @@ const transactionLogSchema = mongoose.Schema(
     meta: {
       type: Object,
     },
+    pending: {
+      type: Boolean,
+      default: false,
+    },
+    locked: {
+      type: Boolean,
+      default: false,
+    },
     ...auditableFields,
   },
   {

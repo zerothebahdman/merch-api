@@ -38,20 +38,21 @@ const creditAccount = catchAsync(async (req, res) => {
 
   const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
 
-  await paymentService.updateBalance(updatedBalance, accountInfo.user);
-
   // Confirm that there is no prior log of this particular transaction
   const getTransactions = await paymentService.getTransactions(
     {
       reference: { $eq: data.transactionReference },
     },
-    '',
-    { id: accountInfo.user },
+    {},
+    false,
     true
   );
   if (getTransactions.results.length > 0) {
     return res.send({ status: 'SUCCESS', message: 'Already logged' });
   }
+
+  await paymentService.updateBalance(updatedBalance, accountInfo.user);
+
   const transactionData = {
     amount: Number(data.amount),
     type: TRANSACTION_TYPES.CREDIT,
@@ -65,8 +66,8 @@ const creditAccount = catchAsync(async (req, res) => {
       bankName: data.payerDetails.payerBankName,
       paymentReferenceNumber: data.payerDetails.paymentReferenceNumber,
       fundingPaymentReference: data.fundingPaymentReference,
-      accountNumber: data.accountNumber,
-      accountName: data.accountName,
+      accountNumber: accountInfo.accountInfo.accountNumber,
+      accountName: accountInfo.accountInfo.accountName,
     },
   };
 

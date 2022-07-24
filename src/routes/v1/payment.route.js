@@ -14,7 +14,7 @@ router.route('/dump').get(auth('creator'), async (req, res) => {
   res.send(results);
 });
 router.route('/terminate-account').delete(auth('creator'), async (req, res) => {
-  const results = await Account.deleteMany({ user: req.user.id });
+  const results = await Account.deleteOne({ user: req.user.id });
   res.send(results);
 });
 router.route('/withdraw').post(auth('creator'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);

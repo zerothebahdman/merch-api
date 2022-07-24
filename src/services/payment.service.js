@@ -98,7 +98,7 @@ const createTransactionRecord = async (transactionData) => {
 };
 
 const getTransactions = async (filter, options, actor, paginate = true) => {
-  filter.user = actor.id;
+  if (actor) filter.user = actor.id;
   filter.deletedBy = null;
   const result = !paginate
     ? await TransactionLog.find(filter).populate(options.populate || '')
