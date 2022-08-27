@@ -11,6 +11,7 @@ const validateAccount = {
 const withdrawal = {
   body: Joi.object().keys({
     amount: Joi.string().required(),
+    idempotentKey: Joi.string().min(16).required(),
     bankId: Joi.string().required(),
     accountNumber: Joi.string().required(),
     purpose: Joi.string(),

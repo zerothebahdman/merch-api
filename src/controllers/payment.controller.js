@@ -32,58 +32,71 @@ const creditAccount = catchAsync(async (req, res) => {
     data = { ...req.query };
   } else if (req.body && req.body.statusCode === '0') data = { ...req.body };
 
-  const accountInfo = await paymentService.queryAccountInfoByReference(reference);
+  data.idempotentKey = data.transactionReference;
 
-  const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
+  const proceed = await paymentService.controlTransaction(data);
 
-  const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
+  if (!proceed) return { status: true, message: 'Information already received' };
 
-  // Confirm that there is no prior log of this particular transaction
-  const getTransactions = await paymentService.getTransactions(
-    {
-      reference: { $eq: data.transactionReference },
-    },
-    {},
-    false,
-    true
-  );
-  if (getTransactions.results.length > 0) {
-    return res.send({ status: 'SUCCESS', message: 'Already logged' });
+  try {
+    const accountInfo = await paymentService.queryAccountInfoByReference(reference);
+
+    const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
+
+    const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
+
+    // Confirm that there is no prior log of this particular transaction
+    const getTransactions = await paymentService.getTransactions(
+      {
+        reference: { $eq: data.transactionReference },
+      },
+      {},
+      false,
+      true
+    );
+    if (getTransactions.results.length > 0) {
+      return res.send({ status: 'SUCCESS', message: 'Already logged' });
+    }
+
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+
+    const transactionData = {
+      amount: Number(data.amount),
+      type: TRANSACTION_TYPES.CREDIT,
+      source: TRANSACTION_SOURCES.BANK_TRANSFER,
+      user: accountInfo.user,
+      transactionDump: transactionDump.id,
+      createdBy: accountInfo.user,
+      reference: data.transactionReference,
+      meta: {
+        payerName: data.payerDetails.payerName,
+        bankName: data.payerDetails.payerBankName,
+        paymentReferenceNumber: data.payerDetails.paymentReferenceNumber,
+        fundingPaymentReference: data.fundingPaymentReference,
+        accountNumber: accountInfo.accountInfo.accountNumber,
+        accountName: accountInfo.accountInfo.accountName,
+      },
+    };
+
+    await paymentService.createTransactionRecord(transactionData);
+
+    const message = `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName})`;
+    const user = await userService.getUserById(accountInfo.user);
+
+    emailService.creditEmail(user.email, user.firstName, message);
+
+    addNotification(message, accountInfo.user);
+    res.send({ status: 'SUCCESS' });
+  } catch (error) {
+    paymentService.logError(error);
   }
-
-  await paymentService.updateBalance(updatedBalance, accountInfo.user);
-
-  const transactionData = {
-    amount: Number(data.amount),
-    type: TRANSACTION_TYPES.CREDIT,
-    source: TRANSACTION_SOURCES.BANK_TRANSFER,
-    user: accountInfo.user,
-    transactionDump: transactionDump.id,
-    createdBy: accountInfo.user,
-    reference: data.transactionReference,
-    meta: {
-      payerName: data.payerDetails.payerName,
-      bankName: data.payerDetails.payerBankName,
-      paymentReferenceNumber: data.payerDetails.paymentReferenceNumber,
-      fundingPaymentReference: data.fundingPaymentReference,
-      accountNumber: accountInfo.accountInfo.accountNumber,
-      accountName: accountInfo.accountInfo.accountName,
-    },
-  };
-
-  await paymentService.createTransactionRecord(transactionData);
-
-  const message = `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName})`;
-  const user = await userService.getUserById(accountInfo.user);
-
-  emailService.creditEmail(user.email, user.firstName, message);
-
-  addNotification(message, accountInfo.user);
-  res.send({ status: 'SUCCESS' });
 });
 
 const withdrawMoney = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
+  const proceed = await paymentService.controlTransaction(req.body);
+  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate transaction, withdrawal already initialized');
+
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
   if (Number(req.body.amount) <= accountInfo.balance) {
     const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
