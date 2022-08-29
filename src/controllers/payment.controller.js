@@ -36,13 +36,12 @@ const creditAccount = catchAsync(async (req, res) => {
 
   const proceed = await paymentService.controlTransaction(data);
 
-  if (!proceed) return { status: true, message: 'Information already received' };
+  if (!proceed) return res.send({ status: 'SUCCESS', message: 'Information already received' });
 
   try {
     const accountInfo = await paymentService.queryAccountInfoByReference(reference);
-
     const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
-
+    data.amount = data.amount.replaceAll(',', '');
     const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
 
     // Confirm that there is no prior log of this particular transaction
@@ -89,6 +88,7 @@ const creditAccount = catchAsync(async (req, res) => {
     res.send({ status: 'SUCCESS' });
   } catch (error) {
     paymentService.logError(error);
+    res.send({ status: 'FAILED' });
   }
 });
 
