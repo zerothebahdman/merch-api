@@ -2,7 +2,7 @@
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');
 const { paymentInfo } = require('../config/config');
-const { Account, TransactionLog, ControlTransaction, ErrorTracker } = require('../models');
+const { Account, TransactionLog, ErrorTracker, RegulateTransaction } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
 const { Paga } = require('../utils/paga');
@@ -132,9 +132,9 @@ const buyAirtime = async (body) => {
 
 const controlTransaction = async (body) => {
   // check prior record of transaction
-  const exist = await ControlTransaction.findOne({ idempotentKey: body.idempotentKey });
+  const exist = await RegulateTransaction.findOne({ idempotentKey: body.idempotentKey });
   if (exist) return false;
-  await ControlTransaction.create({ idempotentKey: body.idempotentKey });
+  await RegulateTransaction.create({ idempotentKey: body.idempotentKey });
   return true;
 };
 

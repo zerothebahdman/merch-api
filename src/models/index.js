@@ -10,6 +10,6 @@ module.exports.CreatorPageItem = require('./creatorPageItem.model');
 module.exports.Order = require('./order.model');
 module.exports.TransactionLog = require('./transactionLog.model');
 module.exports.TransactionDump = require('./transactionDump.model');
-module.exports.ControlTransaction = require('./controlTransaction.model');
+module.exports.RegulateTransaction = require('./regulateTransaction.model');
 module.exports.ErrorTracker = require('./errorTracker.model');
 module.exports.Waitlist = require('./waitlist.model');
