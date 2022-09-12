@@ -59,10 +59,11 @@ const userSchema = mongoose.Schema(
             A mixture of letters and numbers
             Inclusion of at least one special character, e.g., ! @ # ? ]
         */
-        const strongRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()-__+.]])');
+
+        const strongRegex = new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^()&*._-])');
 
         if (!strongRegex.test(value)) {
-          throw new Error(ERROR_MESSAGES.USER_INVALID_PASSWORD);
+          throw new Error(ERROR_MESSAGES.INVALID_PASSWORD);
         }
       },
       private: true, // used by the toJSON plugin
