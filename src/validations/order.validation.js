@@ -11,6 +11,7 @@ const createOrder = {
         currency: Joi.string(),
       }),
     }),
+    idempotentKey: Joi.string().min(16).required(),
     totalAmount: Joi.object().keys({
       price: Joi.number(),
       currency: Joi.string(),
@@ -23,6 +24,13 @@ const createOrder = {
 const getOrder = {
   params: Joi.object().keys({
     orderId: Joi.string().custom(objectId),
+  }),
+};
+
+const getOrderByCode = {
+  query: Joi.object().keys({
+    orderCode: Joi.string().required(),
+    email: Joi.string().required(),
   }),
 };
 
@@ -45,6 +53,7 @@ const cancelOrder = {
 
 module.exports = {
   getOrder,
+  getOrderByCode,
   updateOrder,
   createOrder,
   cancelOrder,

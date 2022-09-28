@@ -1,14 +1,16 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { orderService, paymentService, merchService, creatorPageService } = require('../services');
+const { orderService, paymentService, merchService, userService } = require('../services');
 const pick = require('../utils/pick');
-const { ORDER_STATUSES } = require('../config/constants');
+const { ORDER_STATUSES, TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES } = require('../config/constants');
 const { generateRandomChar } = require('../utils/helpers');
 
 const createOrder = catchAsync(async (req, res) => {
   req.body.createdBy = req.user.id;
-  const pageInfo = await creatorPageService.queryCreatorPageById(req.body.creatorPage);
+  // const pageInfo = await creatorPageService.queryCreatorPageById(req.body.creatorPage);
+  const proceed = await paymentService.controlTransaction(req.body);
+  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate order, order is already created.');
   const check = req.body.merches.map(async (merch) => {
     const merchData = await merchService.queryMerchById(merch.merchId);
     if (merch.quantity > merchData.quantity)
@@ -18,26 +20,46 @@ const createOrder = catchAsync(async (req, res) => {
       );
   });
   await Promise.all(check);
-  req.body.status = ORDER_STATUSES.PENDING;
-  req.body.orderCode = `#${generateRandomChar(9, 'num')}`;
+  req.body.status = ORDER_STATUSES.PICKUP;
+  req.body.orderCode = `#${generateRandomChar(6, 'num')}`;
   req.body.user = req.user.id;
-  req.body.paymentUrl = await paymentService.getPaymentLink(
-    {
-      customer: {
-        email: req.user.email,
-      },
-      amount: req.body.totalAmount.price,
-      currency: req.body.totalAmount.currency,
-      tx_ref: req.body.orderCode,
-    },
-    pageInfo.slug
-  );
+  const amount = req.body.totalAmount.price;
+  const page = req.body.creatorPage;
+  const creator = await userService.getUserByCreatorPage(page);
+  // req.body.paymentUrl = await paymentService.getPaymentLink(
+  //   {
+  //     customer: {
+  //       email: req.user.email,
+  //     },
+  //     amount: req.body.totalAmount.price,
+  //     currency: req.body.totalAmount.currency,
+  //     tx_ref: req.body.orderCode,
+  //   },
+  //   pageInfo.slug
+  // );
   const order = await orderService.createOrder(req.body);
   const orderJson = order.toJSON();
   orderJson.merches.forEach(async (merch) => {
     const merchData = await merchService.queryMerchById(merch.merchId);
     merchService.updateMerchById(merch.merchId, { quantity: merchData.quantity - merch.quantity });
   });
+  await paymentService.createTransactionRecord({
+    user: creator.id,
+    source: TRANSACTION_SOURCES.STORE,
+    type: TRANSACTION_TYPES.CREDIT,
+    amount: Number(amount),
+    purpose: 'Store purchase',
+    createdBy: req.user.id,
+    reference: orderJson.orderCode,
+    meta: {
+      user: req.user.id,
+      Email: req.user.email,
+      currency: CURRENCIES.NAIRA,
+    },
+  });
+
+  paymentService.addToBalance(amount, creator.id);
+
   res.status(httpStatus.CREATED).send(orderJson);
 });
 
@@ -46,6 +68,13 @@ const getOrder = catchAsync(async (req, res) => {
   if (!order) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Requested order not found');
   }
+  res.send(order);
+});
+
+const getOrderByCode = catchAsync(async (req, res) => {
+  const order = await orderService.getOrderByOrderCode(`#${req.query.orderCode}`, 'user');
+  if (!order || (order && order.user.email.toLowerCase() !== req.query.email.toLowerCase()))
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Order with specified details not found');
   res.send(order);
 });
 
@@ -78,6 +107,7 @@ const updateOrderStatus = catchAsync(async (req, res) => {
 module.exports = {
   createOrder,
   getOrder,
+  getOrderByCode,
   getOrders,
   updateOrderStatus,
   paymentSuccessful,

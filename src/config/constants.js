@@ -41,7 +41,7 @@ const CurrencySymbolMapping = new Map([
 const ORDER_STATUSES = {
   PENDING: 'pending',
   ENROUTE: 'enroute',
-  PICKUP: 'pickup',
+  PICKUP: 'to pickup',
   COMPLETED: 'fulfilled',
   PROCESSING: 'processing',
   PREORDER: 'preorder',

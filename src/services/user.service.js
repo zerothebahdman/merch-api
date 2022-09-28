@@ -41,6 +41,15 @@ const getUserById = async (id, eagerLoadFields) => {
 };
 
 /**
+ * Get user by Creator page
+ * @param {ObjectId} id
+ * @returns {Promise<User>}
+ */
+const getUserByCreatorPage = async (creatorPage, eagerLoadFields) => {
+  return eagerLoadFields ? User.findOne({ creatorPage }).populate(eagerLoadFields) : User.findOne({ creatorPage });
+};
+
+/**
  * Get user by email
  * @param {string} email
  * @returns {Promise<User>}
@@ -70,6 +79,7 @@ module.exports = {
   createUser,
   queryUsers,
   getUserById,
+  getUserByCreatorPage,
   getUserByEmail,
   updateUserById,
 };

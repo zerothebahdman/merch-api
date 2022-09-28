@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');
+const moment = require('moment');
 const { paymentInfo } = require('../config/config');
 const { Account, TransactionLog, ErrorTracker, RegulateTransaction } = require('../models');
 const ApiError = require('../utils/ApiError');
@@ -111,6 +112,15 @@ const updateBalance = async (balance, user) => {
   return accountInfo;
 };
 
+const addToBalance = async (amount, user) => {
+  const accountInfo = await Account.findOne({ user });
+  amount = Number(amount);
+  const update = { balance: accountInfo.balance + amount, updatedAt: moment().format() };
+  Object.assign(accountInfo, update);
+  accountInfo.save();
+  return accountInfo;
+};
+
 const updateDebt = async (balance, user) => {
   const accountInfo = await Account.updateOne({ user }, { debt: balance });
   return accountInfo;
@@ -151,6 +161,7 @@ module.exports = {
   createTransactionRecord,
   getTransactions,
   updateBalance,
+  addToBalance,
   updateDebt,
   withdrawMoney,
   buyAirtime,

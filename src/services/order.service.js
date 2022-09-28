@@ -36,7 +36,20 @@ const getOrders = async (filter, options, actor, ignorePagination = false) => {
  * @returns {Promise<Order>}
  */
 const getOrderById = async (id, eagerLoadFields = false) => {
-  return eagerLoadFields ? Order.findById(id).populate(eagerLoadFields) : Order.findById(id);
+  const order = eagerLoadFields ? await Order.findById(id).populate(eagerLoadFields) : await Order.findById(id);
+  return order;
+};
+
+/**
+ * Get Order by order code
+ * @param {ObjectId} id
+ * @returns {Promise<Order>}
+ */
+const getOrderByOrderCode = async (orderCode, eagerLoadFields = false) => {
+  const order = eagerLoadFields
+    ? await Order.findOne({ orderCode }).populate(eagerLoadFields)
+    : await Order.findOne({ orderCode });
+  return order;
 };
 
 /**
@@ -68,5 +81,6 @@ module.exports = {
   createOrder,
   getOrders,
   getOrderById,
+  getOrderByOrderCode,
   updateOrderById,
 };

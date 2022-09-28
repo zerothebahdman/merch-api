@@ -7,6 +7,7 @@ const orderController = require('../../controllers/order.controller');
 const router = express.Router();
 
 router.route('/').post(auth('user'), validate(orderValidation.createOrder), orderController.createOrder);
+router.route('/get-order-by-code').get(validate(orderValidation.getOrderByCode), orderController.getOrderByCode);
 router.route('/:orderId/successful').post(auth('user'), orderController.paymentSuccessful);
 router.route('/:orderId/failed').post(auth('user'), orderController.paymentFailed);
 

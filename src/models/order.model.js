@@ -60,7 +60,7 @@ const orderSchema = mongoose.Schema(
     status: {
       type: String,
       enum: Object.values(ORDER_STATUSES),
-      default: ORDER_STATUSES.IN_PROGRESS,
+      default: ORDER_STATUSES.PICKUP,
     },
     ...auditableFields,
   },
