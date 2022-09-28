@@ -39,6 +39,7 @@ const orderSchema = mongoose.Schema(
     },
     discount: {
       type: Number,
+      default: 0,
     },
     user: {
       type: mongoose.SchemaTypes.ObjectId,
@@ -53,7 +54,7 @@ const orderSchema = mongoose.Schema(
     orderCode: {
       type: String,
     },
-    paymentUrl: {
+    paymentReference: {
       type: String,
     },
     status: {

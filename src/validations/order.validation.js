@@ -15,7 +15,8 @@ const createOrder = {
       price: Joi.number(),
       currency: Joi.string(),
     }),
-    creatorPage: Joi.string().custom(objectId),
+    paymentReference: Joi.string(),
+    creatorPage: Joi.string().custom(objectId).required(),
   }),
 };
 
