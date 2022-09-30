@@ -53,6 +53,7 @@ const createOrder = catchAsync(async (req, res) => {
     reference: orderJson.orderCode,
     meta: {
       user: req.user.id,
+      payerName: `${req.user.firstName} ${req.user.lastName}`,
       Email: req.user.email,
       currency: CURRENCIES.NAIRA,
     },
