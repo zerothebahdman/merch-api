@@ -10,3 +10,4 @@ module.exports.paymentService = require('./payment.service');
 module.exports.tokenService = require('./token.service');
 module.exports.userService = require('./user.service');
 module.exports.waitlistService = require('./waitlist.service');
+module.exports.chargeService = require('./charge.service');

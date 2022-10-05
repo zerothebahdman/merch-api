@@ -1,7 +1,7 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { orderService, paymentService, merchService, userService } = require('../services');
+const { orderService, paymentService, merchService, userService, chargeService } = require('../services');
 const pick = require('../utils/pick');
 const { ORDER_STATUSES, TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES } = require('../config/constants');
 const { generateRandomChar } = require('../utils/helpers');
@@ -23,7 +23,7 @@ const createOrder = catchAsync(async (req, res) => {
   req.body.status = ORDER_STATUSES.PICKUP;
   req.body.orderCode = `#${generateRandomChar(6, 'num')}`;
   req.body.user = req.user.id;
-  const amount = req.body.totalAmount.price;
+  let amount = req.body.totalAmount.price;
   const page = req.body.creatorPage;
   const creator = await userService.getUserByCreatorPage(page);
   // req.body.paymentUrl = await paymentService.getPaymentLink(
@@ -43,6 +43,8 @@ const createOrder = catchAsync(async (req, res) => {
     const merchData = await merchService.queryMerchById(merch.merchId);
     merchService.updateMerchById(merch.merchId, { quantity: merchData.quantity - merch.quantity });
   });
+  const charge = await chargeService.saveCharge(amount, order.id, creator.id);
+  amount -= charge;
   await paymentService.createTransactionRecord({
     user: creator.id,
     source: TRANSACTION_SOURCES.STORE,

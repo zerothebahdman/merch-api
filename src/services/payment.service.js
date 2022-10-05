@@ -113,7 +113,10 @@ const updateBalance = async (balance, user) => {
 };
 
 const addToBalance = async (amount, user) => {
-  const accountInfo = await Account.findOne({ user });
+  let accountInfo = await Account.findOne({ user });
+  if (accountInfo === null) {
+    accountInfo = await Account.create({ user });
+  }
   amount = Number(amount);
   const update = { balance: accountInfo.balance + amount, updatedAt: moment().format() };
   Object.assign(accountInfo, update);
