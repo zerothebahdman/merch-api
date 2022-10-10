@@ -43,7 +43,7 @@ components:
         industry: ICT
         avatar: https://merchro.netlify.app/img/logo.8dfeb500.svg
         timezone: (GMT+01:00) Lagos
-        
+
     Store:
       type: object
       properties:
@@ -65,13 +65,13 @@ components:
           type: string
       example:
         {
-          "name": "New store",
-          "user": "614cc426b1183e2de8a9500c",
-          "createdBy": "614cc426b1183e2de8a9500c",
-          "slug": "new-store",
-          "createdAt": "2021-09-23T23:38:29.347Z",
-          "updatedAt": "2021-09-23T23:38:29.347Z",
-          "id": "614d0ff5c5d8b07020a899d1"
+          'name': 'New store',
+          'user': '614cc426b1183e2de8a9500c',
+          'createdBy': '614cc426b1183e2de8a9500c',
+          'slug': 'new-store',
+          'createdAt': '2021-09-23T23:38:29.347Z',
+          'updatedAt': '2021-09-23T23:38:29.347Z',
+          'id': '614d0ff5c5d8b07020a899d1',
         }
 
     Stores:
@@ -79,24 +79,19 @@ components:
       example:
         [
           {
-            "name": "New store",
-            "user": "614cc426b1183e2de8a9500c",
-            "createdBy": "614cc426b1183e2de8a9500c",
-            "slug": "new-store",
-            "createdAt": "2021-09-23T23:38:29.347Z",
-            "updatedAt": "2021-09-23T23:38:29.347Z",
-            "id": "614d0ff5c5d8b07020a899d1"
+            'name': 'New store',
+            'user': '614cc426b1183e2de8a9500c',
+            'createdBy': '614cc426b1183e2de8a9500c',
+            'slug': 'new-store',
+            'createdAt': '2021-09-23T23:38:29.347Z',
+            'updatedAt': '2021-09-23T23:38:29.347Z',
+            'id': '614d0ff5c5d8b07020a899d1',
           },
-          ...
+          ...,
         ]
     Notifications:
       type: array,
-      example:
-        [
-          'Your bank account was updated',
-          'You have a new order',
-          'You updated your profile'
-        ]
+      example: ['Your bank account was updated', 'You have a new order', 'You updated your profile']
     Item:
       type: object
       properties:
@@ -107,6 +102,8 @@ components:
         store:
           type: string
         amount:
+          type: object
+        preOrder:
           type: object
         quantity:
           type: number
@@ -124,68 +121,66 @@ components:
           type: array
       example:
         {
-            "amount": {
-                "currency": "NGN",
-                "price": 5500
-            },
-            "images": [],
-            "quantity": 28,
-            "isPromo": false,
-            "published": false,
-            "name": "T Shirt",
-            "store": "614d0ff5c5d8b07020a899d1",
-            "createdBy": "614cc426b1183e2de8a9500c",
-            "createdAt": "2021-09-24T07:57:24.373Z",
-            "updatedAt": "2021-09-24T07:57:24.373Z",
-            "id": "614d84e4dba4c158dc2aa687"
+          'amount': { 'currency': 'NGN', 'price': 5500 },
+          'preOrder': { 'enabled': true, 'maxNumOfPreOrders': '5', 'productionDuration': '1 week' },
+          'images': [],
+          'quantity': 28,
+          'isPromo': false,
+          'published': false,
+          'name': 'T Shirt',
+          'store': '614d0ff5c5d8b07020a899d1',
+          'createdBy': '614cc426b1183e2de8a9500c',
+          'createdAt': '2021-09-24T07:57:24.373Z',
+          'updatedAt': '2021-09-24T07:57:24.373Z',
+          'id': '614d84e4dba4c158dc2aa687',
         }
 
     Items:
       type: array
       example:
-        [ {
-            "amount": {
-                "currency": "NGN",
-                "price": 5500
-            },
-            "images": [],
-            "quantity": 28,
-            "isPromo": false,
-            "published": false,
-            "name": "T Shirt",
-            "store": "614d0ff5c5d8b07020a899d1",
-            "createdBy": "614cc426b1183e2de8a9500c",
-            "createdAt": "2021-09-24T07:57:24.373Z",
-            "updatedAt": "2021-09-24T07:57:24.373Z",
-            "id": "614d84e4dba4c158dc2aa687"
-        }, ... ]
+        [
+          {
+            'amount': { 'currency': 'NGN', 'price': 5500 },
+            'images': [],
+            'quantity': 28,
+            'isPromo': false,
+            'published': false,
+            'name': 'T Shirt',
+            'store': '614d0ff5c5d8b07020a899d1',
+            'createdBy': '614cc426b1183e2de8a9500c',
+            'createdAt': '2021-09-24T07:57:24.373Z',
+            'updatedAt': '2021-09-24T07:57:24.373Z',
+            'id': '614d84e4dba4c158dc2aa687',
+          },
+          ...,
+        ]
 
     Waitlists:
       type: object
-      example: 
+      example:
         [
           {
-            "email": "email@waitlist.com",
-            "createdAt": "2021-09-24T07:57:24.373Z",
-            "updatedAt": "2021-09-24T07:57:24.373Z",
-            "id": "614d84e4dba4c158dc2aa687"
+            'email': 'email@waitlist.com',
+            'createdAt': '2021-09-24T07:57:24.373Z',
+            'updatedAt': '2021-09-24T07:57:24.373Z',
+            'id': '614d84e4dba4c158dc2aa687',
           },
           {
-            "email": "email@waitlist.com",
-            "createdAt": "2021-09-24T07:57:24.373Z",
-            "updatedAt": "2021-09-24T07:57:24.373Z",
-            "id": "614d84e4dba4c158dc2aa687"
-          }
+            'email': 'email@waitlist.com',
+            'createdAt': '2021-09-24T07:57:24.373Z',
+            'updatedAt': '2021-09-24T07:57:24.373Z',
+            'id': '614d84e4dba4c158dc2aa687',
+          },
         ]
 
     Waitlist:
       type: object
-      example: 
+      example:
         {
-          "email": "email@waitlist.com",
-          "createdAt": "2021-09-24T07:57:24.373Z",
-          "updatedAt": "2021-09-24T07:57:24.373Z",
-          "id": "614d84e4dba4c158dc2aa687"
+          'email': 'email@waitlist.com',
+          'createdAt': '2021-09-24T07:57:24.373Z',
+          'updatedAt': '2021-09-24T07:57:24.373Z',
+          'id': '614d84e4dba4c158dc2aa687',
         }
 
     Token:

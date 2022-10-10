@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { MERCH_PRODUCTION_DURATION } = require('../config/constants');
 const { objectId } = require('./custom.validation');
 
 const createMerch = {
@@ -20,6 +21,15 @@ const createMerch = {
     description: Joi.string(),
     images: Joi.array(),
     paymentLink: Joi.string(),
+    preOrder: Joi.object()
+      .keys({
+        enabled: Joi.boolean().required(),
+        maxNumOfPreOrders: Joi.number().optional(),
+        productionDuration: Joi.string()
+          .optional()
+          .valid(...Object.values(MERCH_PRODUCTION_DURATION)),
+      })
+      .required(),
   }),
 };
 

@@ -85,6 +85,14 @@ const TRANSACTION_SOURCES = {
   STASH: 'stash',
 };
 
+const MERCH_PRODUCTION_DURATION = {
+  ONE_WEEK: '1 week',
+  TWO_WEEKS: '2 weeks',
+  THREE_WEEKS: '3 weeks',
+  ONE_MONTH: '1 month',
+  TWO_MONTHS: '2 months',
+};
+
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -97,4 +105,5 @@ module.exports = {
   TRANSACTION_TYPES,
   TRANSACTION_SOURCES,
   CurrencySymbolMapping,
+  MERCH_PRODUCTION_DURATION,
 };

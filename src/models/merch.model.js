@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { toJSON, paginate, auditableFields } = require('./plugins');
-const { CURRENCIES } = require('../config/constants');
+const { CURRENCIES, MERCH_PRODUCTION_DURATION } = require('../config/constants');
 
 const merchSchema = mongoose.Schema(
   {
@@ -62,6 +62,11 @@ const merchSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'CreatorPage',
       required: true,
+    },
+    preOrder: {
+      enabled: { type: Boolean, default: false },
+      maxNumOfPreOrders: { type: Number, default: 0 },
+      productionDuration: { type: String, enum: Object.values(MERCH_PRODUCTION_DURATION) },
     },
     ...auditableFields,
   },
