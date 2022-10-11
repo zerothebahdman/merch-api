@@ -63,3 +63,36 @@ module.exports = router;
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */
+
+/**
+ * @swagger
+ * path:
+ *  /buy-airtime:
+ *    post:
+ *      summary: Purchase airtime
+ *      description: Creators can be able to purchase airtime from their dashboard
+ *      tags: [Payments]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - amount
+ *                - phoneNumber
+ *              example:
+ *                amount: 1000
+ *                phoneNumber: '+2348157582101'
+ *      responses:
+ *        "201":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Airtime'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */

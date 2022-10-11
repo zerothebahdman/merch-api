@@ -155,6 +155,29 @@ components:
           ...,
         ]
 
+    Airtime:
+      type: object
+      example:
+        {
+          'pending': false,
+          'locked': false,
+          'user': '63456b0b4495e90021367a12',
+          'source': 'savings',
+          'type': 'debit',
+          'amount': 1000,
+          'purpose': 'Airtime purchase',
+          'createdBy': '63456b0b4495e90021367a12',
+          'transactionDump': '63458fa1eef9d17a73cfcc91',
+          'meta':
+            {
+              'phoneNumber': '+2348157582101',
+              'message': 'You successfully purchased N50.00 worth of airtime for phone number +2348157582101. Transaction Id: C39S1.',
+            },
+          'createdAt': '2022-10-11T15:45:37.249Z',
+          'updatedAt': '2022-10-11T15:45:37.249Z',
+          'id': '614d84e4dba4c158dc2aa687',
+        }
+
     Waitlists:
       type: object
       example:

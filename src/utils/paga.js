@@ -50,7 +50,7 @@ const Paga = {
   },
   airtimeTopup: async (data) => {
     const paga = await Paga.initPagaBusiness();
-    const response = await paga.airtimePurchase(generateRandomChar(16, 'num'), data.amount, 'NGN', data.phoneNumber, '', '');
+    const response = await paga.airtimePurchase(generateRandomChar(16, 'num'), data.amount, 'NGN', data.phoneNumber);
     return response;
   },
   checkAccount: async (data) => {
