@@ -122,7 +122,7 @@ components:
       example:
         {
           'amount': { 'currency': 'NGN', 'price': 5500 },
-          'preOrder': { 'enabled': true, 'maxNumOfPreOrders': '5', 'productionDuration': '1 week' },
+          'preOrder': { 'enabled': true, 'maxNumOfPreOrders': '5', 'productionDuration': 14 },
           'images': [],
           'quantity': 28,
           'isPromo': false,

@@ -86,11 +86,11 @@ const TRANSACTION_SOURCES = {
 };
 
 const MERCH_PRODUCTION_DURATION = {
-  ONE_WEEK: '1 week',
-  TWO_WEEKS: '2 weeks',
-  THREE_WEEKS: '3 weeks',
-  ONE_MONTH: '1 month',
-  TWO_MONTHS: '2 months',
+  ONE_WEEK: '7',
+  TWO_WEEKS: '14',
+  THREE_WEEKS: '21',
+  ONE_MONTH: '28',
+  TWO_MONTHS: '56',
 };
 
 module.exports = {

@@ -79,6 +79,15 @@ const updateMerch = {
       endDate: Joi.date(),
       merchLogo: Joi.string(),
       paymentLink: Joi.string(),
+      preOrder: Joi.object()
+        .keys({
+          enabled: Joi.boolean().required(),
+          maxNumOfPreOrders: Joi.number().optional(),
+          productionDuration: Joi.string()
+            .optional()
+            .valid(...Object.values(MERCH_PRODUCTION_DURATION)),
+        })
+        .required(),
     })
     .min(1),
 };
