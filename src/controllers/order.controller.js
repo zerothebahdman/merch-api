@@ -1,14 +1,15 @@
+/* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { orderService, paymentService, merchService, userService, chargeService } = require('../services');
+const { orderService, paymentService, merchService, userService, emailService } = require('../services');
 const pick = require('../utils/pick');
-const { ORDER_STATUSES, TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES } = require('../config/constants');
+const { ORDER_STATUSES } = require('../config/constants');
 const { generateRandomChar } = require('../utils/helpers');
+const creatorPageService = require('../services/creatorPage.service');
 
 const createOrder = catchAsync(async (req, res) => {
   req.body.createdBy = req.user.id;
-  // const pageInfo = await creatorPageService.queryCreatorPageById(req.body.creatorPage);
   const proceed = await paymentService.controlTransaction(req.body);
   if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate order, order is already created.');
   const check = req.body.merches.map(async (merch) => {
@@ -20,49 +21,50 @@ const createOrder = catchAsync(async (req, res) => {
       );
   });
   await Promise.all(check);
-  req.body.status = ORDER_STATUSES.PICKUP;
+  req.body.status = ORDER_STATUSES.PENDING;
   req.body.orderCode = `#${generateRandomChar(6, 'num')}`;
   req.body.user = req.user.id;
-  let amount = req.body.totalAmount.price;
   const page = req.body.creatorPage;
   const creator = await userService.getUserByCreatorPage(page);
-  // req.body.paymentUrl = await paymentService.getPaymentLink(
-  //   {
-  //     customer: {
-  //       email: req.user.email,
-  //     },
-  //     amount: req.body.totalAmount.price,
-  //     currency: req.body.totalAmount.currency,
-  //     tx_ref: req.body.orderCode,
-  //   },
-  //   pageInfo.slug
-  // );
+  const pageInfo = await creatorPageService.queryCreatorPageById(page);
+  req.body.paymentUrl = await paymentService.getPaymentLink(
+    {
+      customer: {
+        email: req.user.email,
+      },
+      meta: { orderCode: req.body.orderCode, purchaser: req.user.id, creatorPage: page },
+      amount: req.body.totalAmount.price,
+      currency: req.body.totalAmount.currency,
+      tx_ref: req.body.orderCode,
+      customizations: {
+        title: pageInfo.name.toUpperCase(),
+        logo: creator.avatar ? creator.avatar : 'https://www.merchro.com/logo-black.svg',
+      },
+    },
+    pageInfo.slug
+  );
   const order = await orderService.createOrder(req.body);
   const orderJson = order.toJSON();
   orderJson.merches.forEach(async (merch) => {
     const merchData = await merchService.queryMerchById(merch.merchId);
     merchService.updateMerchById(merch.merchId, { quantity: merchData.quantity - merch.quantity });
   });
-  const charge = await chargeService.saveCharge(amount, order.id, creator.id);
-  amount -= charge;
-  await paymentService.createTransactionRecord({
-    user: creator.id,
-    source: TRANSACTION_SOURCES.STORE,
-    type: TRANSACTION_TYPES.CREDIT,
-    amount: Number(amount),
-    purpose: 'Store purchase',
-    createdBy: req.user.id,
-    reference: orderJson.orderCode,
-    meta: {
-      user: req.user.id,
-      payerName: `${req.user.firstName} ${req.user.lastName}`,
-      Email: req.user.email,
-      currency: CURRENCIES.NAIRA,
-    },
+  const orderedMerches = [];
+  const orderMerch = order.merches.map(async (merch) => {
+    const data = await merchService.queryMerchById(merch.merchId);
+    orderedMerches.push(data);
   });
-
-  paymentService.addToBalance(amount, creator.id);
-
+  await Promise.all(orderMerch);
+  order.merches.forEach((merch) => {
+    orderedMerches.forEach((merchData) => {
+      if (merch.merchId.toString() === merchData.id.toString()) {
+        merch.merchId = merchData;
+      }
+    });
+  });
+  const link = `https://${pageInfo.slug}.merchro.store`;
+  order.paymentStatus = 'Pending';
+  await emailService.sendUserOrderFulfillmentEmail(req.user, order, link);
   res.status(httpStatus.CREATED).send(orderJson);
 });
 

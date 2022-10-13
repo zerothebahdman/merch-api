@@ -1,7 +1,16 @@
+/* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { paymentService, emailService, userService } = require('../services');
-const { TRANSACTION_TYPES, TRANSACTION_SOURCES } = require('../config/constants');
+const {
+  paymentService,
+  emailService,
+  userService,
+  orderService,
+  chargeService,
+  creatorPageService,
+  merchService,
+} = require('../services');
+const { TRANSACTION_TYPES, TRANSACTION_SOURCES, ORDER_STATUSES, CURRENCIES } = require('../config/constants');
 const { TransactionDump } = require('../models');
 const ApiError = require('../utils/ApiError');
 const Bank = require('../models/bank.model');
@@ -186,6 +195,64 @@ const buyAirtime = catchAsync(async (req, res) => {
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
 
+const validatePaymentCallback = catchAsync(async (req, res) => {
+  if (req.query.status === 'successful') {
+    const proceed = await paymentService.controlTransaction(req.query);
+    if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
+    const validatePayment = await paymentService.validatePayment(req.query.transaction_id);
+    if (validatePayment.data.status === 'successful') {
+      const order = await orderService.getOrderByOrderCode(validatePayment.data.meta.orderCode, 'Merch');
+      const purchaser = await userService.getUserById(validatePayment.data.meta.purchaser);
+      if (order) {
+        await orderService.updateOrderById(order.id, { status: ORDER_STATUSES.PICKUP });
+        const orderJson = order.toJSON();
+        let { amount } = validatePayment.data;
+        const creator = await userService.getUserByCreatorPage(validatePayment.data.meta.creatorPage);
+        const creatorPage = await creatorPageService.queryCreatorPageById(validatePayment.data.meta.creatorPage);
+        const charge = await chargeService.saveCharge(amount, order.id, creator.id);
+        amount -= charge;
+        await paymentService.createTransactionRecord({
+          user: creator.id,
+          source: TRANSACTION_SOURCES.STORE,
+          type: TRANSACTION_TYPES.CREDIT,
+          amount: Number(amount),
+          purpose: 'Store purchase',
+          createdBy: purchaser.id,
+          reference: orderJson.orderCode,
+          meta: {
+            user: purchaser.id,
+            payerName: `${purchaser.firstName} ${purchaser.lastName}`,
+            email: purchaser.email,
+            currency: CURRENCIES.NAIRA,
+          },
+        });
+
+        paymentService.addToBalance(amount, creator.id);
+        const orderedMerches = [];
+        const orderMerch = order.merches.map(async (merch) => {
+          const data = await merchService.queryMerchById(merch.merchId);
+          orderedMerches.push(data);
+        });
+        await Promise.all(orderMerch);
+        order.merches.forEach((merch) => {
+          orderedMerches.forEach((merchData) => {
+            if (merch.merchId.toString() === merchData.id.toString()) {
+              merch.merchId = merchData;
+            }
+          });
+        });
+        const link = `https://${creatorPage.slug}.merchro.store`;
+        order.paymentStatus = 'Paid';
+        await emailService.sendUserOrderFulfillmentEmail(purchaser, order, link);
+        res.send(order);
+      }
+    } else {
+      // Inform the customer their payment was unsuccessful
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was unsuccessful');
+    }
+  }
+});
+
 module.exports = {
   getAccountInfo,
   getBanks,
@@ -195,4 +262,5 @@ module.exports = {
   getTransactions,
   billPayment,
   buyAirtime,
+  validatePaymentCallback,
 };

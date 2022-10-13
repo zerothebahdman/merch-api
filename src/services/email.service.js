@@ -120,6 +120,12 @@ const waitlistEmail = async (to) => {
   await sendEmail(to, subject, null, html);
 };
 
+const sendUserOrderFulfillmentEmail = (user, order, link) => {
+  const subject = 'Your order has been fulfilled!';
+  const html = renderFile('order-fulfillment', { user, order, link });
+  return sendEmail(user.email, subject, null, html);
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -130,4 +136,5 @@ module.exports = {
   creditEmail,
   debitEmail,
   waitlistEmail,
+  sendUserOrderFulfillmentEmail,
 };

@@ -51,6 +51,7 @@ const orderSchema = mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    paymentUrl: String,
     orderCode: {
       type: String,
     },

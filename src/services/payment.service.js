@@ -2,7 +2,7 @@
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');
 const moment = require('moment');
-const { paymentInfo } = require('../config/config');
+const { paymentData } = require('../config/config');
 const { Account, TransactionLog, ErrorTracker, RegulateTransaction } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
@@ -18,21 +18,17 @@ const { Paga } = require('../utils/paga');
  * @returns {Promise}
  */
 const getPaymentLink = async (paymentBody, pageSlug) => {
-  const redirectUrl = paymentInfo.redirect_url.replace('{slug}', pageSlug);
+  const redirectUrl = paymentData.flutter_redirect_url.replace('{slug}', pageSlug);
   try {
-    const response = await fetch(`${paymentInfo.url}/payments`, {
+    const response = await fetch(`${paymentData.flutter_url}/payments`, {
       headers: {
-        Authorization: `Bearer ${paymentInfo.secret}`,
+        Authorization: `Bearer ${paymentData.flutter_secret}`,
         'Content-Type': 'application/json',
       },
       method: 'POST',
       body: JSON.stringify({
         ...paymentBody,
         redirect_url: redirectUrl,
-        customizations: {
-          title: 'Merchro Pay',
-          logo: 'https://www.merchro.com/logo-black.svg',
-        },
       }),
     });
     const data = await response.json();
@@ -40,6 +36,18 @@ const getPaymentLink = async (paymentBody, pageSlug) => {
   } catch (err) {
     // eslint-disable-next-line no-console
     console.log(err);
+  }
+};
+
+const validatePayment = async (transactionId) => {
+  try {
+    const response = await fetch(`${paymentData.flutter_url}/transactions/${transactionId}/verify`, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${paymentData.flutter_secret}` },
+      method: 'GET',
+    });
+    return await response.json();
+  } catch (error) {
+    throw new ApiError(error.status, error.message);
   }
 };
 
@@ -170,4 +178,5 @@ module.exports = {
   buyAirtime,
   controlTransaction,
   logError,
+  validatePayment,
 };

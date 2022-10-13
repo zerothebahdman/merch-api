@@ -27,6 +27,7 @@ router
   .post(auth('creator'), validate(paymentValidation.validateAccount), paymentController.validateAccount);
 router.route('/funding/:reference').get(paymentController.creditAccount);
 router.route('/funding/:reference').post(paymentController.creditAccount);
+router.route('/validate-payment-callback').get(paymentController.validatePaymentCallback);
 
 module.exports = router;
 
@@ -58,6 +59,52 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/Notifications'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /validate-payment-callback:
+ *    get:
+ *      summary: Validate payment for an order
+ *      description: After a user has made payments, he will be redirected to a url that contain's information's about the payment status, pass in those information to this endpoint to validate the payment.
+ *      tags: [Payments]
+ *      parameters:
+ *        - in: query
+ *          name: status
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: the status of the payment
+ *        - in: query
+ *          name: transaction_id
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: the transaction id of the payment
+ *        - in: query
+ *          name: tx_ref
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: the tx_ref of the payment
+ *        - in: query
+ *          name: idempotent_key
+ *          required: true
+ *          schema:
+ *            type: string
+ *          description: idempotent key for the payment
+ *      responses:
+ *        "200":
+ *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Item'
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":
