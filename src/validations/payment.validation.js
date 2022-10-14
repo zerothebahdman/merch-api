@@ -38,9 +38,19 @@ const getTransactions = {
   }),
 };
 
+const validatePaymentCallback = {
+  body: Joi.object().keys({
+    status: Joi.string().required(),
+    transactionId: Joi.string().required(),
+    txRef: Joi.string().required(),
+    idempotentKey: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   validateAccount,
   withdrawal,
   buyAirtime,
   getTransactions,
+  validatePaymentCallback,
 };

@@ -196,10 +196,10 @@ const buyAirtime = catchAsync(async (req, res) => {
 });
 
 const validatePaymentCallback = catchAsync(async (req, res) => {
-  if (req.query.status === 'successful') {
-    const proceed = await paymentService.controlTransaction(req.query);
+  if (req.body.status === 'successful') {
+    const proceed = await paymentService.controlTransaction(req.body);
     if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
-    const validatePayment = await paymentService.validatePayment(req.query.transaction_id);
+    const validatePayment = await paymentService.validatePayment(req.body.transactionId);
     if (validatePayment.data.status === 'successful') {
       const order = await orderService.getOrderByOrderCode(validatePayment.data.meta.orderCode, 'Merch');
       const purchaser = await userService.getUserById(validatePayment.data.meta.purchaser);

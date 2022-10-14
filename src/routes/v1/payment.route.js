@@ -69,35 +69,24 @@ module.exports = router;
  * @swagger
  * path:
  *  /validate-payment-callback:
- *    get:
+ *    post:
  *      summary: Validate payment for an order
  *      description: After a user has made payments, he will be redirected to a url that contain's information's about the payment status, pass in those information to this endpoint to validate the payment.
  *      tags: [Payments]
- *      parameters:
- *        - in: query
- *          name: status
- *          required: true
- *          schema:
- *            type: string
- *          description: the status of the payment
- *        - in: query
- *          name: transaction_id
- *          required: true
- *          schema:
- *            type: string
- *          description: the transaction id of the payment
- *        - in: query
- *          name: tx_ref
- *          required: true
- *          schema:
- *            type: string
- *          description: the tx_ref of the payment
- *        - in: query
- *          name: idempotent_key
- *          required: true
- *          schema:
- *            type: string
- *          description: idempotent key for the payment
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - transactionId
+ *                - status
+ *                - txRef
+ *              example:
+ *                transactionId: 8157582101
+ *                txRef: 157582101
+ *                status: 'successful'
  *      responses:
  *        "200":
  *          description: Success
