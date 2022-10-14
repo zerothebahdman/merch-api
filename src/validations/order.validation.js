@@ -18,6 +18,7 @@ const createOrder = {
     }),
     paymentReference: Joi.string(),
     creatorPage: Joi.string().custom(objectId).required(),
+    redirectUrl: Joi.string().required(),
   }),
 };
 

@@ -21,7 +21,7 @@ const createOrder = catchAsync(async (req, res) => {
       );
   });
   await Promise.all(check);
-  req.body.status = ORDER_STATUSES.PENDING;
+  req.body.status = ORDER_STATUSES.UNPAID;
   req.body.orderCode = `#${generateRandomChar(6, 'num')}`;
   req.body.user = req.user.id;
   const page = req.body.creatorPage;
@@ -41,7 +41,7 @@ const createOrder = catchAsync(async (req, res) => {
         logo: creator.avatar ? creator.avatar : 'https://www.merchro.com/logo-black.svg',
       },
     },
-    pageInfo.slug
+    req.body.redirectUrl
   );
   const order = await orderService.createOrder(req.body);
   const orderJson = order.toJSON();
@@ -63,7 +63,7 @@ const createOrder = catchAsync(async (req, res) => {
     });
   });
   const link = `https://${pageInfo.slug}.merchro.store`;
-  order.paymentStatus = 'Pending';
+  order.paymentStatus = ORDER_STATUSES.UNPAID;
   await emailService.sendUserOrderFulfillmentEmail(req.user, order, link);
   res.status(httpStatus.CREATED).send(orderJson);
 });

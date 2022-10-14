@@ -17,8 +17,7 @@ const { Paga } = require('../utils/paga');
  * @param {string} folder
  * @returns {Promise}
  */
-const getPaymentLink = async (paymentBody, pageSlug) => {
-  const redirectUrl = paymentData.flutter_redirect_url.replace('{slug}', pageSlug);
+const getPaymentLink = async (paymentBody, redirectUrl) => {
   try {
     const response = await fetch(`${paymentData.flutter_url}/payments`, {
       headers: {
