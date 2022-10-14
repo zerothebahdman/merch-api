@@ -10,6 +10,9 @@ router.route('/').post(auth('user'), validate(orderValidation.createOrder), orde
 router.route('/get-order-by-code').get(validate(orderValidation.getOrderByCode), orderController.getOrderByCode);
 router.route('/:orderId/successful').post(auth('user'), orderController.paymentSuccessful);
 router.route('/:orderId/failed').post(auth('user'), orderController.paymentFailed);
+router
+  .route('/update-order-status/:orderId')
+  .patch(auth('user'), validate(orderValidation.updateOrder), orderController.updateOrderStatus);
 
 module.exports = router;
 
@@ -101,6 +104,12 @@ module.exports = router;
  *        "404":
  *          $ref: '#/components/responses/NotFound'
  *
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /update-order-status/{id}:
  *    patch:
  *      summary: Update a Order
  *      description: Logged in admins can only update their own Order information.
@@ -121,17 +130,10 @@ module.exports = router;
  *            schema:
  *              type: object
  *              properties:
- *                name:
- *                  type: string
- *                contactEmail:
- *                  type: string
- *                  format: email
- *                timezone:
+ *                status:
  *                  type: string
  *              example:
- *                name: fake name
- *                contactEmail: contact@example.com
- *                timezone: (GMT+01:00) Lagos
+ *                status: to pickup
  *      responses:
  *        "200":
  *          description: OK
