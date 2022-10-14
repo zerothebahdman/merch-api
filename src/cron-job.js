@@ -9,7 +9,7 @@ const config = require('./config/config');
 const cronJobs = () => {
   const sendOrderNotFulfilledReminder = cronJob.schedule(config.cronSchedule.sendOrderNotFulfilledReminder, async () => {
     const orders = await Order.find({
-      status: ORDER_STATUSES.UNPAID,
+      status: ORDER_STATUSES.PENDING,
       createdAt: { $lte: moment().startOf('day').toDate() },
     });
     orders.forEach(async (order) => {

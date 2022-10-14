@@ -21,7 +21,7 @@ const createOrder = catchAsync(async (req, res) => {
       );
   });
   await Promise.all(check);
-  req.body.status = ORDER_STATUSES.UNPAID;
+  req.body.status = ORDER_STATUSES.PENDING;
   req.body.orderCode = `#${generateRandomChar(6, 'num')}`;
   req.body.user = req.user.id;
   const page = req.body.creatorPage;

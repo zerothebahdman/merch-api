@@ -27,7 +27,9 @@ router
   .post(auth('creator'), validate(paymentValidation.validateAccount), paymentController.validateAccount);
 router.route('/funding/:reference').get(paymentController.creditAccount);
 router.route('/funding/:reference').post(paymentController.creditAccount);
-router.route('/validate-payment-callback').post(paymentController.validatePaymentCallback);
+router
+  .route('/validate-payment-callback')
+  .post(validate(paymentValidation.validatePaymentCallback), paymentController.validatePaymentCallback);
 
 module.exports = router;
 

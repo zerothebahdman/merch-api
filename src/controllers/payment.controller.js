@@ -201,10 +201,11 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
     if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
     const validatePayment = await paymentService.validatePayment(req.body.transactionId);
     if (validatePayment.data.status === 'successful') {
-      const order = await orderService.getOrderByOrderCode(validatePayment.data.meta.orderCode, 'Merch');
+      const order = await orderService.getOrderByOrderCode(validatePayment.data.meta.orderCode);
       const purchaser = await userService.getUserById(validatePayment.data.meta.purchaser);
+      const vendor = await userService.getUserByCreatorPage(order.creatorPage);
       if (order) {
-        await orderService.updateOrderById(order.id, { status: ORDER_STATUSES.PICKUP });
+        await orderService.updateOrderById(order._id, { status: ORDER_STATUSES.PICKUP }, vendor);
         const orderJson = order.toJSON();
         let { amount } = validatePayment.data;
         const creator = await userService.getUserByCreatorPage(validatePayment.data.meta.creatorPage);
