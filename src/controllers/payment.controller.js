@@ -242,7 +242,7 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
           });
         });
         const link = `https://${creatorPage.slug}.merchro.store`;
-        order.paymentStatus = 'Paid';
+        order.paymentStatus = ORDER_STATUSES.PICKUP;
         await emailService.sendUserOrderFulfillmentEmail(purchaser, order, link);
         res.send(order);
       }

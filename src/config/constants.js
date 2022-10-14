@@ -39,6 +39,7 @@ const CurrencySymbolMapping = new Map([
 ]);
 
 const ORDER_STATUSES = {
+  UNPAID: 'unpaid',
   PENDING: 'pending',
   ENROUTE: 'enroute',
   PICKUP: 'to pickup',
