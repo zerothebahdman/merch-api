@@ -203,13 +203,12 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
     if (validatePayment.data.status === 'successful') {
       const order = await orderService.getOrderByOrderCode(validatePayment.data.meta.orderCode);
       const purchaser = await userService.getUserById(validatePayment.data.meta.purchaser);
-      const vendor = await userService.getUserByCreatorPage(order.creatorPage);
+      const creator = await userService.getUserByCreatorPage(order.creatorPage);
       if (order) {
-        await orderService.updateOrderById(order._id, { status: ORDER_STATUSES.PICKUP }, vendor);
+        await orderService.updateOrderById(order._id, { status: ORDER_STATUSES.PICKUP }, creator);
         const orderJson = order.toJSON();
         let { amount } = validatePayment.data;
-        const creator = await userService.getUserByCreatorPage(validatePayment.data.meta.creatorPage);
-        const creatorPage = await creatorPageService.queryCreatorPageById(validatePayment.data.meta.creatorPage);
+        const creatorPage = await creatorPageService.queryCreatorPageById(order.creatorPage);
         const charge = await chargeService.saveCharge(amount, order.id, creator.id);
         amount -= charge;
         await paymentService.createTransactionRecord({

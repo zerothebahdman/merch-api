@@ -2,7 +2,7 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { orderService, paymentService, merchService, userService, emailService } = require('../services');
+const { orderService, paymentService, merchService, emailService } = require('../services');
 const pick = require('../utils/pick');
 const { ORDER_STATUSES } = require('../config/constants');
 const { generateRandomChar } = require('../utils/helpers');
@@ -25,7 +25,6 @@ const createOrder = catchAsync(async (req, res) => {
   req.body.orderCode = `#${generateRandomChar(6, 'num')}`;
   req.body.user = req.user.id;
   const page = req.body.creatorPage;
-  const creator = await userService.getUserByCreatorPage(page);
   const pageInfo = await creatorPageService.queryCreatorPageById(page);
   req.body.paymentUrl = await paymentService.getPaymentLink(
     {
@@ -38,7 +37,7 @@ const createOrder = catchAsync(async (req, res) => {
       tx_ref: req.body.orderCode,
       customizations: {
         title: pageInfo.name.toUpperCase(),
-        logo: creator.avatar ? creator.avatar : 'https://www.merchro.com/logo-black.svg',
+        logo: pageInfo.avatar ? pageInfo.avatar : 'https://www.merchro.com/logo-black.svg',
       },
     },
     req.body.redirectUrl
