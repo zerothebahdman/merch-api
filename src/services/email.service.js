@@ -126,6 +126,11 @@ const sendUserOrderFulfillmentEmail = (user, order, link) => {
   return sendEmail(user.email, subject, null, html);
 };
 
+const sendPaymentTrackingEmail = (message) => {
+  const subject = 'Payment tracking';
+  return sendEmail('amadebusuyi@gmail.com', subject, null, `<p>${message}</p>`);
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -137,4 +142,5 @@ module.exports = {
   debitEmail,
   waitlistEmail,
   sendUserOrderFulfillmentEmail,
+  sendPaymentTrackingEmail,
 };

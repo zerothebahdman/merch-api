@@ -61,9 +61,8 @@ const createOrder = catchAsync(async (req, res) => {
       }
     });
   });
-  const link = `https://${pageInfo.slug}.merchro.store`;
   order.paymentStatus = ORDER_STATUSES.UNPAID;
-  await emailService.sendUserOrderFulfillmentEmail(req.user, order, link);
+  await emailService.sendUserOrderFulfillmentEmail(req.user, order, req.body.paymentUrl);
   res.status(httpStatus.CREATED).send(orderJson);
 });
 

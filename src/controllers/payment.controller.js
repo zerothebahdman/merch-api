@@ -63,6 +63,13 @@ const creditAccount = catchAsync(async (req, res) => {
       true
     );
     if (getTransactions.results.length > 0) {
+      emailService.sendPaymentTrackingEmail(`
+        Transaction record exists for this particular transaction with code ${data.transactionReference}
+        <br>
+        User: ${accountInfo.user || null}
+        <br>
+        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
+      `);
       return res.send({ status: 'SUCCESS', message: 'Already logged' });
     }
 
