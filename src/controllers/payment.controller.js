@@ -53,6 +53,14 @@ const creditAccount = catchAsync(async (req, res) => {
     data.amount = data.amount.replaceAll(',', '');
     const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
 
+    emailService.sendPaymentTrackingEmail(`
+        Balance updated for transaction with reference ${data.transactionReference}
+        <br>
+        User: ${accountInfo.user || null}
+        <br>
+        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
+      `);
+
     // Confirm that there is no prior log of this particular transaction
     const getTransactions = await paymentService.getTransactions(
       {
@@ -193,6 +201,7 @@ const buyAirtime = catchAsync(async (req, res) => {
       createdBy: accountInfo.user,
       transactionDump: transactionDump.id,
       meta: {
+        payerName: `Airtime/${req.body.phoneNumber}`,
         phoneNumber: req.body.phoneNumber,
         message: airtimeResponse.response.message,
         reference: airtimeResponse.response.reference,
