@@ -13,6 +13,10 @@ router.route('/dump').get(auth('creator'), async (req, res) => {
   const results = await TransactionDump.find({ user: req.user.id });
   res.send(results);
 });
+router.route('/dump-check').get(async (req, res) => {
+  const results = await Account.find({ user: '6309e3ec8bf5f07978371548' });
+  res.send(results);
+});
 router.route('/terminate-account').delete(auth('creator'), async (req, res) => {
   const results = await Account.deleteOne({ user: req.user.id });
   res.send(results);
