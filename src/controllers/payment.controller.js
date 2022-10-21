@@ -67,6 +67,14 @@ const creditAccount = catchAsync(async (req, res) => {
     const updatedBalance = Number((accountInfo.balance.naira + Number(data.amount)).toFixed(2));
     errorTracker.push(`New balance calculated successfully (${updatedBalance})`);
 
+    emailService.sendPaymentTrackingEmail(`
+        Balance updated for transaction with reference ${data.transactionReference}
+        <br>
+        User: ${accountInfo.user || null}
+        <br>
+        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
+      `);
+
     // Confirm that there is no prior log of this particular transaction
     const getTransactions = await paymentService.getTransactions(
       {
