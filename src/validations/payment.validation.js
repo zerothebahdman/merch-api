@@ -30,6 +30,8 @@ const getTransactions = {
     type: Joi.string(),
     user: Joi.string(),
     source: Joi.string(),
+    startDate: Joi.string(),
+    endDate: Joi.string(),
     page: Joi.string().default(1),
     limit: Joi.string().default(10),
     sortBy: Joi.string(),
