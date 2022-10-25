@@ -35,6 +35,8 @@ router
   .route('/validate-payment-callback')
   .post(validate(paymentValidation.validatePaymentCallback), paymentController.validatePaymentCallback);
 
+router.route('/transaction-overview').get(auth('creator'), paymentController.getTransactionOverview);
+
 module.exports = router;
 
 /**
@@ -135,6 +137,33 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/Airtime'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /transaction-overview:
+ *    get:
+ *      summary: Get the overview of transactions
+ *      description: Get the overview of the creators transaction.
+ *      tags: [Payments]
+ *      parameters:
+ *        - in: query
+ *          name: period
+ *          schema:
+ *            type: string
+ *          description: Period will be a set of either ''today ,'week', 'month' or 'year' to get the overview of the transactions for that period.
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/TransactionOverview'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */

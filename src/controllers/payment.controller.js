@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const moment = require('moment');
@@ -277,6 +278,81 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
   }
 });
 
+const getTransactionOverview = catchAsync(async (req, res) => {
+  const filterForCurrentPeriod = {
+    createdAt:
+      req.query.period === 'week'
+        ? {
+            $gte: moment().subtract(7, 'days').startOf('day').toDate(),
+            $lte: moment().endOf('day').toDate(),
+          }
+        : req.query.period === 'month'
+        ? { $gte: moment().subtract(30, 'days').startOf('day').toDate(), $lte: moment().endOf('day').toDate() }
+        : req.query.period === 'year'
+        ? { $gte: moment().subtract(365, 'days').startOf('day').toDate(), $lte: moment().endOf('day').toDate() }
+        : req.query.period === 'today'
+        ? { $gte: moment().startOf('D').toDate(), $lte: moment().endOf('D').toDate() }
+        : null,
+  };
+  const transactions = await paymentService.getTransactions(filterForCurrentPeriod, {}, req.user, false);
+  if (!transactions) throw new ApiError(httpStatus.NOT_FOUND, 'No transactions found');
+  const calculateTransaction = (previousPeriodTransaction, currentPeriodTransaction) => {
+    const transactionOverview = {};
+    const previousPeriodCreditTransactions = previousPeriodTransaction.filter(
+      (transaction) => transaction.type === TRANSACTION_TYPES.CREDIT
+    );
+    const previousPeriodDebitTransactions = previousPeriodTransaction.filter(
+      (transaction) => transaction.type === TRANSACTION_TYPES.DEBIT
+    );
+
+    const currentPeriodCreditTransactions = currentPeriodTransaction.filter(
+      (transaction) => transaction.type === TRANSACTION_TYPES.CREDIT
+    );
+    const currentPeriodDebitTransactions = currentPeriodTransaction.filter(
+      (transaction) => transaction.type === TRANSACTION_TYPES.DEBIT
+    );
+
+    const totalDebitAmountPreviousPeriod =
+      previousPeriodDebitTransactions.length > 0
+        ? previousPeriodDebitTransactions.reduce((acc, cur) => acc + cur.amount, 0)
+        : 0;
+    const totalCreditAmountPreviousPeriod =
+      previousPeriodCreditTransactions.length > 0
+        ? previousPeriodCreditTransactions.reduce((acc, cur) => acc + cur.amount, 0)
+        : 0;
+
+    const currentPeriodCreditAmount = currentPeriodCreditTransactions.reduce((acc, cur) => acc + cur.amount, 0);
+    const currentPeriodDebitAmount = currentPeriodDebitTransactions.reduce((acc, cur) => acc + cur.amount, 0);
+    const percentageChangeForMoneyIn = Math.round((currentPeriodCreditAmount / totalCreditAmountPreviousPeriod) * 100);
+    const percentageChangeForMoneyOut = Math.round((currentPeriodDebitAmount / totalDebitAmountPreviousPeriod) * 100);
+    const profit = currentPeriodCreditAmount - currentPeriodDebitAmount;
+    transactionOverview.moneyIn = currentPeriodCreditAmount;
+    transactionOverview.moneyOut = currentPeriodDebitAmount;
+    transactionOverview.percentageChangeForMoneyIn = percentageChangeForMoneyIn;
+    transactionOverview.percentageChangeForMoneyOut = percentageChangeForMoneyOut;
+    transactionOverview.profit = profit;
+    return transactionOverview;
+  };
+  let duration;
+  if (req.query.period === 'today') duration = 1;
+  if (req.query.period === 'week') duration = 7;
+  if (req.query.period === 'month') duration = 30;
+  if (req.query.period === 'year') duration = 365;
+
+  const filterForLastWeek = {
+    createdAt: {
+      $gte: moment()
+        .subtract(duration * 2, 'days')
+        .startOf('day')
+        .toDate(),
+      $lte: moment().subtract(duration, 'days').endOf('day').toDate(),
+    },
+  };
+  const transactionsThatHappenedLastWeek = await paymentService.getTransactions(filterForLastWeek, {}, req.user, false);
+  const transactionOverview = calculateTransaction(transactionsThatHappenedLastWeek, transactions);
+  res.send(transactionOverview);
+});
+
 module.exports = {
   getAccountInfo,
   getBanks,
@@ -287,4 +363,5 @@ module.exports = {
   billPayment,
   buyAirtime,
   validatePaymentCallback,
+  getTransactionOverview,
 };

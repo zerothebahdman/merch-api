@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');

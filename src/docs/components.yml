@@ -206,6 +206,17 @@ components:
           'id': '614d84e4dba4c158dc2aa687',
         }
 
+    TransactionOverview:
+      type: object
+      example:
+        {
+          'moneyIn': 500,
+          'moneyOut': 900,
+          'percentageChangeForMoneyIn': 25,
+          'percentageChangeForMoneyOut': 44,
+          'profit': 400,
+        }
+
     Token:
       type: object
       properties:
