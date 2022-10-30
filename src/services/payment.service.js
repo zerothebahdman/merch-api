@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-param-reassign */
+const { createHash } = require('crypto');
 const httpStatus = require('http-status');
 const fetch = require('node-fetch');
 const moment = require('moment');
@@ -8,6 +9,8 @@ const { Account, TransactionLog, ErrorTracker, RegulateTransaction } = require('
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
 const { Paga } = require('../utils/paga');
+const { generateRandomChar } = require('../utils/helpers');
+const config = require('../config/config');
 
 // eslint-disable-next-line
 // const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -151,6 +154,26 @@ const buyAirtime = async (body) => {
   return airtime;
 };
 
+const purchaseUtilities = async (body) => {
+  const validateCustomer = await Paga.validateCustomerReference(body);
+  if (validateCustomer.error) throw new ApiError(httpStatus.BAD_REQUEST, validateCustomer.response.message);
+  const utility = await Paga.purchaseUtility(body);
+  if (utility.error) throw new ApiError(httpStatus.BAD_REQUEST, utility.response.message);
+  return utility;
+};
+
+const getUtilitiesProviders = async () => {
+  const utilities = await Paga.getUtilitiesProviders();
+  if (utilities.error) throw new ApiError(httpStatus.BAD_REQUEST, utilities.response.errorMessage);
+  return utilities;
+};
+
+const getUtilitiesProvidersServices = async (merchantId, referenceNumber) => {
+  const utilities = await Paga.getUtilitiesProvidersServices(merchantId, referenceNumber);
+  if (utilities.error) throw new ApiError(httpStatus.BAD_REQUEST, utilities.response.errorMessage);
+  return utilities;
+};
+
 const controlTransaction = async (body) => {
   // check prior record of transaction
   const exist = await RegulateTransaction.findOne({ idempotentKey: body.idempotentKey });
@@ -162,6 +185,45 @@ const controlTransaction = async (body) => {
 const logError = async (error) => {
   await ErrorTracker.create({ error });
   return true;
+};
+
+const getMobileOperators = async () => {
+  const operators = await Paga.getMobileOperators();
+  if (operators.error) throw new ApiError(httpStatus.BAD_REQUEST, operators.response.message);
+  return operators;
+};
+
+const getDataBundles = async (operatorId) => {
+  const bundles = await Paga.getDataBundles(operatorId);
+  if (bundles.error) throw new ApiError(httpStatus.BAD_REQUEST, bundles.response.message);
+  return bundles;
+};
+
+const buyData = async (data) => {
+  data.referenceNumber = generateRandomChar(16, 'num');
+  data.currency = 'NGN';
+  try {
+    const hash = await createHash('sha512')
+      .update(`${data.referenceNumber}${data.amount}${data.destinationPhoneNumber}${config.paymentData.paga_key}`)
+      .digest('hex');
+    const pagaResponse = await fetch(`${paymentData.paga_url}/airtimePurchase`, {
+      headers: {
+        credentials: paymentData.paga_secret,
+        principal: paymentData.paga_public_key,
+        hash,
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        ...data,
+      }),
+    });
+    const response = await pagaResponse.json();
+    if (response.error) throw new ApiError(httpStatus.BAD_REQUEST, response.response.message);
+    return response;
+  } catch (error) {
+    throw new ApiError(httpStatus.BAD_REQUEST, error.message);
+  }
 };
 
 module.exports = {
@@ -178,5 +240,11 @@ module.exports = {
   buyAirtime,
   controlTransaction,
   logError,
+  purchaseUtilities,
+  getUtilitiesProviders,
+  getUtilitiesProvidersServices,
   validatePayment,
+  getMobileOperators,
+  getDataBundles,
+  buyData,
 };

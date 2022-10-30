@@ -93,6 +93,67 @@ const Paga = {
     }
     return response.response.banks;
   },
+  purchaseUtility: async (data) => {
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.merchantPayment(
+      data.merchantNumber,
+      data.amount,
+      data.merchant,
+      generateRandomChar(16, 'num'),
+      'NGN',
+      data.merchantServiceProductCode
+    );
+    return response;
+  },
+
+  getUtilitiesProviders: async () => {
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.getMerchants(generateRandomChar(8, 'num'));
+    return response;
+  },
+  getUtilitiesProvidersServices: async (merchantId, referenceNumber) => {
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.getMerchantServices(referenceNumber, merchantId);
+    return response;
+  },
+
+  getMobileOperators: async () => {
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.getMobileOperators(generateRandomChar(8, 'num'));
+    return response;
+  },
+
+  getDataBundles: async (operatorId) => {
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.getDataBundleByOperator(generateRandomChar(8, 'num'), operatorId);
+    return response;
+  },
+
+  buyDataBundle: async (data) => {
+    const paga = await Paga.initPagaBusiness();
+    data.currency = 'NGN';
+    // data.merchantService = data.mobileOperatorServiceId;
+    const response = await paga.airtimePurchase(
+      generateRandomChar(16, 'num'),
+      data.amount,
+      'NGN',
+      data.destinationPhoneNumber,
+      data.mobileOperatorServiceId,
+      data.isDataBundle
+    );
+    return response;
+  },
+
+  validateCustomerReference: async (data) => {
+    const paga = await Paga.initPagaBusiness();
+    const response = await paga.getMerchantAccountDetails(
+      generateRandomChar(8, 'num'),
+      data.merchant,
+      data.merchantNumber,
+      data.merchantServiceProductCode
+    );
+    return response;
+  },
 };
 
 module.exports = {

@@ -178,6 +178,168 @@ components:
           'id': '614d84e4dba4c158dc2aa687',
         }
 
+    Data:
+      type: object
+      example:
+        {
+          'pending': false,
+          'locked': false,
+          'user': '63456b0b4495e90021367a12',
+          'source': 'savings',
+          'type': 'debit',
+          'amount': 200,
+          'purpose': 'Data purchase',
+          'createdBy': '63456b0b4495e90021367a12',
+          'transactionDump': '635bf083432119b54448d052',
+          'meta':
+            {
+              'message': 'You successfully purchased N200.00 worth of data for phone number 08157582132.TRANSACTION Id: G2SSV.',
+              'reference': '0051102192113251',
+              'payerName': 'Data Sub/08157582132',
+            },
+          'createdAt': '2022-10-28T15:08:51.311Z',
+          'updatedAt': '2022-10-28T15:08:51.311Z',
+          'id': '635bf083432119b54448d053',
+        }
+
+    UtilityProvider:
+      type: object
+      example:
+        {
+          'cableSubscription':
+            [
+              {
+                'name': 'DStv',
+                'displayName': 'DStv',
+                'uuid': 'A3878DC1-F07D-48E7-AA59-8276C3C26647',
+                'services':
+                  [
+                    { 'name': 'Asia Add-on', 'code': 'ASIADDE36', 'price': 7100, 'shortCode': 'ASIADDW' },
+                    { 'name': 'Asia Standalone', 'code': 'ASIAE36', 'price': 7100, 'shortCode': 'ASIA' },
+                  ],
+              },
+              {
+                'name': 'GOtv',
+                'displayName': 'GOtv',
+                'uuid': 'A3878DC1-F07D-48E7-AA59-8276C3C26647',
+                'services':
+                  [
+                    { 'name': 'Asia Add-on', 'code': 'ASIADDE36', 'price': 7100, 'shortCode': 'ASIADDW' },
+                    { 'name': 'Asia Standalone', 'code': 'ASIAE36', 'price': 7100, 'shortCode': 'ASIA' },
+                  ],
+              },
+            ],
+          'electricitySubscription':
+            [
+              {
+                'name': 'Eko Electricity',
+                'displayName': 'Eko Electricity (EKEDC)',
+                'uuid': '8E7485D9-1A67-4205-A49D-691E5B78C20D',
+                'services':
+                  [
+                    { 'name': 'Order Payment', 'code': 'ORDER_PAYMENT', 'price': 0, 'shortCode': 'ORDER' },
+                    { 'name': 'Post Paid', 'code': 'POP', 'price': 0, 'shortCode': 'POP' },
+                    { 'name': 'Pre Paid', 'code': 'PRP', 'price': 0, 'shortCode': 'PRP' },
+                  ],
+              },
+              {
+                'name': 'Abuja Electricity Distribution Company',
+                'displayName': 'AEDC',
+                'uuid': '13B5041B-7143-46B1-9A88-F355AD7EA1EC',
+                'services':
+                  [
+                    { 'name': 'Search by Account Number (ac)', 'code': 'MY001', 'price': 0, 'shortCode': '' },
+                    { 'name': 'Search by customer identification (cu)', 'code': 'MY002', 'price': 0, 'shortCode': '' },
+                    { 'name': 'Search by meter number (mr)', 'code': 'MY003', 'price': 0, 'shortCode': '' },
+                  ],
+              },
+            ],
+        }
+
+    StartimesServices:
+      type: object
+      example:
+        {
+          'name': 'Startimes',
+          'displayName': 'Startimes',
+          'uuid': '8E7485D9-1A67-4205-A49D-691E5B78C20D',
+          'services':
+            [
+              {
+                'DTH_Nova': { 'name': 'DTH_Nova', 'code': 'NG_ChangeTo_DTH_Nova', 'price': null, 'shortCode': null },
+                'DTH_Smart': { 'name': 'DTH_Smart', 'code': 'NG_ChangeTo_DTH_Smart', 'price': null, 'shortCode': null },
+                'DTH_French': { 'name': 'DTH_French', 'code': 'NG_ChangeTo_DTH_French', 'price': null, 'shortCode': null },
+                'DTH_Super': { 'name': 'DTH_Super', 'code': 'NG_ChangeTo_DTH_Super', 'price': null, 'shortCode': null },
+                'DTH_French_Super':
+                  { 'name': 'DTH_French_Super', 'code': 'NG_ChangeTo_DTH_French_Super', 'price': null, 'shortCode': null },
+                'DTH_Chinese':
+                  { 'name': 'DTH_Chinese', 'code': 'NG_ChangeTo_DTH_Chinese', 'price': null, 'shortCode': null },
+              },
+            ],
+        }
+
+    MobileOperatorProvider:
+      type: object
+      example:
+        {
+          '9Mobile':
+            {
+              'name': '9Mobile',
+              'mobileOperatorCode': '8FCC90BA-D339-4EA8-811F-55F1651A9FAB',
+              'services':
+                [
+                  {
+                    'mobileOperatorId': 3,
+                    'servicePrice': 30000,
+                    'serviceName': '9Mobile 225GB(60 days)',
+                    'serviceId': 288,
+                  },
+                  {
+                    'mobileOperatorId': 3,
+                    'servicePrice': 50000,
+                    'serviceName': '9Mobile 425GB (90 days)',
+                    'serviceId': 13,
+                  },
+                  {
+                    'mobileOperatorId': 3,
+                    'servicePrice': 50000,
+                    'serviceName': '9Mobile 165GB (180 days)',
+                    'serviceId': 178,
+                  },
+                  { 'mobileOperatorId': 3, 'servicePrice': 70000, 'serviceName': '9Mobile 600GB(180days)', 'serviceId': 81 },
+                  {
+                    'mobileOperatorId': 3,
+                    'servicePrice': 84992,
+                    'serviceName': '9Mobile 100GB (100 days)',
+                    'serviceId': 1,
+                  },
+                  { 'mobileOperatorId': 3, 'servicePrice': 100000, 'serviceName': '9Mobile 1TB(365days)', 'serviceId': 179 },
+                ],
+            },
+        }
+
+    PurchaseUtilities:
+      type: object
+      example:
+        {
+          'pending': false,
+          'locked': false,
+          'user': '63456b0b4495e90021367a12',
+          'source': 'savings',
+          'type': 'debit',
+          'amount': 500,
+          'purpose': 'Utilities purchase',
+          'createdBy': '63456b0b4495e90021367a12',
+          'transactionDump': '6353c0d98fd4dd0d9c427f3f',
+          'meta':
+            {
+              'message': 'You have successfully paid N 500.00 to Abuja Electricity Distribution Company for acct 45030319920. Token: 06178427246256664169. Paga TxnID: 5P3PX',
+            },
+          'createdAt': '2022-10-22T10:07:21.375Z',
+          'updatedAt': '2022-10-22T10:07:21.375Z',
+          'id': '6353c0d98fd4dd0d9c427f40',
+        }
+
     Waitlists:
       type: object
       example:

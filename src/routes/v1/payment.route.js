@@ -22,7 +22,14 @@ router.route('/terminate-account').delete(auth('creator'), async (req, res) => {
   res.send(results);
 });
 router.route('/withdraw').post(auth('creator'), validate(paymentValidation.withdrawal), paymentController.withdrawMoney);
+router.route('/mobile-operators').get(auth('creator'), paymentController.getMobileOperators);
+router.route('/buy-data').post(auth('creator'), validate(paymentValidation.buyData), paymentController.buyData);
 router.route('/buy-airtime').post(auth('creator'), validate(paymentValidation.buyAirtime), paymentController.buyAirtime);
+router
+  .route('/utilities')
+  .post(auth('creator'), validate(paymentValidation.purchaseUtilities), paymentController.purchaseUtilities)
+  .get(auth('creator'), paymentController.getUtilitiesProviders);
+router.route('/get-startimes-utilities').get(auth('creator'), paymentController.getStartimesUtilities);
 router
   .route('/transactions')
   .get(auth('creator'), validate(paymentValidation.getTransactions), paymentController.getTransactions);
@@ -144,6 +151,96 @@ module.exports = router;
 /**
  * @swagger
  * path:
+ *  /utilities:
+ *    post:
+ *      summary: Pay for utilities
+ *      description: Creators can be able to pay for utilities from their dashboard
+ *      tags: [Payments]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - merchant
+ *                - amount
+ *                - merchantNumber
+ *                - merchantServiceProductCode
+ *              example:
+ *                merchant: 13B5041B-7143-46B1-9A88-F355AD7EA1EC
+ *                amount: 1000
+ *                merchantNumber: '45030319920'
+ *                merchantServiceProductCode: 'MY003'
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PurchaseUtilities'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *    get:
+ *      summary: Get all utility providers for the application
+ *      description: Website users can fetch all the utility providers the application provides
+ *      tags: [Payments]
+ *      parameters:
+ *        - in: query
+ *          name: referenceNumber
+ *          schema:
+ *            type: string
+ *          description: Reference number for the utility, this is the smart card number of the user.
+ *      responses:
+ *        "200":
+ *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/UtilityProvider'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /get-startimes-utilities:
+ *    get:
+ *      summary: Startimes utilities
+ *      description: Get all startimes utilities
+ *      tags: [Payments]
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - in: query
+ *          name: referenceNumber
+ *          schema:
+ *            type: string
+ *          description: Reference number for the utility, this is the smart card number of the user.
+ *        - in: query
+ *          name: uuid
+ *          schema:
+ *            type: string
+ *          description: Startimes merchant unique id.
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/StartimesServices'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
  *  /transaction-overview:
  *    get:
  *      summary: Get the overview of transactions
@@ -164,6 +261,64 @@ module.exports = router;
  *                 $ref: '#/components/schemas/TransactionOverview'
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /mobile-operators:
+ *    get:
+ *      summary: Get mobile operators
+ *      description: Get the list of mobile operators that will be used for data purchase
+ *      tags: [Payments]
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/MobileOperatorProvider'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /buy-data:
+ *    post:
+ *      summary: Purchase Data
+ *      description: Creators can be able to purchase data from their dashboard
+ *      tags: [Payments]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - amount
+ *                - destinationPhoneNumber
+ *                - isDataBundle
+ *                - mobileOperatorServiceId
+ *              example:
+ *                amount: 1000,
+ *                destinationPhoneNumber: 08157582132,
+ *                isDataBundle: true,
+ *                mobileOperatorServiceId: 126,
+ *      responses:
+ *        "201":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Data'
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */

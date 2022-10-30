@@ -53,6 +53,9 @@ const envVarsSchema = Joi.object()
     PAGA_API_SECRET: Joi.string().description('PAGA API Secret'),
     PAGA_API_KEY: Joi.string().description('PAGA API key'),
     PAGA_API_PUBLIC_KEY: Joi.string().description('PAGA API public key'),
+    PAGA_API_URL: Joi.string()
+      .description('PAGA BASE API Url')
+      .default('https://www.mypaga.com/paga-webservices/business-rest/secured'),
     REFERRAL_CODE: Joi.string().description('Default referral code, restricted use'),
     CRON_SCHEDULE_SEND_ORDER_NOT_FULFILLED_REMINDER: Joi.string()
       .description('Cron schedule for sending order not fulfilled reminder')
@@ -134,6 +137,7 @@ module.exports = {
     paga_secret: envVars.PAGA_API_SECRET,
     paga_key: envVars.PAGA_API_KEY,
     paga_public_key: envVars.PAGA_API_PUBLIC_KEY,
+    paga_url: envVars.PAGA_API_URL,
   },
   backdoorAccess: {
     referralCode: envVars.REFERRAL_CODE,

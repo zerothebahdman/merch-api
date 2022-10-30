@@ -25,6 +25,15 @@ const buyAirtime = {
   }),
 };
 
+const buyData = {
+  body: Joi.object().keys({
+    amount: Joi.string().required(),
+    destinationPhoneNumber: Joi.string().required(),
+    isDataBundle: Joi.boolean().required(),
+    mobileOperatorServiceId: Joi.number().required(),
+  }),
+};
+
 const getTransactions = {
   query: Joi.object().keys({
     type: Joi.string(),
@@ -37,6 +46,22 @@ const getTransactions = {
     sortBy: Joi.string(),
     paginate: Joi.boolean().default(true),
     include: Joi.array(),
+  }),
+};
+
+const purchaseUtilities = {
+  body: Joi.object().keys({
+    amount: Joi.string().required(),
+    merchantNumber: Joi.string().required(),
+    merchantServiceProductCode: Joi.string().required(),
+    merchant: Joi.string().required(),
+  }),
+};
+
+const getUtilitiesProvidersServices = {
+  body: Joi.object().keys({
+    merchantId: Joi.string(),
+    referenceNumber: Joi.string(),
   }),
 };
 
@@ -55,4 +80,7 @@ module.exports = {
   buyAirtime,
   getTransactions,
   validatePaymentCallback,
+  purchaseUtilities,
+  getUtilitiesProvidersServices,
+  buyData,
 };

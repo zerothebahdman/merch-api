@@ -7,18 +7,19 @@ const {
   paymentService,
   emailService,
   userService,
-  orderService,
-  chargeService,
   creatorPageService,
+  chargeService,
+  orderService,
   merchService,
 } = require('../services');
-const { TRANSACTION_TYPES, TRANSACTION_SOURCES, ORDER_STATUSES, CURRENCIES } = require('../config/constants');
+const { TRANSACTION_TYPES, TRANSACTION_SOURCES, CURRENCIES, ORDER_STATUSES } = require('../config/constants');
 const { TransactionDump } = require('../models');
 const ApiError = require('../utils/ApiError');
 const Bank = require('../models/bank.model');
 const { Paga } = require('../utils/paga');
 const pick = require('../utils/pick');
 const { addNotification } = require('../utils/notification');
+const { generateRandomChar } = require('../utils/helpers');
 
 const getAccountInfo = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
@@ -277,6 +278,122 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
     }
   }
 });
+const buyData = catchAsync(async (req, res) => {
+  const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
+  if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
+  if (Number(req.body.amount) <= accountInfo.balance) {
+    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
+    const dataResponse = await paymentService.buyData(req.body, req.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    const transactionDump = await TransactionDump.create({ data: dataResponse, user: accountInfo.user });
+    // Store transaction
+    const transaction = await paymentService.createTransactionRecord({
+      user: accountInfo.user,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      type: TRANSACTION_TYPES.DEBIT,
+      amount: Number(req.body.amount),
+      purpose: 'Data purchase',
+      createdBy: accountInfo.user,
+      transactionDump: transactionDump.id,
+      meta: {
+        destinationPhoneNumber: req.body.destinationPhoneNumber,
+        message: dataResponse.message,
+        reference: dataResponse.referenceNumber,
+        payerName: `Data Sub/${req.body.destinationPhoneNumber}`,
+      },
+    });
+    res.send(transaction);
+  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
+});
+
+const purchaseUtilities = catchAsync(async (req, res) => {
+  const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
+  if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
+  if (Number(req.body.amount) <= accountInfo.balance) {
+    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
+    const utilitiesResponse = await paymentService.purchaseUtilities(req.body, req.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    const transactionDump = await TransactionDump.create({ data: utilitiesResponse, user: accountInfo.user });
+    // Store transaction
+    const transaction = await paymentService.createTransactionRecord({
+      user: accountInfo.user,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      type: TRANSACTION_TYPES.DEBIT,
+      amount: Number(req.body.amount),
+      purpose: 'Utilities purchase',
+      createdBy: accountInfo.user,
+      transactionDump: transactionDump.id,
+      meta: {
+        payerName: `Utilities/${req.user.firstName} ${req.user.lastName}`,
+        phoneNumber: req.body.phoneNumber,
+        message: utilitiesResponse.response.message,
+        reference: utilitiesResponse.response.reference,
+      },
+    });
+    res.send(transaction);
+  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
+});
+
+const getUtilitiesProviders = catchAsync(async (req, res) => {
+  const utilityProvider = await paymentService.getUtilitiesProviders();
+  const filteredCableUtilities = utilityProvider.response.merchants.filter(
+    (utility) => utility.name === 'DStv' || utility.name === 'GOtv' || utility.name === 'Startimes'
+  );
+  const filteredElectricityUtilities = utilityProvider.response.merchants.filter(
+    (utility) =>
+      utility.displayName === 'Ikeja Electric' ||
+      utility.displayName === 'Eko Electricity (EKEDC)' ||
+      utility.displayName === 'PHED' ||
+      utility.displayName === 'KEDCO' ||
+      utility.displayName === 'AEDC'
+  );
+  const cableSubUtility = [];
+  const referenceNumber = req.query.referenceNumber ? req.query.referenceNumber : generateRandomChar(10, 'num');
+  const promise = filteredCableUtilities.map(async (cable) => {
+    const cableUtility = {};
+    cableUtility.name = cable.name;
+    cableUtility.displayName = cable.displayName;
+    cableUtility.uuid = cable.uuid;
+    const providers = await paymentService.getUtilitiesProvidersServices(cable.uuid, referenceNumber);
+    cableUtility.services = providers.response.services;
+    cableSubUtility.push(cableUtility);
+  });
+  const electricitySubUtility = [];
+  const promise2 = filteredElectricityUtilities.map(async (electricity) => {
+    const electricityUtility = {};
+    electricityUtility.name = electricity.name;
+    electricityUtility.displayName = electricity.displayName;
+    electricityUtility.uuid = electricity.uuid;
+    const providers = await paymentService.getUtilitiesProvidersServices(electricity.uuid, referenceNumber);
+    electricityUtility.services = providers.response.services;
+    electricitySubUtility.push(electricityUtility);
+  });
+  await Promise.all(promise);
+  await Promise.all(promise2);
+  const utilities = {};
+  utilities.cableSubscription = cableSubUtility;
+  utilities.electricitySubscription = electricitySubUtility;
+  res.send(utilities);
+});
+
+const getMobileOperators = catchAsync(async (req, res) => {
+  const mobileOperators = await paymentService.getMobileOperators();
+  const mobileOperatorServices = [];
+  const promise = mobileOperators.response.mobileOperator.map(async (operator) => {
+    const mobileOperator = {};
+    mobileOperator.name = operator.name;
+    mobileOperator.mobileOperatorCode = operator.mobileOperatorCode;
+    const providers = await paymentService.getDataBundles(operator.mobileOperatorCode);
+    mobileOperator.services = providers.response.mobileOperatorServices;
+    mobileOperatorServices.push(mobileOperator);
+  });
+  await Promise.all(promise);
+  const mobileOperatorServicesObject = mobileOperatorServices.reduce((obj, item) => {
+    obj[item.name] = item;
+    return obj;
+  }, {});
+  res.send(mobileOperatorServicesObject);
+});
 
 const getTransactionOverview = catchAsync(async (req, res) => {
   const filterForCurrentPeriod = {
@@ -353,6 +470,15 @@ const getTransactionOverview = catchAsync(async (req, res) => {
   res.send(transactionOverview);
 });
 
+const getStartimesUtilities = catchAsync(async (req, res) => {
+  const startimesUtilities = await paymentService.getUtilitiesProvidersServices(req.query.uuid, req.query.referenceNumber);
+  const startTimesPayload = {};
+  startTimesPayload.name = 'Startimes';
+  startTimesPayload.displayName = 'Startimes';
+  startTimesPayload.uuid = req.query.uuid;
+  startTimesPayload.services = startimesUtilities.response.services;
+  res.send(startTimesPayload);
+});
 module.exports = {
   getAccountInfo,
   getBanks,
@@ -363,5 +489,10 @@ module.exports = {
   billPayment,
   buyAirtime,
   validatePaymentCallback,
+  purchaseUtilities,
+  getUtilitiesProviders,
+  getMobileOperators,
+  buyData,
   getTransactionOverview,
+  getStartimesUtilities,
 };
