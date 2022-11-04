@@ -7,3 +7,4 @@ module.exports.orderController = require('./order.controller');
 module.exports.userController = require('./user.controller');
 module.exports.paymentController = require('./payment.controller');
 module.exports.waitlistController = require('./waitlist.controller');
+module.exports.invoiceController = require('./invoice.controller');

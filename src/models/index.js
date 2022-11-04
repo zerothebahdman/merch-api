@@ -14,3 +14,6 @@ module.exports.RegulateTransaction = require('./regulateTransaction.model');
 module.exports.ErrorTracker = require('./errorTracker.model');
 module.exports.Waitlist = require('./waitlist.model');
 module.exports.Charge = require('./charge.model');
+module.exports.Invoice = require('./invoice/invoice.model');
+module.exports.Client = require('./invoice/client.model');
+module.exports.ReportIssue = require('./invoice/report-issues.model');

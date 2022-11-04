@@ -10,6 +10,7 @@ const orderRoute = require('./order.route');
 const paymentRoute = require('./payment.route');
 const userRoute = require('./user.route');
 const waitlistRoute = require('./waitlist.route');
+const invoiceRoute = require('./invoice.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -54,6 +55,10 @@ const defaultRoutes = [
   {
     path: '/payments',
     route: paymentRoute,
+  },
+  {
+    path: '/invoices',
+    route: invoiceRoute,
   },
 ];
 

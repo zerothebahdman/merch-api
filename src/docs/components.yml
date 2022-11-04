@@ -358,6 +358,60 @@ components:
           },
         ]
 
+    Invoice:
+      type: object
+      example:
+        {
+          'discount': 0,
+          'tax': 0,
+          'shipping': 50,
+          'currency': 'NGN',
+          'status': 'unpaid',
+          'amountPaid': 0,
+          'client': '6360e10c520fcc49d5d97cd4',
+          'items':
+            [
+              { 'itemDetails': 'Testing Invoice 1', 'amount': 100, 'quantity': 1 },
+              { 'itemDetails': 'Testing Invoice 2', 'amount': 100, 'quantity': 1 },
+            ],
+          'totalAmount': 250,
+          'invoiceNote': 'Thanks for doing business with us.',
+          'creator': '63456b0b4495e90021367a12',
+          'invoiceNumber': '#INV-68583',
+          'createdAt': '2022-11-04T06:49:11.737Z',
+          'updatedAt': '2022-11-04T06:49:11.737Z',
+          'id': '6364b5e732214ff4ee936a4a',
+        }
+
+    Issue:
+      type: object
+      example:
+        {
+          'reasonForReport': 'Testing',
+          'description': 'Testing Testing',
+          'invoice': '6360e54b56f1784bd904808c',
+          'creator': '63456b0b4495e90021367a12',
+          'createdAt': '2022-11-04T07:14:53.639Z',
+          'updatedAt': '2022-11-04T07:14:53.639Z',
+          'id': '6364bbed0e10ad049e7b4d2d',
+        }
+
+    Client:
+      type: object
+      example:
+        {
+          'name': 'Zero',
+          'email': 'zero@merchro.com',
+          'phoneNumber': '08157582199',
+          'country': 'Nigeria',
+          'state': 'Abuja',
+          'address': 'Testing address',
+          'creator': '63456b0b4495e90021367a12',
+          'createdAt': '2022-11-04T06:59:27.711Z',
+          'updatedAt': '2022-11-04T06:59:27.711Z',
+          'id': '6364b84f3e62abfb6e640017',
+        }
+
     Waitlist:
       type: object
       example:

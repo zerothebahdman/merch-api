@@ -94,6 +94,12 @@ const MERCH_PRODUCTION_DURATION = {
   TWO_MONTHS: '56',
 };
 
+const INVOICE_STATUSES = {
+  FULLY_PAID: 'fully_paid',
+  UNPAID: 'unpaid',
+  PARTIALLY_PAID: 'partially_paid',
+};
+
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -107,4 +113,5 @@ module.exports = {
   TRANSACTION_SOURCES,
   CurrencySymbolMapping,
   MERCH_PRODUCTION_DURATION,
+  INVOICE_STATUSES,
 };
