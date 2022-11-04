@@ -46,7 +46,7 @@ const ORDER_STATUSES = {
   COMPLETED: 'fulfilled',
   PROCESSING: 'processing',
   PREORDER: 'preorder',
-  UNFULFILLED: 'unfulfilled',
+  UNFULFILLED: 'unfufilled',
   FAILED: 'failed',
 };
 
@@ -82,6 +82,7 @@ const TRANSACTION_SOURCES = {
   CARD_DEPOSIT: 'card_deposit',
   STORE: 'store',
   INVOICE: 'invoice',
+  PAYMENT_LINK: 'payment_link',
   SAVINGS: 'savings',
   STASH: 'stash',
 };
@@ -100,6 +101,12 @@ const INVOICE_STATUSES = {
   PARTIALLY_PAID: 'partially_paid',
 };
 
+const PAYMENT_LINK_TYPES = {
+  ONE_TIME: 'one_time',
+  SUBSCRIPTION: 'subscription',
+  EVENT: 'event',
+};
+
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -114,4 +121,5 @@ module.exports = {
   CurrencySymbolMapping,
   MERCH_PRODUCTION_DURATION,
   INVOICE_STATUSES,
+  PAYMENT_LINK_TYPES,
 };

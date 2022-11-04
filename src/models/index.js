@@ -17,3 +17,5 @@ module.exports.Charge = require('./charge.model');
 module.exports.Invoice = require('./invoice/invoice.model');
 module.exports.Client = require('./invoice/client.model');
 module.exports.ReportIssue = require('./invoice/report-issues.model');
+module.exports.PaymentLink = require('./invoice/paymentLinks.model');
+module.exports.PaymentLinkClient = require('./invoice/paymentLinkClient.model');

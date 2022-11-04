@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 const { createHash } = require('crypto');
 const httpStatus = require('http-status');
+const Flutterwave = require('flutterwave-node-v3');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { paymentData } = require('../config/config');
@@ -14,6 +15,8 @@ const config = require('../config/config');
 
 // eslint-disable-next-line
 // const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+
+const flw = new Flutterwave(paymentData.flutter_public_key, paymentData.flutter_secret);
 
 /**
  * Payment API - Get payment link
@@ -44,11 +47,10 @@ const getPaymentLink = async (paymentBody, redirectUrl) => {
 
 const validatePayment = async (transactionId) => {
   try {
-    const response = await fetch(`${paymentData.flutter_url}/transactions/${transactionId}/verify`, {
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${paymentData.flutter_secret}` },
-      method: 'GET',
+    const response = await flw.Transaction.verify({
+      id: transactionId,
     });
-    return await response.json();
+    return response;
   } catch (error) {
     throw new ApiError(error.status, error.message);
   }

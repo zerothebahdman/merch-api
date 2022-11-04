@@ -50,6 +50,7 @@ const envVarsSchema = Joi.object()
     FLUTTER_API_URL: Joi.string().description('Flutter wave API Url'),
     FLUTTER_API_REDIRECT: Joi.string().description('Flutter wave API Redirect URL'),
     FLUTTER_API_SECRET: Joi.string().description('Flutter wave API Secret'),
+    FLUTTER_PUBLIC_KEY: Joi.string().description('Flutter wave Public Key'),
     PAGA_API_SECRET: Joi.string().description('PAGA API Secret'),
     PAGA_API_KEY: Joi.string().description('PAGA API key'),
     PAGA_API_PUBLIC_KEY: Joi.string().description('PAGA API public key'),
@@ -122,6 +123,7 @@ module.exports = {
   paymentData: {
     flutter_url: envVars.FLUTTER_API_URL,
     flutter_secret: envVars.FLUTTER_API_SECRET,
+    flutter_public_key: envVars.FLUTTER_PUBLIC_KEY,
     flutter_redirect_url: envVars.FLUTTER_API_REDIRECT,
     paga_secret: envVars.PAGA_API_SECRET,
     paga_key: envVars.PAGA_API_KEY,

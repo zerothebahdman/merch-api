@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { INVOICE_STATUSES } = require('../config/constants');
+const { INVOICE_STATUSES, PAYMENT_LINK_TYPES } = require('../config/constants');
 const { objectId } = require('./custom.validation');
 
 const createInvoiceValidation = {
@@ -50,9 +50,77 @@ const createIssue = {
   }),
 };
 
+const createPaymentLink = {
+  body: Joi.object().keys({
+    paymentType: Joi.string()
+      .valid(...Object.values(PAYMENT_LINK_TYPES))
+      .required(),
+    pageName: Joi.string().required(),
+    pageImage: Joi.string(),
+    pageDescription: Joi.string().required(),
+    pageRedirectUrl: Joi.string().required(),
+    amount: Joi.number(),
+    recurringPayment: Joi.object().keys({
+      interval: Joi.string().required(),
+      frequency: Joi.number().required(),
+    }),
+    eventPayment: Joi.object().keys({
+      type: Joi.boolean().required(),
+      location: Joi.string().required(),
+      date: Joi.object()
+        .keys({
+          from: Joi.date().required(),
+          to: Joi.date().required(),
+        })
+        .required(),
+      tickets: Joi.array()
+        .items({
+          ticketType: Joi.string().required(),
+          ticketPrice: Joi.number().required(),
+          ticketQuantity: Joi.number().required(),
+        })
+        .required(),
+    }),
+  }),
+};
+
+const paymentLinkPay = {
+  body: Joi.object().keys({
+    transaction_id: Joi.string().required(),
+    tx_ref: Joi.string().required(),
+    idempotentKey: Joi.string().required(),
+  }),
+};
+
+const generateCheckoutLink = {
+  body: Joi.object().keys({
+    clientFirstName: Joi.string().required(),
+    clientLastName: Joi.string().required(),
+    clientEmail: Joi.string().email().required(),
+    clientPhoneNumber: Joi.string().required(),
+    paymentType: Joi.string()
+      .required()
+      .valid(...Object.values(PAYMENT_LINK_TYPES)),
+    creatorPaymentLinkId: Joi.custom(objectId).required(),
+    redirectUrl: Joi.string().required(),
+    amount: Joi.number().required(),
+    event: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.EVENT,
+      then: Joi.array()
+        .items(
+          Joi.object().keys({ ticketType: Joi.string().required(), ticketQuantity: Joi.number().required() }).required()
+        )
+        .required(),
+    }),
+  }),
+};
+
 module.exports = {
   createInvoiceValidation,
   createClient,
   updateInvoice,
   createIssue,
+  createPaymentLink,
+  paymentLinkPay,
+  generateCheckoutLink,
 };
