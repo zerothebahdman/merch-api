@@ -57,18 +57,7 @@ const envVarsSchema = Joi.object()
       .description('PAGA BASE API Url')
       .default('https://www.mypaga.com/paga-webservices/business-rest/secured'),
     REFERRAL_CODE: Joi.string().description('Default referral code, restricted use'),
-    CRON_SCHEDULE_SEND_ORDER_NOT_FULFILLED_REMINDER: Joi.string()
-      .description('Cron schedule for sending order not fulfilled reminder')
-      .default('0 */6 * * *'),
-    CRON_SCHEDULE_REVERT_MERCH_QUANTITY_FOR_UNFULFILLED_ORDERS: Joi.string()
-      .description('Cron schedule for reverting merch quantity for unfulfilled orders')
-      .default('0 0 * * *'),
-    CRON_SCHEDULE_SEND_ORDER_PENDING_REMINDER: Joi.string()
-      .description('Cron schedule for sending order pending reminder')
-      .default('* * * * *'),
-    CRON_SCHEDULE_SEND_USER_ORDER_TERMINATION_EMAIL: Joi.string()
-      .description('Cron schedule for sending user order termination email')
-      .default('0 * * * *'),
+    CRON_SCHEDULE_PROCESS_ORDER: Joi.string().description('Cron schedule for processing order').default('0 * * * *'),
     ORDER_RESERVATION_TIMELINE: Joi.number().description('Order reservation timeline in minutes').default(48),
   })
   .unknown();
@@ -143,10 +132,7 @@ module.exports = {
     referralCode: envVars.REFERRAL_CODE,
   },
   cronSchedule: {
-    sendOrderNotFulfilledReminder: envVars.CRON_SCHEDULE_SEND_ORDER_NOT_FULFILLED_REMINDER,
-    revertMerchQuantityForUnfulfilledOrders: envVars.CRON_SCHEDULE_REVERT_MERCH_QUANTITY_FOR_UNFULFILLED_ORDERS,
-    sendOrderPendingReminder: envVars.CRON_SCHEDULE_SEND_ORDER_PENDING_REMINDER,
-    sendUserOrderTerminationEmail: envVars.CRON_SCHEDULE_SEND_USER_ORDER_TERMINATION_EMAIL,
+    processOrder: envVars.CRON_SCHEDULE_PROCESS_ORDER,
   },
   orderReservationTimeline: envVars.ORDER_RESERVATION_TIMELINE,
 };

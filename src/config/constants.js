@@ -46,7 +46,7 @@ const ORDER_STATUSES = {
   COMPLETED: 'fulfilled',
   PROCESSING: 'processing',
   PREORDER: 'preorder',
-  UNFULFILLED: 'unfufilled',
+  UNFULFILLED: 'unfulfilled',
   FAILED: 'failed',
 };
 

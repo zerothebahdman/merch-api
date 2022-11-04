@@ -120,9 +120,15 @@ const waitlistEmail = async (to) => {
   await sendEmail(to, subject, null, html);
 };
 
-const sendUserOrderFulfillmentEmail = (user, order, link) => {
+const sendUserOrderFulfillmentEmail = (user, order) => {
   const subject = 'Your order has been fulfilled!';
-  const html = renderFile('order-fulfillment', { user, order, link });
+  const html = renderFile('order-fulfillment', { user, order });
+  return sendEmail(user.email, subject, null, html);
+};
+
+const sendUserOrderReminderEmail = (user, order) => {
+  const subject = '[URGENT!] You have pending orders';
+  const html = renderFile('order-reminder', { user, order });
   return sendEmail(user.email, subject, null, html);
 };
 
@@ -143,4 +149,5 @@ module.exports = {
   waitlistEmail,
   sendUserOrderFulfillmentEmail,
   sendPaymentTrackingEmail,
+  sendUserOrderReminderEmail,
 };
