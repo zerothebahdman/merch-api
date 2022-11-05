@@ -17,6 +17,7 @@ const paymentLinkClientSchema = new Schema({
     ref: 'User',
     required: true,
   },
+  amount: Number,
   card: {
     token: { type: String },
     last_4digits: { type: String },
@@ -26,7 +27,7 @@ const paymentLinkClientSchema = new Schema({
     issuer: { type: String },
     country: { type: String },
   },
-  eventMetaDetails: [Object],
+  eventMetaDetails: Object,
 });
 
 paymentLinkClientSchema.plugin(toJSON);

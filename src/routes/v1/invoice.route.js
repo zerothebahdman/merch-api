@@ -38,7 +38,7 @@ router
 router
   .route('/payment-link/validate-payment')
   .post(auth('creator'), validate(invoiceValidation.paymentLinkPay), invoiceController.paymentLinkPay);
- 
+
 module.exports = router;
 
 /**

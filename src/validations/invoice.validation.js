@@ -106,10 +106,21 @@ const generateCheckoutLink = {
     amount: Joi.number().required(),
     event: Joi.when('paymentType', {
       is: PAYMENT_LINK_TYPES.EVENT,
-      then: Joi.array()
-        .items(
-          Joi.object().keys({ ticketType: Joi.string().required(), ticketQuantity: Joi.number().required() }).required()
-        )
+      then: Joi.object()
+        .keys({
+          ticketType: Joi.string().required(),
+          ticketQuantity: Joi.number().required(),
+          peopleReceivingTicket: Joi.array().items(
+            Joi.object()
+              .keys({
+                clientFirstName: Joi.string().required(),
+                clientLastName: Joi.string().required(),
+                clientEmail: Joi.string().email().required(),
+                clientPhoneNumber: Joi.string().required(),
+              })
+              .required()
+          ),
+        })
         .required(),
     }),
   }),

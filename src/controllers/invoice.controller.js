@@ -1,7 +1,8 @@
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
+const moment = require('moment');
 const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES } = require('../config/constants');
-const { invoiceService, paymentService, userService } = require('../services');
+const { invoiceService, paymentService, userService, emailService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { generateRandomChar } = require('../utils/helpers');
@@ -71,8 +72,8 @@ const getPaymentLink = catchAsync(async (req, res) => {
 });
 
 const paymentLinkPay = catchAsync(async (req, res) => {
-  const proceed = await paymentService.controlTransaction(req.body);
-  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
+  // const proceed = await paymentService.controlTransaction(req.body);
+  // if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
   const validatePayment = await paymentService.validatePayment(req.body.transaction_id);
   if (validatePayment.data.status === 'successful') {
     const {
@@ -90,12 +91,27 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       const { eventMetaDetails } = creatorClient;
       const { tickets } = paymentLink.eventPayment;
       const updatedTickets = tickets.map((ticket) => {
-        const ticketIndex = eventMetaDetails.findIndex((item) => item.ticketType === ticket.ticketType);
-        if (ticketIndex !== -1) {
-          ticket.ticketQuantity -= eventMetaDetails[ticketIndex].ticketQuantity;
-          return ticket;
-        }
-        return ticket;
+        if (eventMetaDetails.ticketType === ticket.ticketType) ticket.ticketQuantity -= eventMetaDetails.ticketQuantity;
+        return eventMetaDetails;
+      });
+      const from = moment(paymentLink.eventPayment.date.from).format('dddd, MMMM Do · h:mm a z');
+      const to = moment(paymentLink.eventPayment.date.to).format('dddd, MMMM Do · h:mm a z');
+      const eventPayload = {
+        ...paymentLink.toJSON(),
+      };
+      eventPayload.from = from;
+      eventPayload.to = to;
+      await emailService.sendUserEventPaymentLinkTicket(creatorClient, eventPayload);
+      eventMetaDetails.peopleReceivingTicket.map(async (person) => {
+        const userPayload = {
+          ...person,
+          amount: creatorClient.amount,
+          eventMetaDetails: {
+            ticketQuantity: eventMetaDetails.ticketQuantity,
+            ticketType: eventMetaDetails.ticketType,
+          },
+        };
+        await emailService.sendUserEventPaymentLinkTicket(userPayload, eventPayload);
       });
       await invoiceService.updatePaymentLink(creatorPaymentLink, { eventPayment: { tickets: updatedTickets } });
     }
@@ -127,15 +143,9 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
   const getCreatorPaymentLink = await invoiceService.getPaymentLinkById(req.body.creatorPaymentLinkId);
   const { event } = req.body;
   const { tickets } = getCreatorPaymentLink.eventPayment;
-  event.map((item) => {
-    const ticketIndex = tickets.findIndex((ticket) => ticket.ticketType === item.ticketType);
-    if (ticketIndex !== -1 && item.ticketQuantity > tickets[ticketIndex].ticketQuantity)
-      throw new ApiError(httpStatus.BAD_REQUEST, `Oops!, these quantity of ${item.ticketType} tickets is not available`);
-    return {
-      ticketType: item.ticketType,
-      quantity: item.ticketQuantity,
-    };
-  });
+  const ticketIndex = tickets.findIndex((ticket) => ticket.ticketType === event.ticketType);
+  if (ticketIndex !== -1 && event.ticketQuantity > tickets[ticketIndex].ticketQuantity)
+    throw new ApiError(httpStatus.BAD_REQUEST, `Oops!, these quantity of ${event.ticketType} tickets is not available`);
   req.body.creator = getCreatorPaymentLink.creator;
   req.body.creatorPaymentLink = getCreatorPaymentLink._id;
   req.body.eventMetaDetails = req.body.event;
