@@ -17,14 +17,6 @@ router
   .post(auth('creator'), validate(invoiceValidation.createClient), invoiceController.createClient);
 
 router
-  .route('/:invoiceId')
-  .patch(auth('creator'), validate(invoiceValidation.updateInvoice), invoiceController.updateInvoice)
-  .get(auth('creator'), invoiceController.getInvoice)
-  .delete(auth('creator'), invoiceController.deleteInvoice);
-
-router.route('/issue').post(auth('creator'), validate(invoiceValidation.createIssue), invoiceController.createIssue);
-
-router
   .route('/payment-link')
   .get(auth('creator'), invoiceController.getPaymentLinks)
   .post(auth('creator'), validate(invoiceValidation.createPaymentLink), invoiceController.createPaymentLink);
@@ -39,6 +31,12 @@ router
   .route('/payment-link/validate-payment')
   .post(auth('creator'), validate(invoiceValidation.paymentLinkPay), invoiceController.paymentLinkPay);
 
+router.route('/issue').post(auth('creator'), validate(invoiceValidation.createIssue), invoiceController.createIssue);
+router
+  .route('/:invoiceId')
+  .patch(auth('creator'), validate(invoiceValidation.updateInvoice), invoiceController.updateInvoice)
+  .get(auth('creator'), invoiceController.getInvoice)
+  .delete(auth('creator'), invoiceController.deleteInvoice);
 module.exports = router;
 
 /**

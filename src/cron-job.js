@@ -1,10 +1,10 @@
 /* eslint-disable no-param-reassign */
 const cronJob = require('node-cron');
 const moment = require('moment');
-const { Order, Merch } = require('./models');
-const { ORDER_STATUSES } = require('./config/constants');
+const { Order, Merch, PaymentLink } = require('./models');
+const { ORDER_STATUSES, PAYMENT_LINK_TYPES } = require('./config/constants');
 const config = require('./config/config');
-const { merchService, emailService } = require('./services');
+const { merchService, emailService, invoiceService, paymentService } = require('./services');
 
 const cronJobs = () => {
   const processOrder = cronJob.schedule(config.cronSchedule.processOrder, async () => {
@@ -58,6 +58,32 @@ const cronJobs = () => {
     }
   });
   processOrder.start();
+
+  const initiateRecurringPayment = cronJob.schedule(config.cronSchedule.initiateRecurringPayment, async () => {
+    /** initiate recurring payment for paymentLinks that the type is subscription */
+    const paymentLinks = await PaymentLink.find({
+      deletedAt: null,
+      paymentType: PAYMENT_LINK_TYPES.SUBSCRIPTION,
+    });
+    if (paymentLinks.length > 0) {
+      paymentLinks.forEach(async (paymentLink) => {
+        const filter = {
+          creatorPaymentLink: paymentLink._id,
+        };
+        const paymentLinkClient = await invoiceService.getAllCreatorPaymentLinkClient(filter);
+        paymentLinkClient.map(async (client) => {
+          const { nextChargeDate } = client.subscriptionDetails;
+          if (
+            moment(nextChargeDate) <= moment() &&
+            client.subscriptionDetails.timesBilled <= paymentLink.recurringPayment.frequency
+          ) {
+            await paymentService.initiateRecurringPayment(paymentLink, client);
+          }
+        });
+      });
+    }
+  });
+  initiateRecurringPayment.start();
 };
 
 module.exports = cronJobs;

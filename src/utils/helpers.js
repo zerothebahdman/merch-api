@@ -1,3 +1,4 @@
+const moment = require('moment');
 const { ERROR_MESSAGES } = require('../config/messages');
 
 const titleCase = function (string) {
@@ -69,6 +70,35 @@ const slugify = (str) => {
   return str.toLowerCase().replace(/ /g, '-');
 };
 
+const calculatePeriod = (interval) => {
+  let periodDate;
+  // eslint-disable-next-line default-case
+  switch (interval) {
+    case 'weekly':
+      periodDate = moment().add(1, 'week').startOf('day').toDate();
+      break;
+    case 'monthly':
+      periodDate = moment().add(1, 'month').startOf('day').toDate();
+      break;
+    case 'yearly':
+      periodDate = moment().add(1, 'year').startOf('day').toDate();
+      break;
+    case 'bi-weekly':
+      periodDate = moment().add(2, 'week').startOf('day').toDate();
+      break;
+    case 'bi-monthly':
+      periodDate = moment().add(2, 'month').startOf('day').toDate();
+      break;
+    case 'bi-annual':
+      periodDate = moment().add(6, 'month').startOf('day').toDate();
+      break;
+    case 'quarterly':
+      periodDate = moment().add(3, 'month').startOf('day').toDate();
+      break;
+  }
+  return periodDate;
+};
+
 module.exports = {
   titleCase,
   capitalCase,
@@ -76,4 +106,5 @@ module.exports = {
   storeNameValidator,
   generateRandomChar,
   slugify,
+  calculatePeriod,
 };

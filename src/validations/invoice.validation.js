@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { INVOICE_STATUSES, PAYMENT_LINK_TYPES } = require('../config/constants');
+const { INVOICE_STATUSES, PAYMENT_LINK_TYPES, RECURRING_PAYMENT } = require('../config/constants');
 const { objectId } = require('./custom.validation');
 
 const createInvoiceValidation = {
@@ -59,25 +59,42 @@ const createPaymentLink = {
     pageImage: Joi.string(),
     pageDescription: Joi.string().required(),
     pageRedirectUrl: Joi.string().required(),
-    amount: Joi.number(),
-    recurringPayment: Joi.object().keys({
-      interval: Joi.string().required(),
-      frequency: Joi.number().required(),
+    amount: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.EVENT,
+      then: Joi.number(),
+      otherwise: Joi.number().required(),
     }),
-    eventPayment: Joi.object().keys({
-      type: Joi.boolean().required(),
-      location: Joi.string().required(),
-      date: Joi.object()
+    recurringPayment: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.SUBSCRIPTION,
+      then: Joi.object()
         .keys({
-          from: Joi.date().required(),
-          to: Joi.date().required(),
+          type: Joi.boolean().valid(true).required(),
+          interval: Joi.string()
+            .valid(...Object.values(RECURRING_PAYMENT))
+            .required(),
+          frequency: Joi.number().required(),
         })
         .required(),
-      tickets: Joi.array()
-        .items({
-          ticketType: Joi.string().required(),
-          ticketPrice: Joi.number().required(),
-          ticketQuantity: Joi.number().required(),
+    }),
+    eventPayment: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.EVENT,
+      then: Joi.object()
+        .keys({
+          type: Joi.boolean().required(),
+          location: Joi.string().required(),
+          date: Joi.object()
+            .keys({
+              from: Joi.date().required(),
+              to: Joi.date().required(),
+            })
+            .required(),
+          tickets: Joi.array()
+            .items({
+              ticketType: Joi.string().required(),
+              ticketPrice: Joi.number().required(),
+              ticketQuantity: Joi.number().required(),
+            })
+            .required(),
         })
         .required(),
     }),

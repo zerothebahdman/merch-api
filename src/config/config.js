@@ -59,6 +59,9 @@ const envVarsSchema = Joi.object()
       .default('https://www.mypaga.com/paga-webservices/business-rest/secured'),
     REFERRAL_CODE: Joi.string().description('Default referral code, restricted use'),
     CRON_SCHEDULE_PROCESS_ORDER: Joi.string().description('Cron schedule for processing order').default('0 * * * *'),
+    CRON_INITIATE_RECURRING_PAYMENT: Joi.string()
+      .description('Cron schedule for initiating recurring payment')
+      .default('0 * * * *'),
     ORDER_RESERVATION_TIMELINE: Joi.number().description('Order reservation timeline in minutes').default(48),
   })
   .unknown();
@@ -135,6 +138,7 @@ module.exports = {
   },
   cronSchedule: {
     processOrder: envVars.CRON_SCHEDULE_PROCESS_ORDER,
+    initiateRecurringPayment: envVars.CRON_INITIATE_RECURRING_PAYMENT,
   },
   orderReservationTimeline: envVars.ORDER_RESERVATION_TIMELINE,
 };

@@ -5,7 +5,7 @@ const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES }
 const { invoiceService, paymentService, userService, emailService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { generateRandomChar } = require('../utils/helpers');
+const { generateRandomChar, calculatePeriod } = require('../utils/helpers');
 
 const createInvoice = catchAsync(async (req, res) => {
   req.body.creator = req.user.id;
@@ -79,12 +79,31 @@ const paymentLinkPay = catchAsync(async (req, res) => {
     const {
       card,
       amount,
-      meta: { creator, creatorPaymentLinkClient, creatorPaymentLink, paymentType },
+      meta: { creator, creatorPaymentLinkClient, creatorPaymentLink, paymentType, interval, frequency },
     } = validatePayment.data;
-    const creatorClient = await invoiceService.getCreatorPaymentLinkClient(creatorPaymentLinkClient, creatorPaymentLink);
+    const filter = {
+      _id: creatorPaymentLinkClient,
+      creatorPaymentLink,
+      deletedAt: null,
+    };
+    const creatorClient = await invoiceService.getCreatorPaymentLinkClient(filter);
     const creatorDetails = await userService.getUserById(creator);
-    if (paymentType === PAYMENT_LINK_TYPES.SUBSCRIPTION)
-      await invoiceService.updateCreatorClient(creatorClient._id, { card });
+    if (paymentType === PAYMENT_LINK_TYPES.SUBSCRIPTION) {
+      // calculate next payment date
+      const nextChargeDate = calculatePeriod(interval);
+      const updateBody = {
+        card,
+        subscriptionDetails: {
+          lastChargeDate: moment().toDate(),
+          nextChargeDate,
+          frequency,
+          interval,
+          timesBilled: 1,
+        },
+      };
+      // Math.round(duration / frequency), 'days'
+      await invoiceService.updateCreatorClient(creatorClient._id, { ...updateBody });
+    }
     const paymentLink = await invoiceService.getPaymentLinkById(creatorPaymentLink);
     if (paymentLink.paymentType === PAYMENT_LINK_TYPES.EVENT) {
       /** once a ticket has been purchased subtract the ticket quantity from the total ticket quantity */
@@ -124,9 +143,9 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       createdBy: creatorClient.id,
       reference: `#PL_${generateRandomChar(5, 'num')}`,
       meta: {
-        user: creatorClient.id,
-        payerName: `${paymentLink.pageName}/${creatorClient.firstName} ${creatorClient.lastName}`,
-        email: creatorClient.email,
+        user: creatorClient._id,
+        payerName: `${paymentLink.pageName}/${creatorClient.clientFirstName} ${creatorClient.clientLastName}`,
+        email: creatorClient.clientEmail,
         currency: CURRENCIES.NAIRA,
       },
     });
@@ -142,10 +161,12 @@ const paymentLinkPay = catchAsync(async (req, res) => {
 const generateCheckoutLink = catchAsync(async (req, res) => {
   const getCreatorPaymentLink = await invoiceService.getPaymentLinkById(req.body.creatorPaymentLinkId);
   const { event } = req.body;
-  const { tickets } = getCreatorPaymentLink.eventPayment;
-  const ticketIndex = tickets.findIndex((ticket) => ticket.ticketType === event.ticketType);
-  if (ticketIndex !== -1 && event.ticketQuantity > tickets[ticketIndex].ticketQuantity)
-    throw new ApiError(httpStatus.BAD_REQUEST, `Oops!, these quantity of ${event.ticketType} tickets is not available`);
+  if (event) {
+    const { tickets } = getCreatorPaymentLink.eventPayment;
+    const ticketIndex = tickets.findIndex((ticket) => ticket.ticketType === event.ticketType);
+    if (ticketIndex !== -1 && event.ticketQuantity > tickets[ticketIndex].ticketQuantity)
+      throw new ApiError(httpStatus.BAD_REQUEST, `Oops!, these quantity of ${event.ticketType} tickets is not available`);
+  }
   req.body.creator = getCreatorPaymentLink.creator;
   req.body.creatorPaymentLink = getCreatorPaymentLink._id;
   req.body.eventMetaDetails = req.body.event;
@@ -163,6 +184,8 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
         creatorPaymentLink: getCreatorPaymentLink.id,
         paymentType: req.body.paymentType,
         creatorPaymentLinkClient: createCreatorPaymentLinkClient.id,
+        interval: getCreatorPaymentLink.recurringPayment.interval,
+        frequency: getCreatorPaymentLink.recurringPayment.frequency,
       },
       amount: req.body.amount,
       currency: CURRENCIES.NAIRA,

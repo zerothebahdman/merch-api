@@ -27,6 +27,13 @@ const paymentLinkClientSchema = new Schema({
     issuer: { type: String },
     country: { type: String },
   },
+  subscriptionDetails: {
+    interval: { type: String },
+    frequency: { type: Number },
+    timesBilled: { type: Number },
+    lastChargeDate: { type: Date },
+    nextChargeDate: { type: Date },
+  },
   eventMetaDetails: Object,
 });
 

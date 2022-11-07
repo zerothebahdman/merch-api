@@ -107,6 +107,17 @@ const PAYMENT_LINK_TYPES = {
   EVENT: 'event',
 };
 
+const RECURRING_PAYMENT = {
+  ONE_TIME: 'one_time',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+  BI_WEEKLY: 'bi_weekly',
+  BI_MONTHLY: 'bi_monthly',
+  QUARTERLY: 'quarterly',
+  BI_ANNUALLY: 'bi_annually',
+};
+
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -122,4 +133,5 @@ module.exports = {
   MERCH_PRODUCTION_DURATION,
   INVOICE_STATUSES,
   PAYMENT_LINK_TYPES,
+  RECURRING_PAYMENT,
 };

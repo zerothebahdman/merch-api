@@ -107,12 +107,12 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
   return clientExist;
 };
 
-const getCreatorPaymentLinkClient = async (creatorPaymentLinkClient, paymentLinkId) => {
-  const client = await PaymentLinkClient.findOne({
-    _id: creatorPaymentLinkClient,
-    creatorPaymentLink: paymentLinkId,
-    deletedAt: null,
-  });
+const getCreatorPaymentLinkClient = async (filter) => {
+  const client = await PaymentLinkClient.findOne(filter);
+  return client;
+};
+const getAllCreatorPaymentLinkClient = async (filter) => {
+  const client = await PaymentLinkClient.find(filter);
   return client;
 };
 
@@ -146,4 +146,5 @@ module.exports = {
   getCreatorPaymentLinkClient,
   updateCreatorClient,
   getPaymentLink,
+  getAllCreatorPaymentLinkClient,
 };

@@ -10,8 +10,11 @@ const { Account, TransactionLog, ErrorTracker, RegulateTransaction } = require('
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
 const { Paga } = require('../utils/paga');
-const { generateRandomChar } = require('../utils/helpers');
+const { generateRandomChar, calculatePeriod } = require('../utils/helpers');
 const config = require('../config/config');
+const { CURRENCIES, TRANSACTION_SOURCES, TRANSACTION_TYPES } = require('../config/constants');
+const userService = require('./user.service');
+const invoiceService = require('./invoice.service');
 
 // eslint-disable-next-line
 // const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -228,6 +231,66 @@ const buyData = async (data) => {
   }
 };
 
+const initiateRecurringPayment = async (paymentLink, client) => {
+  try {
+    /**
+     * 1. add a 2% charge of the original amount to the amount to be paid
+     * 2. charge the user
+     * 3. if the charge is successful, save the transaction record
+     * 4. Add the amount paid to the creator's wallet
+     * 5. Updated the subscription record for the client to prepare for the next payment
+     */
+
+    const amountCharge = (2 / 100) * paymentLink.amount + paymentLink.amount;
+
+    const chargeBody = {
+      tx_ref: `tx-${generateRandomChar(10, 'lower-num')}`,
+      amount: Number(amountCharge),
+      currency: 'NGN',
+      country: 'NG',
+      email: client.clientEmail,
+      token: client.card.token,
+      narration: `Payment for ${client.subscriptionDetails.interval} ${paymentLink.pageName} subscription`,
+    };
+
+    const initiateCharge = await flw.Tokenized.charge(chargeBody);
+    if (initiateCharge.status === 'success') {
+      const creator = await userService.getUserById(paymentLink.creator);
+      await createTransactionRecord({
+        user: creator._id,
+        source: TRANSACTION_SOURCES.PAYMENT_LINK,
+        type: TRANSACTION_TYPES.CREDIT,
+        amount: Number(paymentLink.amount),
+        purpose: `Payment for ${client.subscriptionDetails.interval} ${paymentLink.pageName} subscription`,
+        createdBy: client._id,
+        reference: `#PL_${generateRandomChar(5, 'num')}`,
+        meta: {
+          user: client._id,
+          payerName: `${client.subscriptionDetails.interval} Subscription / ${client.clientFirstName} ${client.clientLastName}`,
+          email: client.clientEmail,
+          currency: CURRENCIES.NAIRA,
+        },
+      });
+
+      addToBalance(paymentLink.amount, client._id);
+      const { interval, frequency } = paymentLink.recurringPayment;
+      const nextChargeDate = calculatePeriod(interval);
+      const updateBody = {
+        subscriptionDetails: {
+          lastChargeDate: moment().toDate(),
+          nextChargeDate,
+          frequency,
+          interval,
+          timesBilled: client.subscriptionDetails.timesBilled + 1,
+        },
+      };
+      await invoiceService.updateCreatorClient(client._id, { ...updateBody });
+    }
+  } catch (error) {
+    throw new ApiError(error.status, error.message);
+  }
+};
+
 module.exports = {
   queryAccountInfoByUser,
   queryAccountInfoByReference,
@@ -249,4 +312,5 @@ module.exports = {
   getMobileOperators,
   getDataBundles,
   buyData,
+  initiateRecurringPayment,
 };
