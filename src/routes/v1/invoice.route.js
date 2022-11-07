@@ -21,15 +21,15 @@ router
   .get(auth('creator'), invoiceController.getPaymentLinks)
   .post(auth('creator'), validate(invoiceValidation.createPaymentLink), invoiceController.createPaymentLink);
 
-router.route('/payment-link/:paymentCode').get(auth('creator'), invoiceController.getPaymentLink);
+router.route('/payment-link/:paymentCode').get(invoiceController.getPaymentLink);
 
 router
   .route('/payment-link/checkout')
-  .post(auth('creator'), validate(invoiceValidation.generateCheckoutLink), invoiceController.generateCheckoutLink);
+  .post(validate(invoiceValidation.generateCheckoutLink), invoiceController.generateCheckoutLink);
 
 router
   .route('/payment-link/validate-payment')
-  .post(auth('creator'), validate(invoiceValidation.paymentLinkPay), invoiceController.paymentLinkPay);
+  .post(validate(invoiceValidation.paymentLinkPay), invoiceController.paymentLinkPay);
 
 router.route('/issue').post(auth('creator'), validate(invoiceValidation.createIssue), invoiceController.createIssue);
 router
