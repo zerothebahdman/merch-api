@@ -62,7 +62,7 @@ const createPaymentLink = catchAsync(async (req, res) => {
 const getPaymentLinks = catchAsync(async (req, res) => {
   const filter = { creator: req.user.id, deletedAt: null, deletedBy: null };
   const paymentLink = await invoiceService.getPaymentLinks(filter);
-  res.status(400).send(paymentLink);
+  res.status(httpStatus.OK).send(paymentLink);
 });
 
 const getPaymentLink = catchAsync(async (req, res) => {
