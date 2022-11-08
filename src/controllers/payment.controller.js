@@ -50,19 +50,20 @@ const creditAccount = catchAsync(async (req, res) => {
 
   if (!proceed) return res.send({ status: 'SUCCESS', message: 'Information already received' });
 
+  const errorTracker = [
+    `<strong>Account credit process for user account. Reference: ${reference}</strong><br>`,
+    `Credit request initiated for TrxId: ${data.transactionReference}`,
+  ];
+
   try {
     const accountInfo = await paymentService.queryAccountInfoByReference(reference);
+    errorTracker.push(`Account info retrieved sucessfully for user ${accountInfo.user}`);
     const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
+    errorTracker.push(`Transaction data dumped sucessfully. DumpId ${transactionDump._id.toString()}`);
     data.amount = data.amount.replaceAll(',', '');
+    errorTracker.push(`Transaction amount converted to number successfully (${data.amount})`);
     const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
-
-    emailService.sendPaymentTrackingEmail(`
-        Balance updated for transaction with reference ${data.transactionReference}
-        <br>
-        User: ${accountInfo.user || null}
-        <br>
-        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
-      `);
+    errorTracker.push(`New balance calculated successfully (${updatedBalance})`);
 
     // Confirm that there is no prior log of this particular transaction
     const getTransactions = await paymentService.getTransactions(
@@ -74,17 +75,13 @@ const creditAccount = catchAsync(async (req, res) => {
       true
     );
     if (getTransactions.results.length > 0) {
-      emailService.sendPaymentTrackingEmail(`
-        Transaction record exists for this particular transaction with code ${data.transactionReference}
-        <br>
-        User: ${accountInfo.user || null}
-        <br>
-        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
-      `);
+      errorTracker.push(`Transaction previous log check returns true`);
       return res.send({ status: 'SUCCESS', message: 'Already logged' });
     }
+    errorTracker.push(`Transaction previous log check returns false`);
 
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
 
     const transactionData = {
       amount: Number(data.amount),
@@ -106,15 +103,23 @@ const creditAccount = catchAsync(async (req, res) => {
 
     await paymentService.createTransactionRecord(transactionData);
 
+    errorTracker.push(`Transaction logged successfully for user`);
+
     const message = `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName})`;
     const user = await userService.getUserById(accountInfo.user);
 
     emailService.creditEmail(user.email, user.firstName, message);
+    errorTracker.push(`Credit notification email sent`);
+
+    errorTracker.push(`All required step completed successfully`);
+
+    emailService.sendPaymentTrackingEmail(errorTracker.join(' <br> '));
 
     addNotification(message, accountInfo.user);
     res.send({ status: 'SUCCESS' });
   } catch (error) {
-    paymentService.logError(error);
+    paymentService.logError({ status: errorTracker.join(' <br> ') });
+    emailService.sendPaymentTrackingEmail(errorTracker.join(' <br> '));
     res.send({ status: 'FAILED' });
   }
 });
