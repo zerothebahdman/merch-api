@@ -64,7 +64,7 @@ const createPaymentLink = catchAsync(async (req, res) => {
 });
 
 const getPaymentLinks = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['user', 'type', 'source']);
+  const filter = pick(req.query, ['creator', 'paymentType']);
   if (req.query.startDate && req.query.endDate) {
     filter.createdAt = { $gte: moment(req.query.startDate).startOf('day'), $lte: moment(req.query.endDate).endOf('day') };
   } else if (req.query.startDate) {
@@ -216,6 +216,17 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+const getPaymentLinkPurchased = catchAsync(async (req, res) => {
+  const filter = { paymentCode: req.params.paymentCode, deletedAt: null, deletedBy: null, creator: req.user.id };
+  const paymentLink = await invoiceService.getPaymentLink(filter);
+  const _filter = { creatorPaymentLink: paymentLink._id, deletedAt: null };
+  const peopleThatPaid = await invoiceService.getAllCreatorPaymentLinkClient(_filter);
+  const totalAmountMadeFromSales = peopleThatPaid.reduce((acc, cur) => acc + cur.amount, 0);
+  const totalTicketsSold = peopleThatPaid.reduce((acc, cur) => acc + cur.eventMetaDetails.ticketQuantity, 0);
+  const data = { totalAmountMadeFromSales, totalTicketsSold, peopleThatPaid };
+  res.status(200).send(data);
+});
+
 module.exports = {
   createInvoice,
   getCreatorClient,
@@ -230,4 +241,5 @@ module.exports = {
   generateCheckoutLink,
   paymentLinkPay,
   getPaymentLink,
+  getPaymentLinkPurchased,
 };

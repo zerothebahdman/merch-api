@@ -441,6 +441,42 @@ components:
           'id': '6364b84f3e62abfb6e640017',
         }
 
+    PaymentLinkInsights:
+      type: object
+      example:
+        {
+          'totalAmountMadeFromSales': 2000,
+          'totalTicketsSold': 2,
+          'peopleThatPaid':
+            [
+              {
+                'clientFirstName': 'Zero',
+                'clientLastName': 'Client',
+                'clientPhoneNumber': '08157582199',
+                'clientEmail': 'info.ezecodes@gmail.com',
+                'paymentType': 'event',
+                'amount': 2000,
+                'creator': '63456b0b4495e90021367a12',
+                'creatorPaymentLink': '636653251905de5c8c506153',
+                'eventMetaDetails':
+                  {
+                    'ticketType': 'Regular',
+                    'ticketQuantity': 2,
+                    'peopleReceivingTicket':
+                      [
+                        {
+                          'clientFirstName': 'Zero',
+                          'clientLastName': 'Thebahdman',
+                          'clientEmail': 'test@mail.com',
+                          'clientPhoneNumber': '08157582133',
+                        },
+                      ],
+                  },
+                'id': '636653aa1905de5c8c506156',
+              },
+            ],
+        }
+
     Waitlist:
       type: object
       example:

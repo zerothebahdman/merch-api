@@ -31,6 +31,8 @@ router
   .route('/payment-link/validate-payment')
   .post(validate(invoiceValidation.paymentLinkPay), invoiceController.paymentLinkPay);
 
+router.route('/payment-link/:paymentCode/purchased').get(auth('creator'), invoiceController.getPaymentLinkPurchased);
+
 router.route('/issue').post(auth('creator'), validate(invoiceValidation.createIssue), invoiceController.createIssue);
 router
   .route('/:invoiceId')
@@ -411,6 +413,27 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /payment-links/{paymentCode}/purchased:
+ *    get:
+ *      summary: Get insights for a payment link
+ *      description: Get insights for a payment link
+ *      tags: [Invoice]
+ *      responses:
+ *        "200":
+ *          description: Fetched
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLinkInsights'
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":
