@@ -6,6 +6,7 @@ const { invoiceService, paymentService, userService, emailService } = require('.
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { generateRandomChar, calculatePeriod } = require('../utils/helpers');
+const pick = require('../utils/pick');
 
 const createInvoice = catchAsync(async (req, res) => {
   req.body.creator = req.user.id;
@@ -20,8 +21,11 @@ const updateInvoice = catchAsync(async (req, res) => {
 });
 
 const getInvoices = catchAsync(async (req, res) => {
-  const filter = { creator: req.user.id };
-  const invoices = await invoiceService.getInvoice(filter, { populate: 'client' }, req.user);
+  const filter = pick(req.query, ['creator', 'type', 'source']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  if (req.query.include) options.populate = req.query.include.toString();
+  else options.populate = '';
+  const invoices = await invoiceService.getInvoice(filter, options, req.user, req.query.paginate);
   res.status(200).send(invoices);
 });
 
@@ -60,8 +64,11 @@ const createPaymentLink = catchAsync(async (req, res) => {
 });
 
 const getPaymentLinks = catchAsync(async (req, res) => {
-  const filter = { creator: req.user.id, deletedAt: null, deletedBy: null };
-  const paymentLink = await invoiceService.getPaymentLinks(filter);
+  const filter = pick(req.query, ['user', 'type', 'source']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  if (req.query.include) options.populate = req.query.include.toString();
+  else options.populate = '';
+  const paymentLink = await invoiceService.getPaymentLinks(filter, options, req.user, req.query.paginate);
   res.status(httpStatus.OK).send(paymentLink);
 });
 

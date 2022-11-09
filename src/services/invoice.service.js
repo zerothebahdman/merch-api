@@ -11,6 +11,7 @@ const getInvoiceById = async (id, eagerLoadFields = false) => {
 
 const getInvoice = async (filter, options = {}, actor, ignorePagination = false) => {
   filter.deletedBy = null;
+  if (actor) filter.creator = actor.id;
   if (actor && filter.creator && actor.id === filter.creator) {
     if (!options.populate) options.populate = '';
     const merches = ignorePagination
@@ -77,8 +78,12 @@ const updatePaymentLink = async (paymentLinkId, paymentLinkBody) => {
   return paymentLink;
 };
 
-const getPaymentLinks = async (filter) => {
-  const paymentLink = await PaymentLink.find(filter);
+const getPaymentLinks = async (filter, options, actor, paginate = true) => {
+  if (actor) filter.creator = actor.id;
+  filter.deletedAt = null;
+  const paymentLink = !paginate
+    ? await PaymentLink.find(filter).populate(options.populate || '')
+    : await PaymentLink.paginate(filter, options);
   return paymentLink;
 };
 
