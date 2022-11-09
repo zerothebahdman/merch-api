@@ -65,6 +65,13 @@ const createPaymentLink = catchAsync(async (req, res) => {
 
 const getPaymentLinks = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['user', 'type', 'source']);
+  if (req.query.startDate && req.query.endDate) {
+    filter.createdAt = { $gte: moment(req.query.startDate).startOf('day'), $lte: moment(req.query.endDate).endOf('day') };
+  } else if (req.query.startDate) {
+    filter.createdAt = { $gte: moment(req.query.startDate).startOf('day') };
+  } else if (req.query.endDate) {
+    filter.createdAt = { $lte: moment(req.query.endDate).endOf('day') };
+  }
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   if (req.query.include) options.populate = req.query.include.toString();
   else options.populate = '';
