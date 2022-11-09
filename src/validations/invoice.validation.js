@@ -58,7 +58,7 @@ const createPaymentLink = {
     pageName: Joi.string().required(),
     pageImage: Joi.string(),
     pageDescription: Joi.string().required(),
-    pageRedirectUrl: Joi.string().required(),
+    pageRedirectUrl: Joi.string(),
     amount: Joi.when('paymentType', {
       is: PAYMENT_LINK_TYPES.EVENT,
       then: Joi.number(),

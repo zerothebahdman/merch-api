@@ -256,3 +256,163 @@ module.exports = router;
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */
+
+/**
+ * @swagger
+ * path:
+ *  /payment-link:
+ *    post:
+ *      summary: Create a payment link
+ *      description: Allow creators to be able to payment links for their products
+ *      tags: [Invoice]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - pageName
+ *                - pageDescription
+ *                - pageRedirectUrl
+ *                - amount
+ *                - paymentType
+ *                - eventPayment: {}
+ *              example:
+ *                pageName: 'Merchro'
+ *                pageDescription: 'Merchro payment page'
+ *                pageRedirectUrl: 'https://merchro.com'
+ *                amount: 100
+ *                paymentType: 'event'
+ *                eventPayment: {type: true, location: 'Lagos', date: {from: '2021-01-01', to: '2021-01-01'}, tickets: [{ticketType: 'VIP', ticketPrice: 100, ticketQuantity: 10}, {ticketType: 'Regular', ticketPrice: 50, ticketQuantity: 10}]}
+ *      responses:
+ *        "201":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *
+ *    get:
+ *      summary: Get all Payment Links
+ *      description: Get all creator payment links
+ *      tags: [Invoice]
+ *      responses:
+ *        "200":
+ *          description: Fetched
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /payment-links/{paymentCode}:
+ *    get:
+ *      summary: Get a payment link
+ *      description: Get a payment link by the payment code
+ *      tags: [Invoice]
+ *      responses:
+ *        "200":
+ *          description: Fetched
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /payment-link/checkout:
+ *    post:
+ *      summary: Create a payment link
+ *      description: Allow creators to be able to payment links for their products
+ *      tags: [Invoice]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - clientFirstName
+ *                - clientLastName
+ *                - clientEmail
+ *                - clientPhoneNumber
+ *                - creatorPaymentLinkId
+ *                - redirectUrl
+ *                - paymentType
+ *                - amount
+ *                - event: {ticketType: 'VIP', ticketQuantity: 10, peopleReceivingTicket: [{clientFirstName: 'John', clientLastName: 'Doe', clientEmail: ' [emailProtected] ', clientPhoneNumber: '08012345678'}]}
+ *              example:
+ *                clientFirstName: 'John'
+ *                clientLastName: 'Doe'
+ *                clientEmail: ' [emailProtected]'
+ *                clientPhoneNumber: '08012345678'
+ *                creatorPaymentLinkId: '5f9f5b9c0b9d3b0b8c8b4567'
+ *                redirectUrl: 'https://merchro.com'
+ *                paymentType: 'event'
+ *                amount: 100
+ *                event: {ticketType: 'VIP', ticketPrice: 100, ticketQuantity: 10, peopleReceivingTicket: [{clientFirstName: 'John', clientLastName: 'Doe', clientEmail: ' [emailProtected] ', clientPhoneNumber: '08012345678'}]}
+ *      responses:
+ *        "201":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLinkCheckout'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /payment-link/validate-payment:
+ *    post:
+ *      summary:  Validate payment link payment
+ *      description:  Validate payment link payment
+ *      tags: [Invoice]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - transaction_id
+ *                - tx_ref
+ *                - idempotentKey
+ *              example:
+ *                transaction_id: '3930674'
+ *                tx_ref: '0215149335'
+ *                idempotentKey: '8014193946DFADFAD3915878119943491039235553930674wefwe'
+ *      responses:
+ *        "200":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */

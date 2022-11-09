@@ -396,6 +396,35 @@ components:
           'id': '6364bbed0e10ad049e7b4d2d',
         }
 
+    PaymentLink:
+      type: object
+      example:
+        {
+          'recurringPayment': { 'type': false },
+          'eventPayment':
+            {
+              'type': true,
+              'location': 'Lagos',
+              'date': { 'from': '2021-01-01', 'to': '2021-01-01' },
+              'tickets':
+                [
+                  { ticketType: 'VIP', ticketPrice: 100, ticketQuantity: 10 },
+                  { ticketType: 'Regular', ticketPrice: 50, ticketQuantity: 10 },
+                ],
+            },
+          'paymentType': 'event',
+          'pageName': 'Event Payment Link',
+          'pageDescription': 'Event Payment link to see if payment pageDescription is working fine',
+          'pageRedirectUrl': 'https://zeroacme.merchro.store',
+          'amount': 1000,
+          'creator': '63456b0b4495e90021367a12',
+          'paymentCode': 'pay-zxd8lkfsd8ptn1u',
+        }
+
+    PaymentLinkCheckout:
+      type: object
+      example: { 'url': 'https://ravemodal-dev.herokuapp.com/v3/hosted/pay/ce9c3e4ce39586c751d3' }
+
     Client:
       type: object
       example:
