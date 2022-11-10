@@ -1,4 +1,5 @@
 const moment = require('moment');
+const config = require('../config/config');
 const { ERROR_MESSAGES } = require('../config/messages');
 
 const titleCase = function (string) {
@@ -99,6 +100,49 @@ const calculatePeriod = (interval) => {
   return periodDate;
 };
 
+const calculateProfit = (amount, type) => {
+  let profitAmount;
+  switch (type) {
+    case 'DStv':
+      profitAmount = (Number(config.paymentProcessing.dstvProcessingCharge) / 100) * amount;
+      break;
+    case 'GOtv':
+      profitAmount = (Number(config.paymentProcessing.gotvProcessingCharge) / 100) * amount;
+      break;
+    case 'StarTimes':
+      profitAmount = (Number(config.paymentProcessing.startimesProcessingCharge) / 100) * amount;
+      break;
+    case 'AEDC':
+      profitAmount = (Number(config.paymentProcessing.aedcProcessingCharge) / 100) * amount;
+      break;
+    case 'Ikeja Electric':
+      profitAmount = (Number(config.paymentProcessing.ikejaElectricProcessingCharge) / 100) * amount;
+      break;
+    case 'PHED':
+      profitAmount = (Number(config.paymentProcessing.phedProcessingCharge) / 100) * amount;
+      break;
+    case 'Ibadan Electricity Distribution Company':
+      profitAmount = (Number(config.paymentProcessing.iedcProcessingCharge) / 100) * amount;
+      break;
+    case 'KEDCO':
+      profitAmount = (Number(config.paymentProcessing.kedcoProcessingCharge) / 100) * amount;
+      break;
+    case 'Jos Electricity Distribution (JED)':
+      profitAmount = (Number(config.paymentProcessing.jedElectricProcessingCharge) / 100) * amount;
+      break;
+    case 'Kaduna Electric':
+      profitAmount = (Number(config.paymentProcessing.kadunaElectricProcessingCharge) / 100) * amount;
+      break;
+    case 'Eko Electricity (EKEDC)':
+      profitAmount = (Number(config.paymentProcessing.ekedcProcessingCharge) / 100) * amount;
+      break;
+    default:
+      profitAmount = 0;
+      break;
+  }
+  return profitAmount;
+};
+
 module.exports = {
   titleCase,
   capitalCase,
@@ -107,4 +151,5 @@ module.exports = {
   generateRandomChar,
   slugify,
   calculatePeriod,
+  calculateProfit,
 };

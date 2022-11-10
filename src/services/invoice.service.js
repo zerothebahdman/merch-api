@@ -11,6 +11,7 @@ const getInvoiceById = async (id, eagerLoadFields = false) => {
 
 const getInvoice = async (filter, options = {}, actor, ignorePagination = false) => {
   filter.deletedBy = null;
+  filter.deletedAt = null;
   if (actor) filter.creator = actor.id;
   if (actor && filter.creator && actor.id === filter.creator) {
     if (!options.populate) options.populate = '';

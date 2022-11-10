@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const moment = require('moment');
+const config = require('../config/config');
 const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES } = require('../config/constants');
 const { invoiceService, paymentService, userService, emailService } = require('../services');
 const ApiError = require('../utils/ApiError');
@@ -86,8 +87,8 @@ const getPaymentLink = catchAsync(async (req, res) => {
 });
 
 const paymentLinkPay = catchAsync(async (req, res) => {
-  // const proceed = await paymentService.controlTransaction(req.body);
-  // if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
+  const proceed = await paymentService.controlTransaction(req.body);
+  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
   const validatePayment = await paymentService.validatePayment(req.body.transaction_id);
   if (validatePayment.data.status === 'successful') {
     const {
@@ -112,7 +113,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
           nextChargeDate,
           frequency,
           interval,
-          timesBilled: 1,
+          timesBilled: frequency > 0 ? 1 : 0,
         },
       };
       // Math.round(duration / frequency), 'days'
@@ -148,11 +149,17 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       });
       await invoiceService.updatePaymentLink(creatorPaymentLink, { eventPayment: { tickets: updatedTickets } });
     }
-    await paymentService.createTransactionRecord({
+
+    const charge = (Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount;
+    const amountToPayCreator = amount - charge;
+    const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount;
+    const profit = charge - processingCost;
+
+    const transaction = await paymentService.createTransactionRecord({
       user: creatorDetails._id,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
       type: TRANSACTION_TYPES.CREDIT,
-      amount: Number(amount),
+      amount: Number(amountToPayCreator),
       purpose: `Payment for ${paymentLink.pageName}`,
       createdBy: creatorClient.id,
       reference: `#PL_${generateRandomChar(5, 'num')}`,
@@ -164,7 +171,17 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       },
     });
 
-    paymentService.addToBalance(amount, creatorDetails._id);
+    await paymentService.createMerchroEarningsRecord({
+      user: creatorDetails._id,
+      source: TRANSACTION_SOURCES.PAYMENT_LINK,
+      amount: Number(amount),
+      charge,
+      profit,
+      transaction: transaction._id,
+      amountSpent: Math.round(processingCost),
+    });
+
+    paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
     res.send(paymentLink);
   } else {
     // Inform the customer their payment was unsuccessful

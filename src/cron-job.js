@@ -74,8 +74,9 @@ const cronJobs = () => {
         paymentLinkClient.map(async (client) => {
           const { nextChargeDate } = client.subscriptionDetails;
           if (
-            moment(nextChargeDate) <= moment() &&
-            client.subscriptionDetails.timesBilled <= paymentLink.recurringPayment.frequency
+            (moment(nextChargeDate) <= moment() && paymentLink.recurringPayment.frequency === 0) ||
+            (moment(nextChargeDate) <= moment() &&
+              client.subscriptionDetails.timesBilled <= paymentLink.recurringPayment.frequency)
           ) {
             await paymentService.initiateRecurringPayment(paymentLink, client);
           }

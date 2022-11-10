@@ -19,7 +19,8 @@ const Bank = require('../models/bank.model');
 const { Paga } = require('../utils/paga');
 const pick = require('../utils/pick');
 const { addNotification } = require('../utils/notification');
-const { generateRandomChar } = require('../utils/helpers');
+const { generateRandomChar, calculateProfit } = require('../utils/helpers');
+const config = require('../config/config');
 
 const getAccountInfo = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
@@ -83,7 +84,9 @@ const creditAccount = catchAsync(async (req, res) => {
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
 
-    const transactionData = {
+    let charge = (Number(config.paymentProcessing.depositCharge) / 100) * data.amount;
+    charge = charge > 500 ? 500 : charge;
+    const transaction = await paymentService.createTransactionRecord({
       amount: Number(data.amount),
       type: TRANSACTION_TYPES.CREDIT,
       source: TRANSACTION_SOURCES.BANK_TRANSFER,
@@ -99,9 +102,17 @@ const creditAccount = catchAsync(async (req, res) => {
         accountNumber: accountInfo.accountInfo.accountNumber,
         accountName: accountInfo.accountInfo.accountName,
       },
-    };
+    });
 
-    await paymentService.createTransactionRecord(transactionData);
+    await paymentService.createMerchroEarningsRecord({
+      user: accountInfo.user,
+      source: TRANSACTION_SOURCES.PAYMENT_LINK,
+      amount: Number(data.amount),
+      charge: 0,
+      profit: `-${charge}`,
+      transaction: transaction._id,
+      amountSpent: 0,
+    });
 
     errorTracker.push(`Transaction logged successfully for user`);
 
@@ -130,9 +141,12 @@ const withdrawMoney = catchAsync(async (req, res) => {
   if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate transaction, withdrawal already initialized');
 
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
-  if (Number(req.body.amount) <= accountInfo.balance) {
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
+  const charge = Number(config.paymentProcessing.withdrawalCharge);
+  if (Number(req.body.amount) + charge <= accountInfo.balance) {
     const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
+    const processingCost = Number(config.paymentProcessing.withdrawalProcessingCost);
+    const profit = charge - processingCost;
+    const updatedBalance = Number((accountInfo.balance - (Number(req.body.amount) + charge)).toFixed(2));
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
     // Store transaction
@@ -154,6 +168,16 @@ const withdrawMoney = catchAsync(async (req, res) => {
         reference: withdrawResponse.response.reference,
       },
     });
+
+    await paymentService.createMerchroEarningsRecord({
+      user: accountInfo._id,
+      source: TRANSACTION_SOURCES.STORE,
+      amount: Number(req.body.amount),
+      charge,
+      profit,
+      transaction: transaction._id,
+      amountSpent: Math.round(processingCost),
+    });
     const message = `NGN${req.body.amount} was debited from your account to (${withdrawResponse.response.destinationAccountHolderNameAtBank}/${req.body.accountNumber})`;
     const user = await userService.getUserById(accountInfo.user);
 
@@ -161,7 +185,11 @@ const withdrawMoney = catchAsync(async (req, res) => {
 
     addNotification(message, accountInfo.user);
     res.send(transaction);
-  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
+  } else
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Oops! you don't have enough funds ${Number(req.body.amount) + charge} to perform this transaction`
+    );
 });
 
 const validateAccount = catchAsync(async (req, res) => {
@@ -202,8 +230,8 @@ const buyAirtime = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
   if (Number(req.body.amount) <= accountInfo.balance) {
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     const airtimeResponse = await paymentService.buyAirtime(req.body, req.user);
+    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: airtimeResponse, user: accountInfo.user });
     // Store transaction
@@ -221,6 +249,15 @@ const buyAirtime = catchAsync(async (req, res) => {
         message: airtimeResponse.response.message,
         reference: airtimeResponse.response.reference,
       },
+    });
+    await paymentService.createMerchroEarningsRecord({
+      user: accountInfo.user,
+      amount: req.body.amount,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      charge: 0,
+      profit: Number(config.paymentProcessing.airtimeRechargeCharge / 100) * req.body.amount,
+      transaction: transaction.id,
+      amountSpent: 0,
     });
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
@@ -242,7 +279,9 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
         const creatorPage = await creatorPageService.queryCreatorPageById(order.creatorPage);
         const charge = await chargeService.saveCharge(amount, order.id, creator.id);
         amount -= charge;
-        await paymentService.createTransactionRecord({
+        const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount;
+        const profit = charge - processingCost;
+        const transaction = await paymentService.createTransactionRecord({
           user: creator.id,
           source: TRANSACTION_SOURCES.STORE,
           type: TRANSACTION_TYPES.CREDIT,
@@ -256,6 +295,16 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
             email: purchaser.email,
             currency: CURRENCIES.NAIRA,
           },
+        });
+
+        await paymentService.createMerchroEarningsRecord({
+          user: creator._id,
+          source: TRANSACTION_SOURCES.STORE,
+          amount: Number(amount),
+          charge,
+          profit,
+          transaction: transaction._id,
+          amountSpent: processingCost,
         });
 
         paymentService.addToBalance(amount, creator.id);
@@ -287,8 +336,8 @@ const buyData = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
   if (Number(req.body.amount) <= accountInfo.balance) {
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     const dataResponse = await paymentService.buyData(req.body, req.user);
+    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: dataResponse, user: accountInfo.user });
     // Store transaction
@@ -307,6 +356,15 @@ const buyData = catchAsync(async (req, res) => {
         payerName: `Data Sub/${req.body.destinationPhoneNumber}`,
       },
     });
+    await paymentService.createMerchroEarningsRecord({
+      user: accountInfo.user,
+      amount: req.body.amount,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      profit: Number((config.paymentProcessing.airtimeRechargeCharge / 100) * req.body.amount),
+      transaction: transaction.id,
+      charge: 0,
+      amountSpent: 0,
+    });
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -315,8 +373,10 @@ const purchaseUtilities = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
   if (Number(req.body.amount) <= accountInfo.balance) {
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
+    const profit = calculateProfit(req.body.amount, req.body.utilityType);
+    delete req.body.utilityType;
     const utilitiesResponse = await paymentService.purchaseUtilities(req.body, req.user);
+    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: utilitiesResponse, user: accountInfo.user });
     // Store transaction
@@ -335,6 +395,15 @@ const purchaseUtilities = catchAsync(async (req, res) => {
         reference: utilitiesResponse.response.reference,
       },
     });
+    await paymentService.createMerchroEarningsRecord({
+      user: accountInfo.user,
+      amount: req.body.amount,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      charge: 0,
+      profit,
+      transaction: transaction.id,
+      amountSpent: 0,
+    });
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -350,7 +419,11 @@ const getUtilitiesProviders = catchAsync(async (req, res) => {
       utility.displayName === 'Eko Electricity (EKEDC)' ||
       utility.displayName === 'PHED' ||
       utility.displayName === 'KEDCO' ||
-      utility.displayName === 'AEDC'
+      utility.displayName === 'AEDC' ||
+      utility.displayName === 'Jos Electricity Distribution (JED)' ||
+      utility.displayName === 'Ibadan Electricity Distribution Company' ||
+      utility.displayName === 'Enugu Disco' ||
+      utility.displayName === 'Kaduna Electric'
   );
   const cableSubUtility = [];
   const referenceNumber = req.query.referenceNumber ? req.query.referenceNumber : generateRandomChar(10, 'num');

@@ -6,7 +6,7 @@ const Flutterwave = require('flutterwave-node-v3');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { paymentData } = require('../config/config');
-const { Account, TransactionLog, ErrorTracker, RegulateTransaction } = require('../models');
+const { Account, TransactionLog, ErrorTracker, RegulateTransaction, MerchroEarnings } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
 const { Paga } = require('../utils/paga');
@@ -204,6 +204,11 @@ const getDataBundles = async (operatorId) => {
   return bundles;
 };
 
+const createMerchroEarningsRecord = async (transactionData) => {
+  const transaction = await MerchroEarnings.create({ ...transactionData });
+  return transaction;
+};
+
 const buyData = async (data) => {
   data.referenceNumber = generateRandomChar(16, 'num');
   data.currency = 'NGN';
@@ -241,22 +246,24 @@ const initiateRecurringPayment = async (paymentLink, client) => {
      * 5. Updated the subscription record for the client to prepare for the next payment
      */
 
-    const amountCharge = (2 / 100) * paymentLink.amount + paymentLink.amount;
+    // const amountCharge = (2 / 100) * paymentLink.amount + paymentLink.amount;
 
     const chargeBody = {
       tx_ref: `tx-${generateRandomChar(10, 'lower-num')}`,
-      amount: Number(amountCharge),
+      amount: Number(paymentLink.amount),
       currency: 'NGN',
       country: 'NG',
       email: client.clientEmail,
       token: client.card.token,
       narration: `Payment for ${client.subscriptionDetails.interval} ${paymentLink.pageName} subscription`,
     };
-
+    const charge = (Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * paymentLink.amount;
+    const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * paymentLink.amount;
+    const profit = charge - processingCost;
     const initiateCharge = await flw.Tokenized.charge(chargeBody);
     if (initiateCharge.status === 'success') {
       const creator = await userService.getUserById(paymentLink.creator);
-      await createTransactionRecord({
+      const transaction = await createTransactionRecord({
         user: creator._id,
         source: TRANSACTION_SOURCES.PAYMENT_LINK,
         type: TRANSACTION_TYPES.CREDIT,
@@ -272,7 +279,17 @@ const initiateRecurringPayment = async (paymentLink, client) => {
         },
       });
 
-      addToBalance(paymentLink.amount, client._id);
+      await createMerchroEarningsRecord({
+        user: creator._id,
+        source: TRANSACTION_SOURCES.PAYMENT_LINK,
+        amount: Number(paymentLink.amount),
+        charge,
+        profit,
+        transaction: transaction._id,
+        amountSpent: Math.round(processingCost),
+      });
+
+      addToBalance(Number(paymentLink.amount) - charge, client._id);
       const { interval, frequency } = paymentLink.recurringPayment;
       const nextChargeDate = calculatePeriod(interval);
       const updateBody = {
@@ -281,7 +298,7 @@ const initiateRecurringPayment = async (paymentLink, client) => {
           nextChargeDate,
           frequency,
           interval,
-          timesBilled: client.subscriptionDetails.timesBilled + 1,
+          timesBilled: frequency > 0 ? client.subscriptionDetails.timesBilled + 1 : 0,
         },
       };
       await invoiceService.updateCreatorClient(client._id, { ...updateBody });
@@ -313,4 +330,5 @@ module.exports = {
   getDataBundles,
   buyData,
   initiateRecurringPayment,
+  createMerchroEarningsRecord,
 };

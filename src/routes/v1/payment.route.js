@@ -169,11 +169,13 @@ module.exports = router;
  *                - amount
  *                - merchantNumber
  *                - merchantServiceProductCode
+ *                - utilityType
  *              example:
  *                merchant: 13B5041B-7143-46B1-9A88-F355AD7EA1EC
  *                amount: 1000
  *                merchantNumber: '45030319920'
  *                merchantServiceProductCode: 'MY003'
+ *                utilityType: 'DStv'
  *      responses:
  *        "200":
  *          description: OK

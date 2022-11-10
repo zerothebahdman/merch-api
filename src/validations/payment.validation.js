@@ -55,6 +55,7 @@ const purchaseUtilities = {
     merchantNumber: Joi.string().required(),
     merchantServiceProductCode: Joi.string().required(),
     merchant: Joi.string().required(),
+    utilityType: Joi.string().required(),
   }),
 };
 
