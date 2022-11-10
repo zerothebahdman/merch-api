@@ -173,8 +173,8 @@ const getPaymentLink = catchAsync(async (req, res) => {
 });
 
 const paymentLinkPay = catchAsync(async (req, res) => {
-  // const proceed = await paymentService.controlTransaction(req.body);
-  // if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
+  const proceed = await paymentService.controlTransaction(req.body);
+  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
   const validatePayment = await paymentService.validatePayment(req.body.transaction_id);
   if (validatePayment.data.status === 'successful') {
     const {

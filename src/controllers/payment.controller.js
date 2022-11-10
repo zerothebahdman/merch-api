@@ -190,7 +190,11 @@ const withdrawMoney = catchAsync(async (req, res) => {
 
     addNotification(message, accountInfo.user);
     res.send(transaction);
-  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
+  } else
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Oops! you don't have enough funds ${Number(req.body.amount) + charge} to perform this transaction`
+    );
 });
 
 const validateAccount = catchAsync(async (req, res) => {
