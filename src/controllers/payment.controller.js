@@ -93,7 +93,6 @@ const creditAccount = catchAsync(async (req, res) => {
 
     let charge = Number(((Number(config.paymentProcessing.depositCharge) / 100) * data.amount).toFixed(2));
     charge = charge > 500 ? 500 : charge;
-
     const transaction = await paymentService.createTransactionRecord({
       amount: Number(data.amount),
       type: TRANSACTION_TYPES.CREDIT,
