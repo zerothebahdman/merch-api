@@ -115,7 +115,6 @@ const creditAccount = catchAsync(async (req, res) => {
     });
 
     errorTracker.push(`Transaction logged successfully for user`);
-
     const message = `NGN${data.amount} was credited to your account (${data.payerDetails.payerName}/${data.payerDetails.payerBankName})`;
     const user = await userService.getUserById(accountInfo.user);
 
