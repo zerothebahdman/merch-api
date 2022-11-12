@@ -10,10 +10,13 @@ router
   .route('/')
   .get(auth('creator'), invoiceController.getInvoices)
   .post(auth('creator'), validate(invoiceValidation.createInvoiceValidation), invoiceController.createInvoice);
+router
+  .route('/process-invoice-payment')
+  .post(validate(invoiceValidation.processInvoicePayment), invoiceController.processInvoicePayment);
 
 router
   .route('/client')
-  .get(auth('creator'), invoiceController.getCreatorClient)
+  .get(auth('creator'), invoiceController.queryCreatorClient)
   .post(auth('creator'), validate(invoiceValidation.createClient), invoiceController.createClient);
 
 router
@@ -434,6 +437,41 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/PaymentLinkInsights'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /process-invoice-payment:
+ *    post:
+ *      summary:  Process invoice payment
+ *      description:  Process invoice payment
+ *      tags: [Invoice]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - transaction_id
+ *                - tx_ref
+ *                - idempotentKey
+ *              example:
+ *                transaction_id: '3930674'
+ *                tx_ref: '0215149335'
+ *                idempotentKey: '8014193946DFADFAD3915878119943491039235553930674wefwe'
+ *      responses:
+ *        "200":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/Invoice'
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":

@@ -54,8 +54,13 @@ const createClient = async (client) => {
   return newClient;
 };
 
-const getCreatorClient = async (creatorId) => {
+const queryCreatorClient = async (creatorId) => {
   const client = await Client.find({ creator: creatorId, deletedAt: null, deletedBy: null });
+  return client;
+};
+
+const getCreatorClient = async (filter) => {
+  const client = await Client.findOne(filter);
   return client;
 };
 
@@ -139,6 +144,7 @@ module.exports = {
   getInvoiceById,
   createInvoice,
   createClient,
+  queryCreatorClient,
   getCreatorClient,
   getInvoice,
   updateInvoiceById,

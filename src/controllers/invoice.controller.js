@@ -3,7 +3,7 @@ const httpStatus = require('http-status');
 const moment = require('moment');
 const config = require('../config/config');
 const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES } = require('../config/constants');
-const { invoiceService, paymentService, userService, emailService } = require('../services');
+const { invoiceService, paymentService, userService, emailService, creatorPageService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { generateRandomChar, calculatePeriod } = require('../utils/helpers');
@@ -11,9 +11,83 @@ const pick = require('../utils/pick');
 
 const createInvoice = catchAsync(async (req, res) => {
   req.body.creator = req.user.id;
-  req.body.invoiceNumber = `#INV-${generateRandomChar(5, 'num')}`;
+  req.body.invoiceCode = `#INV-${generateRandomChar(5, 'num')}`;
+  const pageInfo = await creatorPageService.queryCreatorPageById(req.user.creatorPage);
+  const client = await invoiceService.getCreatorClient({ creator: req.user.id, _id: req.body.client });
   const invoice = await invoiceService.createInvoice(req.body);
+  const paymentLink = await paymentService.getPaymentLink(
+    {
+      customer: {
+        email: req.user.email,
+      },
+      meta: { client: client.id, creator: req.user.id, invoice: invoice.id },
+      amount: req.body.totalAmount,
+      currency: CURRENCIES.NAIRA,
+      tx_ref: generateRandomChar(10, 'num'),
+      customizations: {
+        title: pageInfo.name.toUpperCase(),
+        logo: pageInfo.avatar ? pageInfo.avatar : 'https://www.merchro.com/logo-black.svg',
+      },
+    },
+    req.body.redirectUrl
+  );
+  await invoiceService.updateInvoiceById(invoice.id, { paymentLink });
   res.status(201).send(invoice);
+});
+
+const processInvoicePayment = catchAsync(async (req, res) => {
+  const proceed = await paymentService.controlTransaction(req.body);
+  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
+  const validatePayment = await paymentService.validatePayment(req.body.transaction_id);
+  if (validatePayment.data.status === 'successful') {
+    const {
+      amount,
+      meta: { creator, client, invoice },
+    } = validatePayment.data;
+    const filter = {
+      _id: client,
+      creator,
+      deletedAt: null,
+    };
+    const creatorClient = await invoiceService.getCreatorClient(filter);
+    const creatorDetails = await userService.getUserById(creator);
+    const _invoice = await invoiceService.getInvoiceById(invoice);
+
+    const charge = (Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount;
+    const amountToPayCreator = amount - charge;
+    const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount;
+    const profit = charge - processingCost;
+
+    const transaction = await paymentService.createTransactionRecord({
+      user: creatorDetails._id,
+      source: TRANSACTION_SOURCES.PAYMENT_LINK,
+      type: TRANSACTION_TYPES.CREDIT,
+      amount: Number(amountToPayCreator),
+      purpose: `Payment for Invoice ${_invoice.invoiceCode}`,
+      createdBy: creatorClient.id,
+      reference: `#PL_${generateRandomChar(5, 'num')}`,
+      meta: {
+        user: creatorClient._id,
+        payerName: `Invoice ${_invoice.invoiceCode}/${creatorClient.name.toUpperCase()}`,
+        email: creatorClient.email,
+        currency: CURRENCIES.NAIRA,
+      },
+    });
+    await paymentService.createMerchroEarningsRecord({
+      user: creatorDetails._id,
+      source: TRANSACTION_SOURCES.INVOICE,
+      amount: Number(amount),
+      charge,
+      profit,
+      transaction: transaction._id,
+      amountSpent: Math.round(processingCost),
+    });
+    paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
+    res.send(_invoice);
+  } else {
+    // Inform the customer their payment was unsuccessful
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was unsuccessful');
+  }
 });
 
 const updateInvoice = catchAsync(async (req, res) => {
@@ -40,8 +114,8 @@ const deleteInvoice = catchAsync(async (req, res) => {
   res.status(204).send();
 });
 
-const getCreatorClient = catchAsync(async (req, res) => {
-  const client = await invoiceService.getCreatorClient(req.user.id);
+const queryCreatorClient = catchAsync(async (req, res) => {
+  const client = await invoiceService.queryCreatorClient(req.user.id);
   res.status(200).send(client);
 });
 
@@ -246,7 +320,7 @@ const getPaymentLinkPurchased = catchAsync(async (req, res) => {
 
 module.exports = {
   createInvoice,
-  getCreatorClient,
+  queryCreatorClient,
   createClient,
   getInvoices,
   updateInvoice,
@@ -259,4 +333,5 @@ module.exports = {
   paymentLinkPay,
   getPaymentLink,
   getPaymentLinkPurchased,
+  processInvoicePayment,
 };

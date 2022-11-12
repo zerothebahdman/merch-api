@@ -18,6 +18,7 @@ const createInvoiceValidation = {
     shipping: Joi.number(),
     invoiceNote: Joi.string(),
     dueDate: Joi.date(),
+    redirectUrl: Joi.string().required(),
   }),
 };
 
@@ -143,6 +144,14 @@ const generateCheckoutLink = {
   }),
 };
 
+const processInvoicePayment = {
+  body: Joi.object().keys({
+    transaction_id: Joi.string().required(),
+    tx_ref: Joi.string().required(),
+    idempotentKey: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   createInvoiceValidation,
   createClient,
@@ -151,4 +160,5 @@ module.exports = {
   createPaymentLink,
   paymentLinkPay,
   generateCheckoutLink,
+  processInvoicePayment,
 };

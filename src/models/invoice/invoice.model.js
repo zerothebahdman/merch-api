@@ -4,7 +4,7 @@ const { toJSON, auditableFields, paginate } = require('../plugins');
 
 const invoiceSchema = new Schema(
   {
-    invoiceNumber: String,
+    invoiceCode: String,
     creator: {
       type: Schema.Types.ObjectId,
       ref: 'User',
