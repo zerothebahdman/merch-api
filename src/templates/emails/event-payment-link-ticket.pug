@@ -743,8 +743,15 @@ center
                                       | TICKET SUMMARY
                                     div(style='width: 90%; margin: 0 auto; margin-top: 1rem; padding: 1rem;  background: #f9f9f9;')
                                       div(style='display: flex; align-items: flex-start; justify-content: space-between;')
-                                        p #{user.eventMetaDetails.ticketType} Ticket
-                                        p #{user.eventMetaDetails.ticketQuantity}
+                                      - for (var i = 0; i < user.eventMetaDetails.ticketType.length; i++) {
+                                        div(style='display: flex; align-items: flex-start; justify-content: space-between;')
+                                          div
+                                            h4(style='font-size: 16px; color: #535456;font-weight: 400; padding:0.8rem 0 0.8rem 0')
+                                              | #{user.eventMetaDetails.ticketType[i].type} Ticket
+                                          div
+                                            h4(style='font-size: 16px; color: #535456;font-weight: 400; padding:0.8rem 0 0.8rem 0')
+                                              | #{user.eventMetaDetails.ticketType[i].quantity}
+                                      - }
                                       hr
                                       div(style='display: flex; align-items: flex-start; justify-content: space-between;')
                                         p
@@ -777,13 +784,15 @@ center
                         tbody
                           tr
                             td
-                              p(style='text-align: center; color: #7890C1;')
-                                | Download
-                                | ticket as PDF
+                            - var url = event.ticketLink
+                              a(href=url)
+                                p(style='text-align: center; color: #7890C1;')
+                                  | Download
+                                  | ticket as PDF
                               p(style='text-align: center; margin:3rem 0 1rem 0; font-weight: 400; font-size: 12px; line-height: 16px; letter-spacing: 0.150769px; color: #474747;')
                                 | Ticket powered by Merchro!
                               img(src='https://www.merchro.com/logo-black.svg' alt='Merchro Logo' style='width:7rem; display: block; margin: 0 auto; padding:0 0 3rem 0')
-              //if (gte mso 9)|(IE)
-              //if (gte mso 9)|(IE)
-              // // END TEMPLATE
+        //if (gte mso 9)|(IE)
+        //if (gte mso 9)|(IE)
+        // // END TEMPLATE
 script(type='text/javascript' src='/K2z2jpXI8uDOE/bxwZHUH/IJeqC6k/ub9YShLc/GRsXSw/JGsz/Il9WBBsB')

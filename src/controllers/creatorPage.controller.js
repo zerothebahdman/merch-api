@@ -2,7 +2,7 @@
 const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { creatorPageService, userService, merchService, orderService } = require('../services');
+const { creatorPageService, userService, merchService, orderService, invoiceService } = require('../services');
 const { ERROR_MESSAGES } = require('../config/messages');
 const { ROLES } = require('../config/roles');
 const { RESERVED_NAMES } = require('../config/reservedNames');
@@ -55,6 +55,19 @@ const getCreatorCustomers = catchAsync(async (req, res) => {
   const filter = { creatorPage: req.params.creatorPageId };
   const options = { populate: ['user'].toString() };
   const orders = await orderService.getOrders(filter, options, req.user, true);
+  const _filter = { creator: req.user.id };
+  const getCreatorPaymentLinks = await invoiceService.getPaymentLinks(_filter, options, req.user, false);
+  const invoiceCustomers = await invoiceService.queryCreatorClient(req.user.id);
+  const customers = [];
+  const paymentLinks = getCreatorPaymentLinks.map(async (link) => {
+    const creatorClientLinks = await invoiceService.getAllCreatorPaymentLinkClient({
+      creatorPaymentLink: link._id,
+      deletedAt: null,
+    });
+    customers.push(creatorClientLinks);
+  });
+  await Promise.all(paymentLinks);
+  const customersArray = customers.flat();
   const users = [];
   orders.forEach((order) => {
     order = order.toJSON();
@@ -68,7 +81,8 @@ const getCreatorCustomers = catchAsync(async (req, res) => {
       users.push({ ...user, orders: [order] });
     }
   });
-  res.send(users);
+  const data = { storeClients: users, paymentLinkClients: customersArray, invoiceCustomers };
+  res.send(data);
 });
 
 const getCreatorPageOrders = catchAsync(async (req, res) => {

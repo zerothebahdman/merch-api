@@ -107,7 +107,7 @@ module.exports = {
     clientId: envVars.GOOGLE_CLIENT_ID,
   },
   mongoose: {
-    url: envVars.NODE_ENV === 'test' ? envVars.MONGODB_URL_TEST : envVars.MONGODB_URL,
+    url: envVars.NODE_ENV === 'test' ? encodeURI(envVars.MONGODB_URL_TEST) : encodeURI(envVars.MONGODB_URL),
     options: {
       useCreateIndex: true,
       useNewUrlParser: true,

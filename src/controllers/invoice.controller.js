@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
 const moment = require('moment');
@@ -96,8 +97,15 @@ const updateInvoice = catchAsync(async (req, res) => {
 });
 
 const getInvoices = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['creator', 'type', 'source']);
+  const filter = pick(req.query, ['creator', 'status', 'client']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  if (req.query.startDate && req.query.endDate) {
+    filter.createdAt = { $gte: moment(req.query.startDate).startOf('day'), $lte: moment(req.query.endDate).endOf('day') };
+  } else if (req.query.startDate) {
+    filter.createdAt = { $gte: moment(req.query.startDate).startOf('day') };
+  } else if (req.query.endDate) {
+    filter.createdAt = { $lte: moment(req.query.endDate).endOf('day') };
+  }
   if (req.query.include) options.populate = req.query.include.toString();
   else options.populate = '';
   const invoices = await invoiceService.getInvoice(filter, options, req.user, req.query.paginate);
@@ -161,8 +169,8 @@ const getPaymentLink = catchAsync(async (req, res) => {
 });
 
 const paymentLinkPay = catchAsync(async (req, res) => {
-  const proceed = await paymentService.controlTransaction(req.body);
-  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
+  // const proceed = await paymentService.controlTransaction(req.body);
+  // if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
   const validatePayment = await paymentService.validatePayment(req.body.transaction_id);
   if (validatePayment.data.status === 'successful') {
     const {
@@ -199,8 +207,13 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       const { eventMetaDetails } = creatorClient;
       const { tickets } = paymentLink.eventPayment;
       const updatedTickets = tickets.map((ticket) => {
-        if (eventMetaDetails.ticketType === ticket.ticketType) ticket.ticketQuantity -= eventMetaDetails.ticketQuantity;
-        return eventMetaDetails;
+        eventMetaDetails.ticketType.map((ticketType) => {
+          if (ticket.ticketType === ticketType.type) {
+            ticket.ticketQuantity -= ticketType.quantity;
+          }
+          return ticket;
+        });
+        return ticket;
       });
       const from = moment(paymentLink.eventPayment.date.from).format('dddd, MMMM Do · h:mm a z');
       const to = moment(paymentLink.eventPayment.date.to).format('dddd, MMMM Do · h:mm a z');
@@ -209,18 +222,8 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       };
       eventPayload.from = from;
       eventPayload.to = to;
+      eventPayload.ticketLink = `${config.frontendAppUrl}/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
       await emailService.sendUserEventPaymentLinkTicket(creatorClient, eventPayload);
-      eventMetaDetails.peopleReceivingTicket.map(async (person) => {
-        const userPayload = {
-          ...person,
-          amount: creatorClient.amount,
-          eventMetaDetails: {
-            ticketQuantity: eventMetaDetails.ticketQuantity,
-            ticketType: eventMetaDetails.ticketType,
-          },
-        };
-        await emailService.sendUserEventPaymentLinkTicket(userPayload, eventPayload);
-      });
       await invoiceService.updatePaymentLink(creatorPaymentLink, { eventPayment: { tickets: updatedTickets } });
     }
 
@@ -256,7 +259,17 @@ const paymentLinkPay = catchAsync(async (req, res) => {
     });
 
     paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
-    res.send(paymentLink);
+    // calculate the totalAmount of tickets bought
+    const totalTickets = creatorClient.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
+    delete creatorClient.eventMetaDetails;
+    const data = {
+      eventObject: {
+        totalTickets,
+        creatorClient,
+      },
+      paymentLink,
+    };
+    res.send(data);
   } else {
     // Inform the customer their payment was unsuccessful
     throw new ApiError(httpStatus.BAD_REQUEST, 'Payment was unsuccessful');
@@ -268,9 +281,18 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
   const { event } = req.body;
   if (event) {
     const { tickets } = getCreatorPaymentLink.eventPayment;
-    const ticketIndex = tickets.findIndex((ticket) => ticket.ticketType === event.ticketType);
-    if (ticketIndex !== -1 && event.ticketQuantity > tickets[ticketIndex].ticketQuantity)
-      throw new ApiError(httpStatus.BAD_REQUEST, `Oops!, these quantity of ${event.ticketType} tickets is not available`);
+    tickets.map((ticket) => {
+      event.ticketType.map((ticketType) => {
+        if (ticket.ticketType === ticketType.type) {
+          if (ticket.ticketQuantity < ticketType.quantity) {
+            throw new ApiError(
+              httpStatus.BAD_REQUEST,
+              `Oops!, these quantity of ${ticketType.type} tickets is not available`
+            );
+          }
+        }
+      });
+    });
   }
   req.body.creator = getCreatorPaymentLink.creator;
   req.body.creatorPaymentLink = getCreatorPaymentLink._id;
@@ -311,10 +333,29 @@ const getPaymentLinkPurchased = catchAsync(async (req, res) => {
   const filter = { paymentCode: req.params.paymentCode, deletedAt: null, deletedBy: null, creator: req.user.id };
   const paymentLink = await invoiceService.getPaymentLink(filter);
   const _filter = { creatorPaymentLink: paymentLink._id, deletedAt: null };
-  const peopleThatPaid = await invoiceService.getAllCreatorPaymentLinkClient(_filter);
+  let peopleThatPaid = await invoiceService.getAllCreatorPaymentLinkClient(_filter);
   const totalAmountMadeFromSales = peopleThatPaid.reduce((acc, cur) => acc + cur.amount, 0);
-  const totalTicketsSold = peopleThatPaid.reduce((acc, cur) => acc + cur.eventMetaDetails.ticketQuantity, 0);
+  let totalTicketsSold = 0;
+  peopleThatPaid = peopleThatPaid.map((person) => {
+    person.eventMetaDetails.ticketType.map((ticket) => {
+      totalTicketsSold += ticket.quantity;
+    });
+    const data = { ...person.toJSON() };
+    data.totalTickets = person.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
+    return data;
+  });
   const data = { totalAmountMadeFromSales, totalTicketsSold, peopleThatPaid };
+  res.status(200).send(data);
+});
+
+const getTickets = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['creatorPaymentLink']);
+  filter._id = req.query.client;
+  filter.deletedAt = null;
+  const client = await invoiceService.getCreatorPaymentLinkClient(filter);
+  const paymentLink = await invoiceService.getPaymentLinkById(client.creatorPaymentLink);
+  const totalTickets = client.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
+  const data = { totalTickets, client, paymentLink };
   res.status(200).send(data);
 });
 
@@ -334,4 +375,5 @@ module.exports = {
   getPaymentLink,
   getPaymentLinkPurchased,
   processInvoicePayment,
+  getTickets,
 };

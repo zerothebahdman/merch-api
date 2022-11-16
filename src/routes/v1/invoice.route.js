@@ -36,6 +36,8 @@ router
 
 router.route('/payment-link/:paymentCode/purchased').get(auth('creator'), invoiceController.getPaymentLinkPurchased);
 
+router.route('/tickets').get(invoiceController.getTickets);
+
 router.route('/issue').post(auth('creator'), validate(invoiceValidation.createIssue), invoiceController.createIssue);
 router
   .route('/:invoiceId')

@@ -140,13 +140,14 @@ const withdrawMoney = catchAsync(async (req, res) => {
   if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate transaction, withdrawal already initialized');
 
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
-  const charge = Number(config.paymentProcessing.withdrawalCharge);
+  let charge = Number(config.paymentProcessing.withdrawalCharge);
   if (Number(req.body.amount) + charge <= accountInfo.balance) {
-    const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
     const processingCost = Number(config.paymentProcessing.withdrawalProcessingCost);
     const profit = charge - processingCost;
-    const updatedBalance = Number((accountInfo.balance - (Number(req.body.amount) + charge)).toFixed(2));
-    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
+    const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
+    charge = withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : charge;
+    await paymentService.updateBalance(updatedBalance + charge, 'naira', accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -162,7 +163,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
         accountNumber: req.body.accountNumber,
         accountName: withdrawResponse.response.destinationAccountHolderNameAtBank,
         currency: withdrawResponse.response.currency,
-        fee: withdrawResponse.response.fee,
+        fee: charge,
         message: withdrawResponse.response.message,
         reference: withdrawResponse.response.reference,
       },
@@ -170,12 +171,12 @@ const withdrawMoney = catchAsync(async (req, res) => {
 
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo._id,
-      source: TRANSACTION_SOURCES.STORE,
+      source: TRANSACTION_SOURCES.SAVINGS,
       amount: Number(req.body.amount),
       charge,
-      profit,
+      profit: withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : profit,
       transaction: transaction._id,
-      amountSpent: Math.round(processingCost),
+      amountSpent: withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : Math.round(processingCost),
     });
     const message = `NGN${req.body.amount} was debited from your account to (${withdrawResponse.response.destinationAccountHolderNameAtBank}/${req.body.accountNumber})`;
     const user = await userService.getUserById(accountInfo.user);
@@ -184,11 +185,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
 
     addNotification(message, accountInfo.user);
     res.send(transaction);
-  } else
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      `Oops! you don't have enough funds ${Number(req.body.amount) + charge} to perform this transaction`
-    );
+  } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
 
 const validateAccount = catchAsync(async (req, res) => {

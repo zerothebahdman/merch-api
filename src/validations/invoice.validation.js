@@ -19,6 +19,11 @@ const createInvoiceValidation = {
     invoiceNote: Joi.string(),
     dueDate: Joi.date(),
     redirectUrl: Joi.string().required(),
+    reminder: Joi.object().keys({
+      beforeDueDate: Joi.date(),
+      onDueDate: Joi.date(),
+      afterDueDate: Joi.date(),
+    }),
   }),
 };
 
@@ -126,15 +131,12 @@ const generateCheckoutLink = {
       is: PAYMENT_LINK_TYPES.EVENT,
       then: Joi.object()
         .keys({
-          ticketType: Joi.string().required(),
-          ticketQuantity: Joi.number().required(),
-          peopleReceivingTicket: Joi.array().items(
+          ticketType: Joi.array().items(
             Joi.object()
               .keys({
-                clientFirstName: Joi.string().required(),
-                clientLastName: Joi.string().required(),
-                clientEmail: Joi.string().email().required(),
-                clientPhoneNumber: Joi.string().required(),
+                type: Joi.string().required(),
+                quantity: Joi.number().required(),
+                ticketAmount: Joi.string().required(),
               })
               .required()
           ),
