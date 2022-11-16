@@ -82,6 +82,7 @@ const envVarsSchema = Joi.object()
     IKEJA_ELECTRIC_PROCESSING_CHARGE: Joi.number().description('IKEJA ELECTRIC charge').default(1.5),
     JED_ELECTRIC_PROCESSING_CHARGE: Joi.number().description('JED ELECTRIC charge').default(1),
     KADUNA_ELECTRIC_PROCESSING_CHARGE: Joi.number().description('KADUNA ELECTRIC charge').default(0.4),
+    MIX_PANEL_TOKEN: Joi.string().description('Mix panel token'),
   })
   .unknown();
 
@@ -181,4 +182,5 @@ module.exports = {
     kadunaElectricProcessingCharge: envVars.KADUNA_ELECTRIC_PROCESSING_CHARGE,
     ekedcProcessingCharge: envVars.EKEDC_PROCESSING_CHARGE,
   },
+  mixPanelToken: envVars.MIX_PANEL_TOKEN,
 };
