@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 const cronJob = require('node-cron');
 const moment = require('moment');
-const { Order, Merch, PaymentLink } = require('./models');
+const { Order, Merch, PaymentLink, Invoice } = require('./models');
 const { ORDER_STATUSES, PAYMENT_LINK_TYPES } = require('./config/constants');
 const config = require('./config/config');
 const { merchService, emailService, invoiceService, paymentService } = require('./services');
@@ -45,6 +45,7 @@ const cronJobs = () => {
           .toDate(),
       },
     }).populate('user');
+    // const pendingOrders = await Order.find({ deletedAt: null, status: 'testing' });
     if (pendingOrders.length > 0) {
       pendingOrders.forEach(async (order) => {
         const orderMerch = order.merches.map(async (merch) => {
@@ -85,6 +86,26 @@ const cronJobs = () => {
     }
   });
   initiateRecurringPayment.start();
+
+  const sendInvoiceReminder = cronJob.schedule(config.cronSchedule.sendInvoiceReminder, async () => {
+    const filter = {
+      deletedAt: null,
+      $or: [
+        { 'reminder.beforeDueDate': { $gte: moment().utc().startOf('day').toDate() } },
+        { 'reminder.onDueDate': { $gte: moment().utc().startOf('day').toDate() } },
+        { 'reminder.afterDueDate': { $gte: moment().utc().startOf('day').toDate() } },
+      ],
+    };
+    const invoices = await Invoice.find(filter).populate(['creator', 'client']);
+    if (invoices.length > 0) {
+      invoices.forEach(async (invoice) => {
+        const data = { ...invoice.toJSON() };
+        data.dueDate = moment(data.dueDate).format('Do MMM, YYYY');
+        await emailService.sendInvoiceReminderEmail(data);
+      });
+    }
+  });
+  sendInvoiceReminder.start();
 };
 
 module.exports = cronJobs;

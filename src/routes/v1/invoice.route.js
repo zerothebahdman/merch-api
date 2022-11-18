@@ -14,6 +14,8 @@ router
   .route('/process-invoice-payment')
   .post(validate(invoiceValidation.processInvoicePayment), invoiceController.processInvoicePayment);
 
+router.route('/reminder/:invoiceId').get(auth('creator'), invoiceController.sendInvoiceReminders);
+
 router
   .route('/client')
   .get(auth('creator'), invoiceController.queryCreatorClient)

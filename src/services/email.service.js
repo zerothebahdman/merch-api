@@ -143,6 +143,12 @@ const sendUserEventPaymentLinkTicket = (user, event) => {
   return sendEmail(user.clientEmail, subject, null, html);
 };
 
+const sendInvoiceReminderEmail = (invoice) => {
+  const subject = 'Invoice Reminder';
+  const html = renderFile('invoice-reminder', { invoice });
+  return sendEmail(invoice.client.email, subject, null, html);
+};
+
 module.exports = {
   transport,
   sendEmail,
@@ -157,4 +163,5 @@ module.exports = {
   sendPaymentTrackingEmail,
   sendUserOrderReminderEmail,
   sendUserEventPaymentLinkTicket,
+  sendInvoiceReminderEmail,
 };

@@ -359,6 +359,15 @@ const getTickets = catchAsync(async (req, res) => {
   res.status(200).send(data);
 });
 
+const sendInvoiceReminders = catchAsync(async (req, res) => {
+  const options = ['client', 'creator'];
+  const invoice = await invoiceService.getInvoiceById(req.params.invoiceId, options);
+  const data = { ...invoice.toJSON() };
+  data.dueDate = moment(data.dueDate).format('Do MMM, YYYY');
+  await emailService.sendInvoiceReminderEmail(data);
+  res.status(204).send();
+});
+
 module.exports = {
   createInvoice,
   queryCreatorClient,
@@ -376,4 +385,5 @@ module.exports = {
   getPaymentLinkPurchased,
   processInvoicePayment,
   getTickets,
+  sendInvoiceReminders,
 };

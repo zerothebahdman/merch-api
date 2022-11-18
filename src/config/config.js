@@ -62,6 +62,7 @@ const envVarsSchema = Joi.object()
     CRON_INITIATE_RECURRING_PAYMENT: Joi.string()
       .description('Cron schedule for initiating recurring payment')
       .default('0 * * * *'),
+    CRON_SEND_INVOICE_REMINDER: Joi.string().description('Cron schedule for sending invoice reminder').default('0 11 * * *'),
     ORDER_RESERVATION_TIMELINE: Joi.number().description('Order reservation timeline in minutes').default(48),
     STORE_PAYMENT_PROCESSING_FEE: Joi.number().description('Store payment processing fees').default(1.4),
     STORE_PAYMENT_CHARGE: Joi.number().description('Store payment charge').default(3),
@@ -158,6 +159,7 @@ module.exports = {
   cronSchedule: {
     processOrder: envVars.CRON_SCHEDULE_PROCESS_ORDER,
     initiateRecurringPayment: envVars.CRON_INITIATE_RECURRING_PAYMENT,
+    sendInvoiceReminder: envVars.CRON_SEND_INVOICE_REMINDER,
   },
   orderReservationTimeline: envVars.ORDER_RESERVATION_TIMELINE,
   paymentProcessing: {
