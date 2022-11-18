@@ -136,7 +136,7 @@ const generateCheckoutLink = {
               .keys({
                 type: Joi.string().required(),
                 quantity: Joi.number().required(),
-                ticketAmount: Joi.string().required(),
+                ticketAmount: Joi.number().required(),
               })
               .required()
           ),
