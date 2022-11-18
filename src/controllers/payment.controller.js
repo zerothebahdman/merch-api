@@ -12,7 +12,7 @@ const {
   orderService,
   merchService,
 } = require('../services');
-const { TRANSACTION_TYPES, TRANSACTION_SOURCES, CURRENCIES, ORDER_STATUSES } = require('../config/constants');
+const { TRANSACTION_TYPES, TRANSACTION_SOURCES, CURRENCIES, ORDER_STATUSES, EVENTS } = require('../config/constants');
 const { TransactionDump } = require('../models');
 const ApiError = require('../utils/ApiError');
 const Bank = require('../models/bank.model');
@@ -21,6 +21,7 @@ const pick = require('../utils/pick');
 const { addNotification } = require('../utils/notification');
 const { generateRandomChar, calculateProfit } = require('../utils/helpers');
 const config = require('../config/config');
+const mixPanel = require('../utils/mixpanel');
 
 const getAccountInfo = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
@@ -103,7 +104,7 @@ const creditAccount = catchAsync(async (req, res) => {
         accountName: accountInfo.accountInfo.accountName,
       },
     });
-
+    mixPanel(EVENTS.DEPOSIT, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
@@ -169,6 +170,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
       },
     });
 
+    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo._id,
       source: TRANSACTION_SOURCES.SAVINGS,
@@ -250,6 +252,7 @@ const buyAirtime = catchAsync(async (req, res) => {
         reference: airtimeResponse.response.reference,
       },
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -296,7 +299,7 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
             currency: CURRENCIES.NAIRA,
           },
         });
-
+        mixPanel(EVENTS.SALE_FROM_STORE, transaction);
         await paymentService.createMerchroEarningsRecord({
           user: creator._id,
           source: TRANSACTION_SOURCES.STORE,
@@ -356,6 +359,7 @@ const buyData = catchAsync(async (req, res) => {
         payerName: `Data Sub/${req.body.destinationPhoneNumber}`,
       },
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -395,6 +399,7 @@ const purchaseUtilities = catchAsync(async (req, res) => {
         reference: utilitiesResponse.response.reference,
       },
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,

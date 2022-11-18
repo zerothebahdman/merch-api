@@ -8,6 +8,7 @@ const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
+    ENVIROMENT: Joi.string().default('staging'),
     USE_PORT: Joi.bool().default(false).description('This is to determine whether to use the PORT value'),
     API_DOMAIN: Joi.string().description('API Domain'),
     FRONT_END_APP_URL: Joi.string().description('Frontend App Domain'),
@@ -83,6 +84,7 @@ const envVarsSchema = Joi.object()
     IKEJA_ELECTRIC_PROCESSING_CHARGE: Joi.number().description('IKEJA ELECTRIC charge').default(1.5),
     JED_ELECTRIC_PROCESSING_CHARGE: Joi.number().description('JED ELECTRIC charge').default(1),
     KADUNA_ELECTRIC_PROCESSING_CHARGE: Joi.number().description('KADUNA ELECTRIC charge').default(0.4),
+    MIX_PANEL_TOKEN: Joi.string().description('Mix panel token'),
   })
   .unknown();
 
@@ -95,6 +97,7 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  enviroment: envVars.ENVIROMENT,
   baseApiUrl: `${envVars.ENFORCE_SSL ? 'https' : 'http'}://${envVars.API_DOMAIN}${
     envVars.USE_PORT ? `:${envVars.PORT}` : ''
   }`,
@@ -183,4 +186,5 @@ module.exports = {
     kadunaElectricProcessingCharge: envVars.KADUNA_ELECTRIC_PROCESSING_CHARGE,
     ekedcProcessingCharge: envVars.EKEDC_PROCESSING_CHARGE,
   },
+  mixPanelToken: envVars.MIX_PANEL_TOKEN,
 };
