@@ -3,12 +3,11 @@
 const httpStatus = require('http-status');
 const moment = require('moment');
 const config = require('../config/config');
-const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES, EVENTS } = require('../config/constants');
+const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES } = require('../config/constants');
 const { invoiceService, paymentService, userService, emailService, creatorPageService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { generateRandomChar, calculatePeriod } = require('../utils/helpers');
-const mixPanel = require('../utils/mixpannel');
 const pick = require('../utils/pick');
 
 const createInvoice = catchAsync(async (req, res) => {
@@ -16,7 +15,7 @@ const createInvoice = catchAsync(async (req, res) => {
   req.body.invoiceCode = `#INV-${generateRandomChar(5, 'num')}`;
   const pageInfo = await creatorPageService.queryCreatorPageById(req.user.creatorPage);
   const client = await invoiceService.getCreatorClient({ creator: req.user.id, _id: req.body.client });
-  let invoice = await invoiceService.createInvoice(req.body);
+  const invoice = await invoiceService.createInvoice(req.body);
   const paymentLink = await paymentService.getPaymentLink(
     {
       customer: {
@@ -33,8 +32,7 @@ const createInvoice = catchAsync(async (req, res) => {
     },
     req.body.redirectUrl
   );
-  invoice = await invoiceService.updateInvoiceById(invoice.id, { paymentLink });
-  mixPanel(EVENTS.CREATE_INVOICE, invoice);
+  await invoiceService.updateInvoiceById(invoice.id, { paymentLink });
   res.status(201).send(invoice);
 });
 
@@ -76,7 +74,6 @@ const processInvoicePayment = catchAsync(async (req, res) => {
         currency: CURRENCIES.NAIRA,
       },
     });
-    mixPanel(EVENTS.PAID_FROM_INVOICE, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: creatorDetails._id,
       source: TRANSACTION_SOURCES.INVOICE,
@@ -146,7 +143,6 @@ const createPaymentLink = catchAsync(async (req, res) => {
   req.body.creator = req.user.id;
   req.body.paymentCode = `pay-${generateRandomChar(15, 'lower-num')}`;
   const paymentLink = await invoiceService.createPaymentLink(req.body);
-  mixPanel(EVENTS.CREATE_PAYMENT_LINK, paymentLink);
   res.status(200).send(paymentLink);
 });
 
@@ -251,8 +247,6 @@ const paymentLinkPay = catchAsync(async (req, res) => {
         currency: CURRENCIES.NAIRA,
       },
     });
-
-    mixPanel(EVENTS.PAID_FROM_PAYMENT_LINK, transaction);
 
     await paymentService.createMerchroEarningsRecord({
       user: creatorDetails._id,

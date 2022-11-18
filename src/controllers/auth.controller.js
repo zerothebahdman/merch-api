@@ -13,8 +13,7 @@ const {
 const { ROLES } = require('../config/roles');
 const config = require('../config/config');
 const { ERROR_MESSAGES } = require('../config/messages');
-const { ONBOARDING_STAGES, USER_STATUSES, EVENTS } = require('../config/constants');
-const mixPanel = require('../utils/mixpannel');
+const { ONBOARDING_STAGES, USER_STATUSES } = require('../config/constants');
 // const { backdoorAccess } = require('../config/config');
 
 const userSignUp = catchAsync(async (req, res) => {
@@ -40,7 +39,6 @@ const userSignUp = catchAsync(async (req, res) => {
     return res.send({ user, tokens });
   }
   user = await userService.createUser(req.body);
-  mixPanel(EVENTS.SIGNED_UP, user);
   const tokens = await tokenService.generateAuthTokens(user);
   res.send({ user, tokens });
 });
@@ -91,7 +89,6 @@ const login = catchAsync(async (req, res) => {
   let user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
   user = await userService.getUserById(user.id);
-  mixPanel(EVENTS.LOGIN, user);
   res.send({ user, tokens });
 });
 
@@ -166,7 +163,6 @@ const googleAuthentication = catchAsync(async (req, res) => {
       googleId: googleUser.sub,
     });
     // Login the admin & Redirect the user to the required page.
-    mixPanel(EVENTS.SIGNED_UP, user);
     const tokens = await tokenService.generateAuthTokens(user);
     res.send({ user, tokens, redirectUrl: `${config.hubSetupPageUrl}?access_token=${tokens.access.token}` });
   } else {
@@ -182,10 +178,8 @@ const googleAuthentication = catchAsync(async (req, res) => {
     const tokens = await tokenService.generateAuthTokens(user);
     if (user.hub) {
       user = await userService.getUserById(user.id, ['hub']);
-      mixPanel(EVENTS.SIGNED_UP, user);
       res.send({ user, tokens });
     } else if (user.role === ROLES.userService && !user.hub) {
-      mixPanel(EVENTS.SIGNED_UP, user);
       // when the user is an admin and does not have a hub
       res.send({ user, tokens, redirectUrl: `${config.hubSetupPageUrl}?access_token=${tokens.access.token}` });
     } else {

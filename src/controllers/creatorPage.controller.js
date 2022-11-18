@@ -8,8 +8,6 @@ const { ROLES } = require('../config/roles');
 const { RESERVED_NAMES } = require('../config/reservedNames');
 const pick = require('../utils/pick');
 const { storeNameValidator } = require('../utils/helpers');
-const mixPanel = require('../utils/mixpannel');
-const { EVENTS } = require('../config/constants');
 
 const createCreatorPage = catchAsync(async (req, res) => {
   req.body.owner = req.user.id;
@@ -30,7 +28,6 @@ const createCreatorPage = catchAsync(async (req, res) => {
   }
   const creatorPage = await creatorPageService.createCreatorPage(req.body, req.user);
   userService.updateUserById(req.user.id, { creatorPage: creatorPage.id });
-  mixPanel(EVENTS.CREATOR_SETUP_PAGE, creatorPage);
   res.status(httpStatus.CREATED).send(creatorPage);
 });
 
@@ -118,7 +115,6 @@ const getCreatorPages = catchAsync(async (req, res) => {
 const updateCreatorPage = catchAsync(async (req, res) => {
   req.body.updatedBy = req.user.id;
   const creatorPage = await creatorPageService.updateCreatorPageById(req.params.creatorPageId, req.body);
-  mixPanel(EVENTS.CREATOR_UPDATE_PAGE, creatorPage);
   res.send(creatorPage);
 });
 
@@ -130,7 +126,6 @@ const deleteCreatorPage = catchAsync(async (req, res) => {
 
 const addItem = catchAsync(async (req, res) => {
   const item = await creatorPageService.addItem(req.body, req.user);
-  mixPanel(EVENTS.ADD_PRODUCT, item);
   res.send(item);
 });
 

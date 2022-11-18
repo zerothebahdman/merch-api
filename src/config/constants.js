@@ -118,22 +118,6 @@ const RECURRING_PAYMENT = {
   BI_ANNUALLY: 'bi_annually',
 };
 
-const EVENTS = {
-  SIGNED_UP: 'Creator signed up',
-  LOGIN: 'Creator logged in',
-  CREATOR_SETUP_PAGE: 'Creator setup page',
-  CREATOR_SETUP_STORE: 'Creator setup store',
-  CREATOR_UPDATE_PAGE: 'Creator updated page',
-  ADD_PRODUCT: 'Creator adds a product to the store',
-  DEPOSIT: 'Creator deposits money',
-  WITHDRAW: 'Creator withdraws money',
-  CREATE_INVOICE: 'Creator creates an invoice',
-  CREATE_PAYMENT_LINK: 'Creator creates a payment link',
-  SALE_FROM_STORE: 'Creator makes a sale from the store',
-  PAID_FROM_PAYMENT_LINK: 'Creator got paid via payment link',
-  PAID_FROM_INVOICE: 'Creator got paid via invoice',
-};
-
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -150,5 +134,4 @@ module.exports = {
   INVOICE_STATUSES,
   PAYMENT_LINK_TYPES,
   RECURRING_PAYMENT,
-  EVENTS,
 };
