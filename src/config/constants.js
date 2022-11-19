@@ -79,6 +79,7 @@ const TRANSACTION_TYPES = {
 
 const TRANSACTION_SOURCES = {
   BANK_TRANSFER: 'bank_transfer',
+  USER_TRANSFER: 'user_transfer',
   CARD_DEPOSIT: 'card_deposit',
   STORE: 'store',
   INVOICE: 'invoice',

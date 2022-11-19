@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { objectId } = require('./custom.validation');
 // const { objectId } = require('./custom.validation');
 
 const validateAccount = {
@@ -75,6 +76,20 @@ const validatePaymentCallback = {
   }),
 };
 
+const submitReport = {
+  body: Joi.object().keys({
+    transaction: Joi.custom(objectId).required(),
+    reason: Joi.string().required(),
+    info: Joi.string().required(),
+  }),
+};
+
+const updateReport = {
+  body: Joi.object().keys({
+    status: Joi.string().required().valid('active', 'resolved'),
+  }),
+};
+
 module.exports = {
   validateAccount,
   withdrawal,
@@ -84,4 +99,6 @@ module.exports = {
   purchaseUtilities,
   getUtilitiesProvidersServices,
   buyData,
+  submitReport,
+  updateReport,
 };

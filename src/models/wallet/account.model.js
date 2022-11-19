@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 const mongoose = require('mongoose');
-const { toJSON, paginate, auditableFields } = require('./plugins');
+const { toJSON, paginate, auditableFields } = require('../plugins');
 
 const accountSchema = mongoose.Schema(
   {
@@ -31,14 +31,40 @@ const accountSchema = mongoose.Schema(
       },
     },
     balance: {
-      type: Number,
-      default: 0,
-      min: 0,
+      naira: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      dollar: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
     },
     debt: {
-      type: Number,
-      default: 0,
-      min: 0,
+      naira: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      dollar: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+    },
+    stash: {
+      naira: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      dollar: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
     },
     ...auditableFields,
   },

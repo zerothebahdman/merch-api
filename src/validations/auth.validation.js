@@ -52,7 +52,6 @@ const forgotPassword = {
 const resetPassword = {
   body: Joi.object().keys({
     password: Joi.string().required().custom(password),
-    token: Joi.string().required(),
     email: Joi.string().required(),
   }),
 };

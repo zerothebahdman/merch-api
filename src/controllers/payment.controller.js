@@ -7,15 +7,14 @@ const {
   paymentService,
   emailService,
   userService,
-  creatorPageService,
+  // creatorPageService,
   chargeService,
   orderService,
   merchService,
 } = require('../services');
 const { TRANSACTION_TYPES, TRANSACTION_SOURCES, CURRENCIES, ORDER_STATUSES, EVENTS } = require('../config/constants');
-const { TransactionDump } = require('../models');
+const { TransactionDump, Report, Bank } = require('../models');
 const ApiError = require('../utils/ApiError');
-const Bank = require('../models/bank.model');
 const { Paga } = require('../utils/paga');
 const pick = require('../utils/pick');
 const { addNotification } = require('../utils/notification');
@@ -63,9 +62,15 @@ const creditAccount = catchAsync(async (req, res) => {
     const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
     errorTracker.push(`Transaction data dumped sucessfully. DumpId ${transactionDump._id.toString()}`);
     data.amount = data.amount.replaceAll(',', '');
-    errorTracker.push(`Transaction amount converted to number successfully (${data.amount})`);
-    const updatedBalance = Number((accountInfo.balance + Number(data.amount)).toFixed(2));
-    errorTracker.push(`New balance calculated successfully (${updatedBalance})`);
+    const updatedBalance = Number((accountInfo.balance.naira + Number(data.amount)).toFixed(2));
+
+    emailService.sendPaymentTrackingEmail(`
+        Balance updated for transaction with reference ${data.transactionReference}
+        <br>
+        User: ${accountInfo.user || null}
+        <br>
+        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
+      `);
 
     // Confirm that there is no prior log of this particular transaction
     const getTransactions = await paymentService.getTransactions(
@@ -80,10 +85,8 @@ const creditAccount = catchAsync(async (req, res) => {
       errorTracker.push(`Transaction previous log check returns true`);
       return res.send({ status: 'SUCCESS', message: 'Already logged' });
     }
-    errorTracker.push(`Transaction previous log check returns false`);
-
-    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
+    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
 
     let charge = (Number(config.paymentProcessing.depositCharge) / 100) * data.amount;
     charge = charge > 500 ? 500 : charge;
@@ -194,6 +197,49 @@ const withdrawMoney = catchAsync(async (req, res) => {
     );
 });
 
+// In-app cash transfers
+const transferMoney = catchAsync(async (req, res) => {
+  const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
+  const proceed = await paymentService.controlTransaction(req.body);
+  const { currency } = req.body;
+  if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate transaction, withdrawal already initialized');
+
+  if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
+  if (Number(req.body.amount) <= accountInfo.balance[currency]) {
+    const updatedBalance = Number((accountInfo.balance[currency] - Number(req.body.amount)).toFixed(2));
+    const withdrawResponse = await paymentService.transferMoney(req.params.userId, req.body, req.user);
+    await paymentService.updateBalance(updatedBalance, currency, accountInfo.user);
+    const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
+    // Store transaction
+    const transaction = await paymentService.createTransactionRecord({
+      user: accountInfo.user,
+      source: TRANSACTION_SOURCES.SAVINGS,
+      type: TRANSACTION_TYPES.DEBIT,
+      amount: Number(req.body.amount),
+      purpose: req.body.purpose || null,
+      createdBy: accountInfo.user,
+      transactionDump: transactionDump.id,
+      reference: withdrawResponse.response.reference,
+      meta: {
+        accountNumber: req.body.accountNumber,
+        accountName: withdrawResponse.response.destinationAccountHolderNameAtBank,
+        currency: withdrawResponse.response.currency,
+        fee: withdrawResponse.response.fee,
+        message: withdrawResponse.response.message,
+        reference: withdrawResponse.response.reference,
+      },
+    });
+
+    const message = `NGN${req.body.amount} was debited from your account to (${withdrawResponse.response.destinationAccountHolderNameAtBank}/${req.body.accountNumber})`;
+    const user = await userService.getUserById(accountInfo.user);
+
+    emailService.debitEmail(user.email, user.firstName, message);
+
+    addNotification(message, accountInfo.user);
+    res.send(transaction);
+  } else throw new ApiError(httpStatus.BAD_REQUEST, `Oops! you don't have enough funds to perform this transaction`);
+});
+
 const validateAccount = catchAsync(async (req, res) => {
   let account = await Paga.checkAccount(req.body);
   if (account.error) throw new ApiError(httpStatus.BAD_REQUEST, account.response.message);
@@ -201,8 +247,7 @@ const validateAccount = catchAsync(async (req, res) => {
     account = {
       accountNumber: req.body.accountNumber,
       accountName: account.response.destinationAccountHolderNameAtBank,
-      fee: account.response.fee,
-      vat: account.response.vat,
+      fee: 60,
     };
   res.send(account);
 });
@@ -231,10 +276,10 @@ const billPayment = catchAsync(async (req, res) => {
 const buyAirtime = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
-  if (Number(req.body.amount) <= accountInfo.balance) {
+  if (Number(req.body.amount) <= accountInfo.balance.naira) {
+    const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const airtimeResponse = await paymentService.buyAirtime(req.body, req.user);
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
-    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: airtimeResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -279,7 +324,7 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
         await orderService.updateOrderById(order._id, { status: ORDER_STATUSES.PICKUP }, creator);
         const orderJson = order.toJSON();
         let { amount } = validatePayment.data;
-        const creatorPage = await creatorPageService.queryCreatorPageById(order.creatorPage);
+        // const creatorPage = await creatorPageService.queryCreatorPageById(order.creatorPage);
         const charge = await chargeService.saveCharge(amount, order.id, creator.id);
         amount -= charge;
         const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount;
@@ -324,9 +369,9 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
             }
           });
         });
-        const link = `https://${creatorPage.slug}.merchro.store`;
+        // const link = `https://${creatorPage.slug}.merchro.store`;
         order.paymentStatus = ORDER_STATUSES.PICKUP;
-        await emailService.sendUserOrderFulfillmentEmail(purchaser, order, link);
+        await emailService.sendUserOrderFulfillmentEmail(purchaser, order, order.paymentUrl);
         res.send(order);
       }
     } else {
@@ -338,10 +383,10 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
 const buyData = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
-  if (Number(req.body.amount) <= accountInfo.balance) {
+  if (Number(req.body.amount) <= accountInfo.balance.naira) {
+    const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const dataResponse = await paymentService.buyData(req.body, req.user);
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
-    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: dataResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -376,12 +421,12 @@ const buyData = catchAsync(async (req, res) => {
 const purchaseUtilities = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
-  if (Number(req.body.amount) <= accountInfo.balance) {
+  if (Number(req.body.amount) <= accountInfo.balance.naira) {
     const profit = calculateProfit(req.body.amount, req.body.utilityType);
     delete req.body.utilityType;
+    const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const utilitiesResponse = await paymentService.purchaseUtilities(req.body, req.user);
-    const updatedBalance = Number((accountInfo.balance - Number(req.body.amount)).toFixed(2));
-    await paymentService.updateBalance(updatedBalance, accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: utilitiesResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -562,11 +607,35 @@ const getStartimesUtilities = catchAsync(async (req, res) => {
   startTimesPayload.services = startimesUtilities.response.services;
   res.send(startTimesPayload);
 });
+
+const submitReport = catchAsync(async (req, res) => {
+  req.body.user = req.user.id;
+  req.body.createdAt = moment().format();
+  req.body.email = req.user.email;
+  const report = await Report.create(req.body);
+  res.status(httpStatus.CREATED).send(report);
+});
+
+const getReports = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['user', 'email', 'status']);
+  filter.deletedAt = null;
+  const reports = await Report.find(filter);
+  res.send(reports);
+});
+
+const updateReport = catchAsync(async (req, res) => {
+  const update = { status: req.body.status, updatedAt: moment().format() };
+  await Report.updateOne({ _id: req.params.reportId }, update);
+  const report = await Report.findOne({ _id: req.params.reportId });
+  res.send(report);
+});
+
 module.exports = {
   getAccountInfo,
   getBanks,
   creditAccount,
   withdrawMoney,
+  transferMoney,
   validateAccount,
   getTransactions,
   billPayment,
@@ -578,4 +647,7 @@ module.exports = {
   buyData,
   getTransactionOverview,
   getStartimesUtilities,
+  submitReport,
+  getReports,
+  updateReport,
 };

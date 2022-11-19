@@ -121,8 +121,8 @@ const forgotPassword = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  await authService.resetPassword(req.body.token, req.body.password, req.body.email);
-  res.status(httpStatus.NO_CONTENT).send();
+  await authService.resetPassword(req.body.password, req.body.email);
+  res.status(httpStatus.NO_CONTENT).send({ status: true, message: 'Account password was updated' });
 });
 
 const googleAuthentication = catchAsync(async (req, res) => {

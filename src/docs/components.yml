@@ -487,6 +487,21 @@ components:
           'id': '614d84e4dba4c158dc2aa687',
         }
 
+    ReportTransaction:
+      type: object
+      example:
+        {
+          'reason': 'Fraud',
+          'email': 'info.test@gmail.com',
+          'info': 'I did not make this transaction',
+          'status': 'active',
+          'transaction': '636cd31e2d91784932c06754',
+          'user': '63456b0b4495e90021367a12',
+          'createdAt': '2022-11-11T10:39:29.000Z',
+          'updatedAt': '2022-11-11T10:39:29.000Z',
+          'id': '636e2661c96e8e7b26ff3e9e',
+        }
+
     TransactionOverview:
       type: object
       example:

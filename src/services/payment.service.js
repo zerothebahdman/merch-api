@@ -6,7 +6,14 @@ const Flutterwave = require('flutterwave-node-v3');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { paymentData } = require('../config/config');
-const { Account, TransactionLog, ErrorTracker, RegulateTransaction, MerchroEarnings } = require('../models');
+const {
+  Account,
+  TransactionLog,
+  ErrorTracker,
+  RegulateTransaction,
+  MerchroEarnings,
+  TransactionDump,
+} = require('../models');
 const ApiError = require('../utils/ApiError');
 const { addNotification } = require('../utils/notification');
 const { Paga } = require('../utils/paga');
@@ -123,31 +130,92 @@ const getTransactions = async (filter, options, actor, paginate = true) => {
   return result;
 };
 
-const updateBalance = async (balance, user) => {
-  const accountInfo = await Account.updateOne({ user }, { balance });
-  return accountInfo;
+const updateBalance = async (balance, currency, user) => {
+  if (currency === 'naira') {
+    const accountInfo = await Account.updateOne({ user }, { 'balance.naira': balance });
+    return accountInfo;
+  }
+  if (currency === 'dollar') {
+    const accountInfo = await Account.updateOne({ user }, { 'balance.dollar': balance });
+    return accountInfo;
+  }
 };
 
-const addToBalance = async (amount, user) => {
+const addToBalance = async (amount, currency = 'naira', user) => {
   let accountInfo = await Account.findOne({ user });
   if (accountInfo === null) {
     accountInfo = await Account.create({ user });
   }
   amount = Number(amount);
-  const update = { balance: accountInfo.balance + amount, updatedAt: moment().format() };
+  let update = {};
+  if (currency === 'naira') update = { 'balance.naira': accountInfo.balance.naira + amount, updatedAt: moment().format() };
+  else if (currency === 'dollar')
+    update = { 'balance.dollar': accountInfo.balance.dollar + amount, updatedAt: moment().format() };
   Object.assign(accountInfo, update);
-  accountInfo.save();
+  await accountInfo.save();
   return accountInfo;
 };
 
-const updateDebt = async (balance, user) => {
-  const accountInfo = await Account.updateOne({ user }, { debt: balance });
-  return accountInfo;
+const updateDebt = async (balance, currency, user) => {
+  if (currency === 'naira') {
+    const accountInfo = await Account.updateOne({ user }, { 'debt.naira': balance });
+    return accountInfo;
+  }
+  if (currency === 'dollar') {
+    const accountInfo = await Account.updateOne({ user }, { 'debt.dollar': balance });
+    return accountInfo;
+  }
+  throw new ApiError(httpStatus.BAD_REQUEST, 'Valid currency not found in request');
+};
+
+const transferMoney = async (user, body, actor) => {
+  body.reference = generateRandomChar(16, 'num');
+  const userAccount = await Account.findOne({ user, deletedAt: null }).populate('user');
+  if (!userAccount) throw new ApiError(httpStatus.BAD_REQUEST, "Recipient's account not found");
+  // const updatedBalance = userAccount.balance + Number(body.amount);
+  // await Account.updateOne({ user, deletedAt: null }, { balance: updatedBalance });
+  const dump = await TransactionDump.create({ data: body, user });
+  // Store transaction
+  await createTransactionRecord({
+    user,
+    source: TRANSACTION_SOURCES.USER_TRANSFER,
+    type: TRANSACTION_TYPES.CREDIT,
+    amount: Number(body.amount),
+    purpose: body.purpose || null,
+    createdBy: user,
+    transactionDump: dump.id,
+    reference: body.reference,
+    meta: {
+      accountNumber: userAccount.accountInfo.accountNumber,
+      payerName: `${actor.firstName} ${actor.lastName}`,
+      currency: 'NGN',
+      fee: 0,
+      message: 'Transfer within Merchro (Charge: 0)',
+      reference: body.reference,
+    },
+  });
+  const response = {
+    reference: body.reference,
+    accountNumber: userAccount.accountInfo.accountNumber,
+    destinationAccountHolderNameAtBank: `${userAccount.user.firstName} ${userAccount.user.lastName}`,
+    currency: 'NGN',
+    fee: 0,
+    message: 'Transfer within Merchro (Charge: 0)',
+  };
+  return { response };
 };
 
 const withdrawMoney = async (body, actor) => {
   body.firstName = actor.firstName;
   body.lastName = actor.lastName;
+  if (body.bankId === 'AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA') {
+    // Check if account exist on Merchro
+    const userAccount = await Account.findOne({ 'accountInfo.accountNumber': body.accountNumber, deletedAt: null });
+    if (userAccount) {
+      const result = await transferMoney(userAccount.user, body, actor);
+      return result;
+    }
+  }
   const withdrawal = await Paga.withdraw(body);
   if (withdrawal.error) throw new ApiError(httpStatus.BAD_REQUEST, withdrawal.response.message);
   return withdrawal;
@@ -318,6 +386,7 @@ module.exports = {
   updateBalance,
   addToBalance,
   updateDebt,
+  transferMoney,
   withdrawMoney,
   buyAirtime,
   controlTransaction,

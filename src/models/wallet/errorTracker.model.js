@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 const mongoose = require('mongoose');
-const { toJSON, paginate } = require('./plugins');
+const { toJSON, paginate } = require('../plugins');
 
 const errorTrackerSchema = mongoose.Schema(
   {

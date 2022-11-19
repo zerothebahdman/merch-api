@@ -2,7 +2,7 @@
 const PagaBusiness = require('paga-business');
 const PagaCollect = require('paga-collect');
 const { paymentData, baseApiUrl } = require('../config/config');
-const Bank = require('../models/bank.model');
+const Bank = require('../models/wallet/bank.model');
 const { generateRandomChar } = require('./helpers');
 
 const Paga = {

@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 const mongoose = require('mongoose');
-const { TRANSACTION_TYPES, TRANSACTION_SOURCES } = require('../config/constants');
-const { toJSON, paginate, auditableFields } = require('./plugins');
+const { TRANSACTION_TYPES, TRANSACTION_SOURCES } = require('../../config/constants');
+const { toJSON, paginate, auditableFields } = require('../plugins');
 
 const transactionLogSchema = mongoose.Schema(
   {

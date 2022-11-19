@@ -155,6 +155,7 @@ module.exports = {
     paga_key: envVars.PAGA_API_KEY,
     paga_public_key: envVars.PAGA_API_PUBLIC_KEY,
     paga_url: envVars.PAGA_API_URL,
+    withdrawalFee: envVars.WITHDRAWAL_FEE,
   },
   backdoorAccess: {
     referralCode: envVars.REFERRAL_CODE,

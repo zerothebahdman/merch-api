@@ -44,6 +44,15 @@ router
 
 router.route('/transaction-overview').get(auth('creator'), paymentController.getTransactionOverview);
 
+router
+  .route('/report')
+  .post(auth('creator'), validate(paymentValidation.submitReport), paymentController.submitReport)
+  .get(auth('creator'), paymentController.getReports);
+
+router
+  .route('/report/:reportId')
+  .patch(auth('creator'), validate(paymentValidation.updateReport), paymentController.updateReport);
+
 module.exports = router;
 
 /**
@@ -321,6 +330,93 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/Data'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /report:
+ *    post:
+ *      summary: Report a transaction
+ *      description: Creators can be able to report a transaction
+ *      tags: [Payments]
+ *      security:
+ *        - bearerAuth: []
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - transaction
+ *                - reason
+ *                - info
+ *              example:
+ *                transaction: 636cd31e2d91784932c06754
+ *                reason: 'Fraud'
+ *                info: 'I did not make this transaction'
+ *      responses:
+ *        "201":
+ *          description: Created
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/ReportTransaction'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *    get:
+ *      summary: Get all reported transactions
+ *      description: Get all reported transactions
+ *      tags: [Payments]
+ *      parameters:
+ *        - in: query
+ *          name: email
+ *          schema:
+ *            type: string
+ *          description: Email of the user
+ *        - in: query
+ *          name: user
+ *          schema:
+ *            type: string
+ *          description: User id of the user
+ *        - in: query
+ *          name: status
+ *          schema:
+ *            type: string
+ *          description: Status of the transaction report
+ *      responses:
+ *        "200":
+ *          description: Success
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/ReportTransaction'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /report/{reportId}:
+ *    get:
+ *      summary: Get a reported transaction
+ *      description: Get a reported transaction
+ *      tags: [Payments]
+ *      responses:
+ *        "200":
+ *          description: Fetched
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/ReportTransaction'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */
