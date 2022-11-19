@@ -62,15 +62,9 @@ const creditAccount = catchAsync(async (req, res) => {
     const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
     errorTracker.push(`Transaction data dumped sucessfully. DumpId ${transactionDump._id.toString()}`);
     data.amount = data.amount.replaceAll(',', '');
+    errorTracker.push(`Transaction amount converted to number successfully (${data.amount})`);
     const updatedBalance = Number((accountInfo.balance.naira + Number(data.amount)).toFixed(2));
-
-    emailService.sendPaymentTrackingEmail(`
-        Balance updated for transaction with reference ${data.transactionReference}
-        <br>
-        User: ${accountInfo.user || null}
-        <br>
-        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
-      `);
+    errorTracker.push(`New balance calculated successfully (${updatedBalance})`);
 
     // Confirm that there is no prior log of this particular transaction
     const getTransactions = await paymentService.getTransactions(
@@ -85,11 +79,12 @@ const creditAccount = catchAsync(async (req, res) => {
       errorTracker.push(`Transaction previous log check returns true`);
       return res.send({ status: 'SUCCESS', message: 'Already logged' });
     }
-    errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
     await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
+    errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
 
     let charge = (Number(config.paymentProcessing.depositCharge) / 100) * data.amount;
     charge = charge > 500 ? 500 : charge;
+
     const transaction = await paymentService.createTransactionRecord({
       amount: Number(data.amount),
       type: TRANSACTION_TYPES.CREDIT,
