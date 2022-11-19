@@ -22,6 +22,7 @@ const config = require('../config/config');
 const { CURRENCIES, TRANSACTION_SOURCES, TRANSACTION_TYPES } = require('../config/constants');
 const userService = require('./user.service');
 const invoiceService = require('./invoice.service');
+const { emailService } = require('.');
 
 // eslint-disable-next-line
 // const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -172,6 +173,7 @@ const transferMoney = async (user, body, actor) => {
   body.reference = generateRandomChar(16, 'num');
   const userAccount = await Account.findOne({ user, deletedAt: null }).populate('user');
   if (!userAccount) throw new ApiError(httpStatus.BAD_REQUEST, "Recipient's account not found");
+  await addToBalance(Number(body.amount), userAccount.user);
   const dump = await TransactionDump.create({ data: body, user });
   // Store transaction
   await createTransactionRecord({
@@ -192,9 +194,12 @@ const transferMoney = async (user, body, actor) => {
       reference: body.reference,
     },
   });
+  const message = `NGN${body.amount} was credited to your Merchro wallet by ${actor.firstName} ${actor.lastName}`;
+  emailService.creditEmail(userAccount.user.email, userAccount.user.firstName, message);
   const response = {
     reference: body.reference,
     accountNumber: userAccount.accountInfo.accountNumber,
+    email: userAccount.user.email,
     destinationAccountHolderNameAtBank: `${userAccount.user.firstName} ${userAccount.user.lastName}`,
     currency: 'NGN',
     fee: 0,

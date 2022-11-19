@@ -208,7 +208,7 @@ const transferMoney = catchAsync(async (req, res) => {
   if (Number(req.body.amount) <= accountInfo.balance[currency]) {
     const updatedBalance = Number((accountInfo.balance[currency] - Number(req.body.amount)).toFixed(2));
     const withdrawResponse = await paymentService.transferMoney(req.params.userId, req.body, req.user);
-    await paymentService.updateBalance(updatedBalance, currency, accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -221,8 +221,8 @@ const transferMoney = catchAsync(async (req, res) => {
       transactionDump: transactionDump.id,
       reference: withdrawResponse.response.reference,
       meta: {
-        accountNumber: req.body.accountNumber,
         accountName: withdrawResponse.response.destinationAccountHolderNameAtBank,
+        payerName: withdrawResponse.response.destinationAccountHolderNameAtBank,
         currency: withdrawResponse.response.currency,
         fee: withdrawResponse.response.fee,
         message: withdrawResponse.response.message,
