@@ -8,20 +8,6 @@ const { paymentValidation } = require('../../validations');
 const router = express.Router();
 
 router.route('/account-info').get(auth('creator'), paymentController.getAccountInfo);
-router.route('/rework').get(async (req, res) => {
-  // const accounts = await Account.find();
-  // const promise = accounts.map(async (account) => {
-  //   console.log(account.balance);
-  //   await Account.updateOne({ _id: account.id }, { $unset: ['balance', 'debt'] });
-  //   await Account.updateOne(
-  //     { _id: account.id },
-  //     { balance: { naira: account.balance, dollar: 0 }, debt: { naira: account.debt, dollar: 0 } }
-  //   );
-  // });
-  // await Promise.all(promise);
-  const updatedAccounts = await Account.find();
-  res.send(updatedAccounts);
-});
 router.route('/bank-list').get(auth('creator'), paymentController.getBanks);
 router.route('/dump').get(auth('creator'), async (req, res) => {
   const results = await TransactionDump.find({ user: req.user.id });
