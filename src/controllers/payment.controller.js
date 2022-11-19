@@ -145,13 +145,13 @@ const withdrawMoney = catchAsync(async (req, res) => {
 
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
   let charge = Number(config.paymentProcessing.withdrawalCharge);
-  if (Number(req.body.amount) + charge <= accountInfo.balance) {
+  if (Number(req.body.amount) + charge <= accountInfo.balance.naira) {
     const processingCost = Number(config.paymentProcessing.withdrawalProcessingCost);
     const profit = charge - processingCost;
     const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
     charge = withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : charge;
-    await paymentService.updateBalance(updatedBalance + charge, 'naira', accountInfo.user);
+    await paymentService.updateBalance(updatedBalance + charge, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -279,7 +279,7 @@ const buyAirtime = catchAsync(async (req, res) => {
   if (Number(req.body.amount) <= accountInfo.balance.naira) {
     const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const airtimeResponse = await paymentService.buyAirtime(req.body, req.user);
-    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: airtimeResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -386,7 +386,7 @@ const buyData = catchAsync(async (req, res) => {
   if (Number(req.body.amount) <= accountInfo.balance.naira) {
     const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const dataResponse = await paymentService.buyData(req.body, req.user);
-    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: dataResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
@@ -426,7 +426,7 @@ const purchaseUtilities = catchAsync(async (req, res) => {
     delete req.body.utilityType;
     const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const utilitiesResponse = await paymentService.purchaseUtilities(req.body, req.user);
-    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: utilitiesResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({

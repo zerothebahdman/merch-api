@@ -130,7 +130,7 @@ const getTransactions = async (filter, options, actor, paginate = true) => {
   return result;
 };
 
-const updateBalance = async (balance, currency, user) => {
+const updateBalance = async (balance, user, currency = 'naira') => {
   if (currency === 'naira') {
     const accountInfo = await Account.updateOne({ user }, { 'balance.naira': balance });
     return accountInfo;
@@ -141,7 +141,7 @@ const updateBalance = async (balance, currency, user) => {
   }
 };
 
-const addToBalance = async (amount, currency = 'naira', user) => {
+const addToBalance = async (amount, user, currency = 'naira') => {
   let accountInfo = await Account.findOne({ user });
   if (accountInfo === null) {
     accountInfo = await Account.create({ user });
@@ -156,7 +156,7 @@ const addToBalance = async (amount, currency = 'naira', user) => {
   return accountInfo;
 };
 
-const updateDebt = async (balance, currency, user) => {
+const updateDebt = async (balance, user, currency = 'naira') => {
   if (currency === 'naira') {
     const accountInfo = await Account.updateOne({ user }, { 'debt.naira': balance });
     return accountInfo;
@@ -172,8 +172,6 @@ const transferMoney = async (user, body, actor) => {
   body.reference = generateRandomChar(16, 'num');
   const userAccount = await Account.findOne({ user, deletedAt: null }).populate('user');
   if (!userAccount) throw new ApiError(httpStatus.BAD_REQUEST, "Recipient's account not found");
-  // const updatedBalance = userAccount.balance + Number(body.amount);
-  // await Account.updateOne({ user, deletedAt: null }, { balance: updatedBalance });
   const dump = await TransactionDump.create({ data: body, user });
   // Store transaction
   await createTransactionRecord({
