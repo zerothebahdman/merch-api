@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 const PagaBusiness = require('paga-business');
 const PagaCollect = require('paga-collect');
+const config = require('../config/config');
 const { paymentData, baseApiUrl } = require('../config/config');
 const Bank = require('../models/wallet/bank.model');
 const { generateRandomChar } = require('./helpers');
@@ -49,9 +50,21 @@ const Paga = {
     return accountInfo;
   },
   airtimeTopup: async (data) => {
-    const paga = await Paga.initPagaBusiness();
-    const response = await paga.airtimePurchase(generateRandomChar(16, 'num'), data.amount, 'NGN', data.phoneNumber);
-    return response;
+    if (config.enviroment === 'production') {
+      const paga = await Paga.initPagaBusiness();
+      const response = await paga.airtimePurchase(generateRandomChar(16, 'num'), data.amount, 'NGN', data.phoneNumber);
+      return response;
+    }
+    const response = {
+      referenceNumber: data.phoneNumber,
+      message: 'Airtime purchase request made successfully',
+      responseCode: 0,
+      transactionId: 'At34',
+      fee: 50.0,
+      currency: null,
+      exchangeRate: null,
+    };
+    return { response };
   },
   checkAccount: async (data) => {
     const reference = generateRandomChar(16, 'num');
@@ -60,24 +73,38 @@ const Paga = {
     return response;
   },
   withdraw: async (data) => {
-    const reference = generateRandomChar(16, 'num');
-    const paga = await Paga.initPagaBusiness();
-    const response = await paga.depositToBank(
-      reference,
-      data.amount,
-      'NGN',
-      data.bankId,
-      data.accountNumber,
-      '',
-      '',
-      `${generateRandomChar(16, 'lower')}@merchro.com`,
-      '',
-      '',
-      'true',
-      `Merchro/${data.firstName} ${data.lastName}/${reference}`,
-      ''
-    );
-    return response;
+    if (config.enviroment === 'production') {
+      const reference = generateRandomChar(16, 'num');
+      const paga = await Paga.initPagaBusiness();
+      const response = await paga.depositToBank(
+        reference,
+        data.amount,
+        'NGN',
+        data.bankId,
+        data.accountNumber,
+        '',
+        '',
+        `${generateRandomChar(16, 'lower')}@merchro.com`,
+        '',
+        '',
+        'true',
+        `Merchro/${data.firstName} ${data.lastName}/${reference}`,
+        ''
+      );
+      return response;
+    }
+    const response = {
+      reference: generateRandomChar(16, 'num'),
+      withdrawalCode: null,
+      exchangeRate: null,
+      fee: 50,
+      receiverRegistrationStatus: 'REGISTERED',
+      currency: 'NGN',
+      message: `You have successfully sent ${data.amount} to ${data.accountNumber}. Paga Txn ID: MG3TZ. Thank you for using Paga!`,
+      transactionId: 'MG3TZ',
+      responseCode: 0,
+    };
+    return { response };
   },
   balance: async (data) => {
     const paga = await Paga.initPagaBusiness();
@@ -94,16 +121,48 @@ const Paga = {
     return response.response.banks;
   },
   purchaseUtility: async (data) => {
-    const paga = await Paga.initPagaBusiness();
-    const response = await paga.merchantPayment(
-      data.merchantNumber,
-      data.amount,
-      data.merchant,
-      generateRandomChar(16, 'num'),
-      'NGN',
-      data.merchantServiceProductCode
-    );
-    return response;
+    if (config.enviroment === 'production') {
+      const paga = await Paga.initPagaBusiness();
+      const response = await paga.merchantPayment(
+        data.merchantNumber,
+        data.amount,
+        data.merchant,
+        generateRandomChar(16, 'num'),
+        'NGN',
+        data.merchantServiceProductCode
+      );
+      return response;
+    }
+    const response = {
+      responseCode: 0,
+      message: `You have successfully paid N${data.amount} to  for acct ${data.merchantNumber}. Token: ${generateRandomChar(
+        10,
+        'num'
+      )}. Paga TxnID: DWV0P`,
+      reference: generateRandomChar(16, 'num'),
+      merchantTransactionReference: data.merchantNumber,
+      transactionId: 'DWV0P',
+      currency: 'NGN',
+      exchangeRate: null,
+      fee: 0.0,
+      commissionEarned: 12.0,
+      integrationStatus: 'SUCCESSFUL',
+      additionalProperties: {
+        unitType: '',
+        totalPayment: '',
+        debtBefore: '',
+        customerAccountNumber: '',
+        units: '',
+        debtPayment: '',
+        paymentDate: '',
+        meterSerial: '',
+        customerName: '',
+        receiptNumber: '',
+        vat: '',
+        token: '',
+      },
+    };
+    return { response };
   },
 
   getUtilitiesProviders: async () => {
@@ -130,18 +189,30 @@ const Paga = {
   },
 
   buyDataBundle: async (data) => {
-    const paga = await Paga.initPagaBusiness();
-    data.currency = 'NGN';
-    // data.merchantService = data.mobileOperatorServiceId;
-    const response = await paga.airtimePurchase(
-      generateRandomChar(16, 'num'),
-      data.amount,
-      'NGN',
-      data.destinationPhoneNumber,
-      data.mobileOperatorServiceId,
-      data.isDataBundle
-    );
-    return response;
+    if (config.enviroment === 'production') {
+      const paga = await Paga.initPagaBusiness();
+      data.currency = 'NGN';
+      // data.merchantService = data.mobileOperatorServiceId;
+      const response = await paga.airtimePurchase(
+        generateRandomChar(16, 'num'),
+        data.amount,
+        'NGN',
+        data.destinationPhoneNumber,
+        data.mobileOperatorServiceId,
+        data.isDataBundle
+      );
+      return response;
+    }
+    const response = {
+      referenceNumber: data.destinationPhoneNumber,
+      message: 'Data purchase request made successfully',
+      responseCode: 0,
+      transactionId: 'At34',
+      fee: 50.0,
+      currency: null,
+      exchangeRate: null,
+    };
+    return { response };
   },
 
   validateCustomerReference: async (data) => {
