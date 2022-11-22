@@ -481,3 +481,20 @@ module.exports = router;
  *        "403":
  *          $ref: '#/components/responses/Forbidden'
  */
+
+/**
+ * @swagger
+ * path:
+ *  /reminder/{invoiceId}:
+ *    get:
+ *      summary: Send reminder to a client
+ *      description: Send reminder to a client
+ *      tags: [Invoice]
+ *      responses:
+ *        "204":
+ *          description: No content
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */

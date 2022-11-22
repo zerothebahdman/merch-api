@@ -13,7 +13,7 @@ const {
   merchService,
 } = require('../services');
 const { TRANSACTION_TYPES, TRANSACTION_SOURCES, CURRENCIES, ORDER_STATUSES, EVENTS } = require('../config/constants');
-const { TransactionDump, Report, Bank } = require('../models');
+const { TransactionDump, Report } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { Paga } = require('../utils/paga');
 const pick = require('../utils/pick');
@@ -21,6 +21,7 @@ const { addNotification } = require('../utils/notification');
 const { generateRandomChar, calculateProfit } = require('../utils/helpers');
 const config = require('../config/config');
 const mixPanel = require('../utils/mixpanel');
+const Bank = require('../models/wallet/bank.model');
 
 const getAccountInfo = catchAsync(async (req, res) => {
   const accountInfo = await paymentService.queryAccountInfoByUser(req.user.id);

@@ -93,18 +93,28 @@ const Paga = {
       );
       return response;
     }
+
+    const checkAccount = await Paga.checkAccount({ bankId: data.bankId, accountNumber: data.accountNumber });
     const response = {
-      reference: generateRandomChar(16, 'num'),
-      withdrawalCode: null,
-      exchangeRate: null,
-      fee: 50,
-      receiverRegistrationStatus: 'REGISTERED',
-      currency: 'NGN',
-      message: `You have successfully sent ${data.amount} to ${data.accountNumber}. Paga Txn ID: MG3TZ. Thank you for using Paga!`,
-      transactionId: 'MG3TZ',
-      responseCode: 0,
+      error: false,
+      response: {
+        responseCode: 0,
+        responseCategoryCode: null,
+        message: `Successfully deposited N${data.amount} to ${data.accountNumber}. Transaction Id: ${generateRandomChar(
+          5,
+          'num'
+        )}.`,
+        referenceNumber: generateRandomChar(16, 'num'),
+        transactionId: generateRandomChar(6, 'num'),
+        currency: 'NGN',
+        exchangeRate: null,
+        fee: 53.75,
+        sessionId: generateRandomChar(16, 'num'),
+        vat: 3.75,
+        destinationAccountHolderNameAtBank: checkAccount.response.destinationAccountHolderNameAtBank,
+      },
     };
-    return { response };
+    return response;
   },
   balance: async (data) => {
     const paga = await Paga.initPagaBusiness();
