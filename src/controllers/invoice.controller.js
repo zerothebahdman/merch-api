@@ -76,6 +76,7 @@ const processInvoicePayment = catchAsync(async (req, res) => {
         currency: CURRENCIES.NAIRA,
       },
     });
+    await paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
     mixPanel(EVENTS.PAID_FROM_INVOICE, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: creatorDetails._id,
@@ -86,7 +87,6 @@ const processInvoicePayment = catchAsync(async (req, res) => {
       transaction: transaction._id,
       amountSpent: Math.round(processingCost),
     });
-    paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
     res.send(_invoice);
   } else {
     // Inform the customer their payment was unsuccessful
@@ -251,7 +251,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
         currency: CURRENCIES.NAIRA,
       },
     });
-
+    await paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
     mixPanel(EVENTS.PAID_FROM_PAYMENT_LINK, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: creatorDetails._id,
@@ -262,8 +262,6 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       transaction: transaction._id,
       amountSpent: Math.round(processingCost),
     });
-
-    paymentService.addToBalance(amountToPayCreator, creatorDetails._id);
     // calculate the totalAmount of tickets bought
     const totalTickets = creatorClient.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
     delete creatorClient.eventMetaDetails;

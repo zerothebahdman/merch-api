@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 const { Schema, model } = require('mongoose');
 const { PAYMENT_LINK_TYPES } = require('../../config/constants');
-const { toJSON } = require('../plugins');
+const { toJSON, auditableFields } = require('../plugins');
 
 const paymentLinkClientSchema = new Schema(
   {
@@ -37,6 +37,7 @@ const paymentLinkClientSchema = new Schema(
       nextChargeDate: { type: Date },
     },
     eventMetaDetails: Object,
+    ...auditableFields,
   },
   {
     timestamps: true,

@@ -149,9 +149,11 @@ const addToBalance = async (amount, user, currency = 'naira') => {
   }
   amount = Number(amount);
   let update = {};
-  if (currency === 'naira') update = { 'balance.naira': accountInfo.balance.naira + amount, updatedAt: moment().format() };
+  if (currency === 'naira')
+    update = { balance: { naira: accountInfo.balance.naira + amount }, updatedAt: moment().format() };
   else if (currency === 'dollar')
-    update = { 'balance.dollar': accountInfo.balance.dollar + amount, updatedAt: moment().format() };
+    update = { balance: { naira: accountInfo.balance.dollar + amount }, updatedAt: moment().format() };
+
   Object.assign(accountInfo, update);
   await accountInfo.save();
   return accountInfo;
@@ -349,7 +351,7 @@ const initiateRecurringPayment = async (paymentLink, client) => {
           currency: CURRENCIES.NAIRA,
         },
       });
-
+      await addToBalance(Number(paymentLink.amount) - charge, client._id);
       await createMerchroEarningsRecord({
         user: creator._id,
         source: TRANSACTION_SOURCES.PAYMENT_LINK,
@@ -360,7 +362,6 @@ const initiateRecurringPayment = async (paymentLink, client) => {
         amountSpent: Math.round(processingCost),
       });
 
-      addToBalance(Number(paymentLink.amount) - charge, client._id);
       const { interval, frequency } = paymentLink.recurringPayment;
       const nextChargeDate = calculatePeriod(interval);
       const updateBody = {

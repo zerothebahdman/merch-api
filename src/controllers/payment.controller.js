@@ -340,6 +340,7 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
             currency: CURRENCIES.NAIRA,
           },
         });
+        await paymentService.addToBalance(amount, creator.id);
         mixPanel(EVENTS.SALE_FROM_STORE, transaction);
         await paymentService.createMerchroEarningsRecord({
           user: creator._id,
@@ -351,7 +352,6 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
           amountSpent: processingCost,
         });
 
-        paymentService.addToBalance(amount, creator.id);
         const orderedMerches = [];
         const orderMerch = order.merches.map(async (merch) => {
           const data = await merchService.queryMerchById(merch.merchId);
