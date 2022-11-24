@@ -80,7 +80,7 @@ const creditAccount = catchAsync(async (req, res) => {
       errorTracker.push(`Transaction previous log check returns true`);
       return res.send({ status: 'SUCCESS', message: 'Already logged' });
     }
-    await paymentService.updateBalance(updatedBalance, 'naira', accountInfo.user);
+    await paymentService.updateBalance(updatedBalance, accountInfo.user);
     errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
 
     let charge = (Number(config.paymentProcessing.depositCharge) / 100) * data.amount;
