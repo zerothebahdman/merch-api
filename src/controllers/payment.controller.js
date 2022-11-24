@@ -62,7 +62,7 @@ const creditAccount = catchAsync(async (req, res) => {
     errorTracker.push(`Account info retrieved sucessfully for user ${accountInfo.user}`);
     const transactionDump = await TransactionDump.create({ data, user: accountInfo.user || null });
     errorTracker.push(`Transaction data dumped sucessfully. DumpId ${transactionDump._id.toString()}`);
-    data.amount = data.amount.replaceAll(',', '');
+    data.amount = data.amount.split(',').join();
     errorTracker.push(`Transaction amount converted to number successfully (${data.amount})`);
     const updatedBalance = Number((accountInfo.balance.naira + Number(data.amount)).toFixed(2));
     errorTracker.push(`New balance calculated successfully (${updatedBalance})`);
