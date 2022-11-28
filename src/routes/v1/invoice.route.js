@@ -26,7 +26,11 @@ router
   .get(auth('creator'), invoiceController.getPaymentLinks)
   .post(auth('creator'), validate(invoiceValidation.createPaymentLink), invoiceController.createPaymentLink);
 
-router.route('/payment-link/:paymentCode').get(invoiceController.getPaymentLink);
+router
+  .route('/payment-link/:paymentCode')
+  .get(invoiceController.getPaymentLink)
+  .patch(auth('creator'), validate(invoiceValidation.updatePaymentLink), invoiceController.updatePaymentLink)
+  .delete(auth('creator'), invoiceController.deletePaymentLink);
 
 router
   .route('/payment-link/checkout')
@@ -338,6 +342,52 @@ module.exports = router;
  *            application/json:
  *              schema:
  *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *    patch:
+ *      summary: Update Payment Link
+ *      description: Allow creators to be able to update payment links
+ *      tags: [Invoice]
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              required:
+ *                - pageName
+ *                - pageDescription
+ *                - pageRedirectUrl
+ *                - amount
+ *                - paymentType
+ *                - eventPayment: {}
+ *              example:
+ *                pageName: 'Merchro'
+ *                pageDescription: 'Merchro payment page'
+ *                pageRedirectUrl: 'https://merchro.com'
+ *                amount: 100
+ *                paymentType: 'event'
+ *                eventPayment: {type: true, location: 'Lagos', date: {from: '2021-01-01', to: '2021-01-01'}, tickets: [{ticketType: 'VIP', ticketPrice: 100, ticketQuantity: 10}, {ticketType: 'Regular', ticketPrice: 50, ticketQuantity: 10}]}
+ *      responses:
+ *        "200":
+ *          description: OK
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLink'
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ *    delete:
+ *      summary: Delete a payment link
+ *      description: Allow creators to be able to delete payment links
+ *      tags: [Invoice]
+ *      responses:
+ *        "204":
+ *          description: No Content
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":

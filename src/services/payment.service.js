@@ -330,7 +330,9 @@ const initiateRecurringPayment = async (paymentLink, client) => {
       token: client.card.token,
       narration: `Payment for ${client.subscriptionDetails.interval} ${paymentLink.pageName} subscription`,
     };
-    const charge = (Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * paymentLink.amount;
+    const charge = Number(
+      ((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * paymentLink.amount).toFixed(2)
+    );
     const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * paymentLink.amount;
     const profit = charge - processingCost;
     const initiateCharge = await flw.Tokenized.charge(chargeBody);
@@ -359,7 +361,7 @@ const initiateRecurringPayment = async (paymentLink, client) => {
         charge,
         profit,
         transaction: transaction._id,
-        amountSpent: Math.round(processingCost),
+        amountSpent: Number(processingCost),
       });
 
       const { interval, frequency } = paymentLink.recurringPayment;

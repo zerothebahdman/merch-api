@@ -23,6 +23,7 @@ const paymentLinkSchema = new Schema(
       interval: String,
       frequency: Number,
     },
+    absorbFees: { type: Boolean, default: true },
     eventPayment: {
       type: { type: Boolean, default: false },
       location: String,

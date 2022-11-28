@@ -98,6 +98,29 @@ const getPaymentLink = async (filter) => {
   return paymentLink;
 };
 
+const updatePaymentLinkById = async (paymentLinkCode, updateBody) => {
+  const filter = { paymentCode: paymentLinkCode, deletedAt: null, deletedBy: null };
+  const paymentLink = await getPaymentLink(filter);
+  if (!paymentLink) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Payment Link not found');
+  }
+  Object.assign(paymentLink, updateBody);
+  await paymentLink.save();
+  return paymentLink;
+};
+
+const deletePaymentLinkById = async (paymentLinkCode) => {
+  const filter = { paymentCode: paymentLinkCode, deletedAt: null, deletedBy: null };
+  const paymentLink = await getPaymentLink(filter);
+  if (!paymentLink) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Payment Link not found');
+  }
+  paymentLink.deletedBy = paymentLink.creator;
+  paymentLink.deletedAt = moment().toDate();
+  await paymentLink.save();
+  return paymentLink;
+};
+
 const getPaymentLinkById = async (id) => {
   const paymentLink = await PaymentLink.findById(id);
   return paymentLink;
@@ -159,4 +182,6 @@ module.exports = {
   updateCreatorClient,
   getPaymentLink,
   getAllCreatorPaymentLinkClient,
+  updatePaymentLinkById,
+  deletePaymentLinkById,
 };

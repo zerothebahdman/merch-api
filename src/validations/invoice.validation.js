@@ -65,6 +65,7 @@ const createPaymentLink = {
     pageImage: Joi.string(),
     pageDescription: Joi.string().required(),
     pageRedirectUrl: Joi.string(),
+    absorbFees: Joi.boolean(),
     amount: Joi.when('paymentType', {
       is: PAYMENT_LINK_TYPES.EVENT,
       then: Joi.number(),
@@ -103,6 +104,50 @@ const createPaymentLink = {
             .required(),
         })
         .required(),
+    }),
+  }),
+};
+
+const updatePaymentLink = {
+  body: Joi.object().keys({
+    paymentType: Joi.string().valid(...Object.values(PAYMENT_LINK_TYPES)),
+    pageName: Joi.string(),
+    pageImage: Joi.string(),
+    pageDescription: Joi.string(),
+    pageRedirectUrl: Joi.string(),
+    absorbFees: Joi.boolean(),
+    amount: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.EVENT,
+      then: Joi.number(),
+      otherwise: Joi.number(),
+    }),
+    recurringPayment: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.SUBSCRIPTION,
+      then: Joi.object().keys({
+        type: Joi.boolean().valid(true).required(),
+        interval: Joi.string()
+          .valid(...Object.values(RECURRING_PAYMENT))
+          .required(),
+        frequency: Joi.number().required(),
+      }),
+    }),
+    eventPayment: Joi.when('paymentType', {
+      is: PAYMENT_LINK_TYPES.EVENT,
+      then: Joi.object().keys({
+        type: Joi.boolean().required(),
+        location: Joi.string().required(),
+        date: Joi.object()
+          .keys({
+            from: Joi.date().required(),
+            to: Joi.date().required(),
+          })
+          .required(),
+        tickets: Joi.array().items({
+          ticketType: Joi.string().required(),
+          ticketPrice: Joi.number().required(),
+          ticketQuantity: Joi.number().required(),
+        }),
+      }),
     }),
   }),
 };
@@ -163,4 +208,5 @@ module.exports = {
   paymentLinkPay,
   generateCheckoutLink,
   processInvoicePayment,
+  updatePaymentLink,
 };

@@ -91,7 +91,7 @@ const creditAccount = catchAsync(async (req, res) => {
     await paymentService.updateBalance(updatedBalance, accountInfo.user);
     errorTracker.push(`New balance updated successfully for user (${updatedBalance})`);
 
-    let charge = (Number(config.paymentProcessing.depositCharge) / 100) * data.amount;
+    let charge = Number(((Number(config.paymentProcessing.depositCharge) / 100) * data.amount).toFixed(2));
     charge = charge > 500 ? 500 : charge;
 
     const transaction = await paymentService.createTransactionRecord({
@@ -148,7 +148,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
   if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Duplicate transaction, withdrawal already initialized');
 
   if (!accountInfo) throw new ApiError(httpStatus.FORBIDDEN, 'You cannot make transfers until your account is fully setup');
-  let charge = Number(config.paymentProcessing.withdrawalCharge);
+  let charge = Number(Number(config.paymentProcessing.withdrawalCharge).toFixed(2));
   if (Number(req.body.amount) + charge <= accountInfo.balance.naira) {
     const processingCost = Number(config.paymentProcessing.withdrawalProcessingCost);
     const profit = charge - processingCost;
@@ -185,7 +185,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
       charge,
       profit: withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : profit,
       transaction: transaction._id,
-      amountSpent: withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : Math.round(processingCost),
+      amountSpent: withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : processingCost,
     });
     const message = `NGN${req.body.amount} was debited from your account to (${withdrawResponse.response.destinationAccountHolderNameAtBank}/${req.body.accountNumber})`;
     const user = await userService.getUserById(accountInfo.user);
@@ -307,7 +307,7 @@ const buyAirtime = catchAsync(async (req, res) => {
       amount: req.body.amount,
       source: TRANSACTION_SOURCES.SAVINGS,
       charge: 0,
-      profit: Number(config.paymentProcessing.airtimeRechargeCharge / 100) * req.body.amount,
+      profit: Number((Number(config.paymentProcessing.airtimeRechargeCharge / 100) * req.body.amount).toFixed(2)),
       transaction: transaction.id,
       amountSpent: 0,
     });
@@ -413,7 +413,7 @@ const buyData = catchAsync(async (req, res) => {
       user: accountInfo.user,
       amount: req.body.amount,
       source: TRANSACTION_SOURCES.SAVINGS,
-      profit: Number((config.paymentProcessing.airtimeRechargeCharge / 100) * req.body.amount),
+      profit: Number(((config.paymentProcessing.airtimeRechargeCharge / 100) * req.body.amount).toFixed(2)),
       transaction: transaction.id,
       charge: 0,
       amountSpent: 0,

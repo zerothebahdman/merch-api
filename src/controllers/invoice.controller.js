@@ -56,16 +56,16 @@ const processInvoicePayment = catchAsync(async (req, res) => {
     const creatorDetails = await userService.getUserById(creator);
     const _invoice = await invoiceService.getInvoiceById(invoice);
 
-    const charge = (Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount;
+    const charge = Number(((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount).toFixed(2));
     const amountToPayCreator = amount - charge;
-    const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount;
+    const processingCost = Number(((Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount).toFixed(2));
     const profit = charge - processingCost;
 
     const transaction = await paymentService.createTransactionRecord({
       user: creatorDetails._id,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
       type: TRANSACTION_TYPES.CREDIT,
-      amount: Number(amountToPayCreator),
+      amount: amountToPayCreator,
       purpose: `Payment for Invoice ${_invoice.invoiceCode}`,
       createdBy: creatorClient.id,
       reference: `#PL_${generateRandomChar(5, 'num')}`,
@@ -85,7 +85,7 @@ const processInvoicePayment = catchAsync(async (req, res) => {
       charge,
       profit,
       transaction: transaction._id,
-      amountSpent: Math.round(processingCost),
+      amountSpent: processingCost,
     });
     res.send(_invoice);
   } else {
@@ -172,6 +172,16 @@ const getPaymentLink = catchAsync(async (req, res) => {
   res.status(200).send(paymentLink);
 });
 
+const updatePaymentLink = catchAsync(async (req, res) => {
+  const paymentLink = await invoiceService.updatePaymentLinkById(req.params.paymentCode, req.body);
+  res.send(paymentLink);
+});
+
+const deletePaymentLink = catchAsync(async (req, res) => {
+  await invoiceService.deletePaymentLinkById(req.params.paymentCode);
+  res.status(204).send();
+});
+
 const paymentLinkPay = catchAsync(async (req, res) => {
   const proceed = await paymentService.controlTransaction(req.body);
   if (!proceed) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
@@ -202,7 +212,6 @@ const paymentLinkPay = catchAsync(async (req, res) => {
           timesBilled: frequency > 0 ? 1 : 0,
         },
       };
-      // Math.round(duration / frequency), 'days'
       await invoiceService.updateCreatorClient(creatorClient._id, { ...updateBody });
     }
     const paymentLink = await invoiceService.getPaymentLinkById(creatorPaymentLink);
@@ -231,16 +240,15 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       await invoiceService.updatePaymentLink(creatorPaymentLink, { eventPayment: { tickets: updatedTickets } });
     }
 
-    const charge = (Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount;
+    const charge = Number(((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount).toFixed(2));
     const amountToPayCreator = amount - charge;
-    const processingCost = (Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount;
+    const processingCost = Number((Number(config.paymentProcessing.invoiceProcessingCost) / 100) * amount).toFixed(2);
     const profit = charge - processingCost;
-
     const transaction = await paymentService.createTransactionRecord({
       user: creatorDetails._id,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
       type: TRANSACTION_TYPES.CREDIT,
-      amount: Number(amountToPayCreator),
+      amount: amountToPayCreator,
       purpose: `Payment for ${paymentLink.pageName}`,
       createdBy: creatorClient.id,
       reference: `#PL_${generateRandomChar(5, 'num')}`,
@@ -256,22 +264,29 @@ const paymentLinkPay = catchAsync(async (req, res) => {
     await paymentService.createMerchroEarningsRecord({
       user: creatorDetails._id,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
-      amount: Number(amount),
+      amount: amountToPayCreator,
       charge,
       profit,
       transaction: transaction._id,
-      amountSpent: Math.round(processingCost),
+      amountSpent: processingCost,
     });
     // calculate the totalAmount of tickets bought
-    const totalTickets = creatorClient.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
-    delete creatorClient.eventMetaDetails;
-    const data = {
-      eventObject: {
-        totalTickets,
-        creatorClient,
-      },
-      paymentLink,
-    };
+    let data = {};
+    if (paymentLink.paymentType === PAYMENT_LINK_TYPES.EVENT) {
+      const totalTickets = creatorClient.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
+      delete creatorClient.eventMetaDetails;
+      data = {
+        eventObject: {
+          totalTickets,
+          creatorClient,
+        },
+        paymentLink,
+      };
+    } else {
+      data = {
+        paymentLink,
+      };
+    }
     res.send(data);
   } else {
     // Inform the customer their payment was unsuccessful
@@ -302,6 +317,8 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
   req.body.eventMetaDetails = req.body.event;
   delete req.body.event;
   const createCreatorPaymentLinkClient = await invoiceService.createCreatorPaymentLinkClient(req.body);
+  const charge = Number(((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * req.body.amount).toFixed(2));
+  if (!getCreatorPaymentLink.absorbFees) req.body.amount = Number(req.body.amount) + charge;
   const paymentLink = await paymentService.getPaymentLink(
     {
       customer: {
@@ -389,4 +406,6 @@ module.exports = {
   processInvoicePayment,
   getTickets,
   sendInvoiceReminders,
+  updatePaymentLink,
+  deletePaymentLink,
 };
