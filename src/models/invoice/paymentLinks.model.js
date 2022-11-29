@@ -7,6 +7,10 @@ const paymentLinkSchema = new Schema(
     paymentType: { type: String, enum: Object.values(PAYMENT_LINK_TYPES) },
     paymentCode: { type: String, required: true },
     pageName: { type: String, required: true },
+    slug: {
+      type: String,
+      unique: true,
+    },
     pageDescription: { type: String, required: true },
     pageImage: { type: String, required: false },
     pageRedirectUrl: { type: String, required: true },

@@ -32,6 +32,8 @@ router
   .patch(auth('creator'), validate(invoiceValidation.updatePaymentLink), invoiceController.updatePaymentLink)
   .delete(auth('creator'), invoiceController.deletePaymentLink);
 
+router.route('/payment-link/s/:slug').get(auth('creator'), invoiceController.getPaymentLinkBySlug);
+
 router
   .route('/payment-link/checkout')
   .post(validate(invoiceValidation.generateCheckoutLink), invoiceController.generateCheckoutLink);
@@ -330,7 +332,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-links/{paymentCode}:
+ *  /payment-link/{paymentCode}:
  *    get:
  *      summary: Get a payment link
  *      description: Get a payment link by the payment code
@@ -388,6 +390,27 @@ module.exports = router;
  *      responses:
  *        "204":
  *          description: No Content
+ *        "401":
+ *          $ref: '#/components/responses/Unauthorized'
+ *        "403":
+ *          $ref: '#/components/responses/Forbidden'
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /payment-link/s/{slug}:
+ *    get:
+ *      summary: Get a payment link
+ *      description: Get a payment link by slug
+ *      tags: [Invoice]
+ *      responses:
+ *        "200":
+ *          description: Fetched
+ *          content:
+ *            application/json:
+ *              schema:
+ *                 $ref: '#/components/schemas/PaymentLink'
  *        "401":
  *          $ref: '#/components/responses/Unauthorized'
  *        "403":
@@ -479,7 +502,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-links/{paymentCode}/purchased:
+ *  /payment-link/{paymentCode}/purchased:
  *    get:
  *      summary: Get insights for a payment link
  *      description: Get insights for a payment link

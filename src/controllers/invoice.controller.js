@@ -7,7 +7,7 @@ const { TRANSACTION_SOURCES, TRANSACTION_TYPES, CURRENCIES, PAYMENT_LINK_TYPES, 
 const { invoiceService, paymentService, userService, emailService, creatorPageService } = require('../services');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { generateRandomChar, calculatePeriod } = require('../utils/helpers');
+const { generateRandomChar, calculatePeriod, slugify } = require('../utils/helpers');
 const mixPanel = require('../utils/mixpanel');
 const pick = require('../utils/pick');
 
@@ -145,6 +145,14 @@ const createIssue = catchAsync(async (req, res) => {
 const createPaymentLink = catchAsync(async (req, res) => {
   req.body.creator = req.user.id;
   req.body.paymentCode = `pay-${generateRandomChar(15, 'lower-num')}`;
+  const paymentLinkSlug = await invoiceService.getPaymentLinkBySlug({
+    slug: slugify(req.body.pageName),
+    creator: req.user.id,
+  });
+
+  req.body.slug = paymentLinkSlug
+    ? `${slugify(req.body.pageName)}-${generateRandomChar(4, 'lower')}`
+    : slugify(req.body.pageName);
   const paymentLink = await invoiceService.createPaymentLink(req.body);
   mixPanel(EVENTS.CREATE_PAYMENT_LINK, paymentLink);
   res.status(200).send(paymentLink);
@@ -163,11 +171,21 @@ const getPaymentLinks = catchAsync(async (req, res) => {
   if (req.query.include) options.populate = req.query.include.toString();
   else options.populate = '';
   const paymentLink = await invoiceService.getPaymentLinks(filter, options, req.user, req.query.paginate);
+  if (req.query.exclude) {
+    const filteredPaymentLink = paymentLink.results.filter((link) => link.paymentType !== req.query.exclude);
+    paymentLink.results = filteredPaymentLink;
+  }
   res.status(httpStatus.OK).send(paymentLink);
 });
 
 const getPaymentLink = catchAsync(async (req, res) => {
   const filter = { paymentCode: req.params.paymentCode, deletedAt: null, deletedBy: null };
+  const paymentLink = await invoiceService.getPaymentLink(filter);
+  res.status(200).send(paymentLink);
+});
+
+const getPaymentLinkBySlug = catchAsync(async (req, res) => {
+  const filter = { slug: req.params.slug, deletedAt: null, deletedBy: null };
   const paymentLink = await invoiceService.getPaymentLink(filter);
   res.status(200).send(paymentLink);
 });
@@ -408,4 +426,5 @@ module.exports = {
   sendInvoiceReminders,
   updatePaymentLink,
   deletePaymentLink,
+  getPaymentLinkBySlug,
 };

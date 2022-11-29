@@ -3,6 +3,7 @@ const moment = require('moment');
 const httpStatus = require('http-status');
 const { Invoice, Client, ReportIssue, PaymentLink, PaymentLinkClient } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { slugify } = require('../utils/helpers');
 
 const getInvoiceById = async (id, eagerLoadFields = false) => {
   const filter = { _id: id, deletedBy: null };
@@ -104,6 +105,7 @@ const updatePaymentLinkById = async (paymentLinkCode, updateBody) => {
   if (!paymentLink) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Payment Link not found');
   }
+  if (!paymentLink.slug) updateBody.slug = slugify(paymentLink.pageName);
   Object.assign(paymentLink, updateBody);
   await paymentLink.save();
   return paymentLink;
@@ -123,6 +125,11 @@ const deletePaymentLinkById = async (paymentLinkCode) => {
 
 const getPaymentLinkById = async (id) => {
   const paymentLink = await PaymentLink.findById(id);
+  return paymentLink;
+};
+
+const getPaymentLinkBySlug = async (filter) => {
+  const paymentLink = await PaymentLink.findOne(filter);
   return paymentLink;
 };
 
@@ -184,4 +191,5 @@ module.exports = {
   getAllCreatorPaymentLinkClient,
   updatePaymentLinkById,
   deletePaymentLinkById,
+  getPaymentLinkBySlug,
 };
