@@ -208,14 +208,9 @@ const paymentLinkPay = catchAsync(async (req, res) => {
     const {
       card,
       amount,
-      meta: { creator, creatorPaymentLinkClient, creatorPaymentLink, paymentType, interval, frequency },
+      meta: { creator, creatorPaymentLink, paymentType, interval, frequency, clientInfo },
     } = validatePayment.data;
-    const filter = {
-      _id: creatorPaymentLinkClient,
-      creatorPaymentLink,
-      deletedAt: null,
-    };
-    const creatorClient = await invoiceService.getCreatorPaymentLinkClient(filter);
+    const creatorClient = await invoiceService.createCreatorPaymentLinkClient(JSON.parse(clientInfo));
     const creatorDetails = await userService.getUserById(creator);
     if (paymentType === PAYMENT_LINK_TYPES.SUBSCRIPTION) {
       // calculate next payment date
@@ -255,7 +250,9 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       eventPayload.to = to;
       eventPayload.ticketLink = `${config.frontendAppUrl}/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
       await emailService.sendUserEventPaymentLinkTicket(creatorClient, eventPayload);
-      await invoiceService.updatePaymentLink(creatorPaymentLink, { eventPayment: { tickets: updatedTickets } });
+      await invoiceService.updatePaymentLink(creatorPaymentLink, {
+        eventPayment: { ...paymentLink.eventPayment.toJSON(), tickets: updatedTickets },
+      });
     }
 
     const charge = Number(((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount).toFixed(2));
@@ -296,7 +293,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       data = {
         eventObject: {
           totalTickets,
-          creatorClient,
+          purchaser: creatorClient,
         },
         paymentLink,
       };
@@ -334,23 +331,22 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
   req.body.creatorPaymentLink = getCreatorPaymentLink._id;
   req.body.eventMetaDetails = req.body.event;
   delete req.body.event;
-  const createCreatorPaymentLinkClient = await invoiceService.createCreatorPaymentLinkClient(req.body);
   const charge = Number(((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * req.body.amount).toFixed(2));
   if (!getCreatorPaymentLink.absorbFees) req.body.amount = Number(req.body.amount) + charge;
   const paymentLink = await paymentService.getPaymentLink(
     {
       customer: {
-        name: createCreatorPaymentLinkClient.clientFirstName,
-        email: createCreatorPaymentLinkClient.clientEmail,
+        name: req.body.clientFirstName,
+        email: req.body.clientEmail,
       },
       payment_options: 'card',
       meta: {
         creator: getCreatorPaymentLink.creator,
         creatorPaymentLink: getCreatorPaymentLink.id,
         paymentType: req.body.paymentType,
-        creatorPaymentLinkClient: createCreatorPaymentLinkClient.id,
         interval: getCreatorPaymentLink.recurringPayment.interval,
         frequency: getCreatorPaymentLink.recurringPayment.frequency,
+        clientInfo: JSON.stringify(req.body),
       },
       amount: req.body.amount,
       currency: CURRENCIES.NAIRA,

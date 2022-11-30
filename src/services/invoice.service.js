@@ -141,6 +141,24 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
     deletedAt: null,
     creator: clientBody.creator,
   });
+  if (clientExist && clientBody.paymentType === 'event') {
+    const updateClientTicket = clientBody.eventMetaDetails.ticketType.map((event) => {
+      // check if the type in eventMetaDetails.ticketType array is the same as the one in the db and if it is, update the quantity
+      const index = clientExist.eventMetaDetails.ticketType.findIndex((item) => item.type === event.type);
+      if (index !== -1) {
+        clientExist.eventMetaDetails.ticketType[index].quantity += Number(event.quantity);
+      }
+      if (index === -1) {
+        clientExist.eventMetaDetails.ticketType.push(event);
+      }
+      return clientExist.toJSON();
+    });
+    await Promise.all(updateClientTicket);
+    const flattenUpdateClientTicket = updateClientTicket.reduce((acc, val) => Object.assign(acc, val), {});
+    flattenUpdateClientTicket.amount += Number(clientBody.amount);
+    Object.assign(clientExist, flattenUpdateClientTicket);
+    await PaymentLinkClient.updateOne({ _id: clientExist.id }, clientExist);
+  }
   if (!clientExist) {
     const client = await PaymentLinkClient.create(clientBody);
     return client;
