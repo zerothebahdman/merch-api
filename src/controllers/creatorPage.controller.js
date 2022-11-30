@@ -58,8 +58,7 @@ const getCreatorCustomers = catchAsync(async (req, res) => {
   const filter = { creatorPage: req.params.creatorPageId };
   const options = { populate: ['user'].toString() };
   const orders = await orderService.getOrders(filter, options, req.user, true);
-  const _filter = { creator: req.user.id };
-  const getCreatorPaymentLinks = await invoiceService.getPaymentLinks(_filter, options, req.user, false);
+  const getCreatorPaymentLinks = await invoiceService.getPaymentLinks({ creator: req.user.id }, options, req.user, false);
   const invoiceCustomers = await invoiceService.queryCreatorClient(req.user.id);
   const customers = [];
   const paymentLinks = getCreatorPaymentLinks.map(async (link) => {
@@ -71,6 +70,8 @@ const getCreatorCustomers = catchAsync(async (req, res) => {
   });
   await Promise.all(paymentLinks);
   const customersArray = customers.flat();
+  // from the list of data in the customers array, remove duplicates using the clientEmail
+  const uniqueCustomers = customersArray.filter((v, i, a) => a.findIndex((t) => t.clientEmail === v.clientEmail) === i);
   const users = [];
   orders.forEach((order) => {
     order = order.toJSON();
@@ -84,7 +85,7 @@ const getCreatorCustomers = catchAsync(async (req, res) => {
       users.push({ ...user, orders: [order] });
     }
   });
-  const data = { storeClients: users, paymentLinkClients: customersArray, invoiceCustomers };
+  const data = { storeClients: users, paymentLinkClients: uniqueCustomers, invoiceCustomers };
   res.send(data);
 });
 

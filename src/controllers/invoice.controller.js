@@ -167,14 +167,13 @@ const getPaymentLinks = catchAsync(async (req, res) => {
   } else if (req.query.endDate) {
     filter.createdAt = { $lte: moment(req.query.endDate).endOf('day') };
   }
+  if (req.query.exclude) {
+    filter.paymentType = { $ne: req.query.exclude };
+  }
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   if (req.query.include) options.populate = req.query.include.toString();
   else options.populate = '';
   const paymentLink = await invoiceService.getPaymentLinks(filter, options, req.user, req.query.paginate);
-  if (req.query.exclude) {
-    const filteredPaymentLink = paymentLink.results.filter((link) => link.paymentType !== req.query.exclude);
-    paymentLink.results = filteredPaymentLink;
-  }
   res.status(httpStatus.OK).send(paymentLink);
 });
 
@@ -249,7 +248,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       eventPayload.from = from;
       eventPayload.to = to;
       eventPayload.ticketLink = `${config.frontendAppUrl}/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
-      await emailService.sendUserEventPaymentLinkTicket(creatorClient, eventPayload);
+      await emailService.sendUserEventPaymentLinkTicket(JSON.parse(clientInfo), eventPayload);
       await invoiceService.updatePaymentLink(creatorPaymentLink, {
         eventPayment: { ...paymentLink.eventPayment.toJSON(), tickets: updatedTickets },
       });

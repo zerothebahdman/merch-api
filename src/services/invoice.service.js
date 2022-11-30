@@ -135,7 +135,7 @@ const getPaymentLinkBySlug = async (filter) => {
 
 const createCreatorPaymentLinkClient = async (clientBody) => {
   const clientExist = await PaymentLinkClient.findOne({
-    email: clientBody.email,
+    clientEmail: clientBody.clientEmail,
     paymentType: clientBody.paymentType,
     creatorPaymentLink: clientBody.creatorPaymentLinkId,
     deletedAt: null,
@@ -143,14 +143,7 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
   });
   if (clientExist && clientBody.paymentType === 'event') {
     const updateClientTicket = clientBody.eventMetaDetails.ticketType.map((event) => {
-      // check if the type in eventMetaDetails.ticketType array is the same as the one in the db and if it is, update the quantity
-      const index = clientExist.eventMetaDetails.ticketType.findIndex((item) => item.type === event.type);
-      if (index !== -1) {
-        clientExist.eventMetaDetails.ticketType[index].quantity += Number(event.quantity);
-      }
-      if (index === -1) {
-        clientExist.eventMetaDetails.ticketType.push(event);
-      }
+      clientExist.eventMetaDetails.ticketType.push(event);
       return clientExist.toJSON();
     });
     await Promise.all(updateClientTicket);
