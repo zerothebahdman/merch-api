@@ -399,7 +399,8 @@ const getTickets = catchAsync(async (req, res) => {
   filter.deletedAt = null;
   const client = await invoiceService.getCreatorPaymentLinkClient(filter);
   const paymentLink = await invoiceService.getPaymentLinkById(client.creatorPaymentLink);
-  const totalTickets = client.eventMetaDetails.ticketType.reduce((acc, ticket) => acc + ticket.quantity, 0);
+  const totalTickets = client.eventMetaDetails.ticketType[client.eventMetaDetails.ticketType.length - 1].quantity;
+  client.eventMetaDetails.ticketType = client.eventMetaDetails.ticketType[client.eventMetaDetails.ticketType.length - 1];
   const data = { totalTickets, client, paymentLink };
   res.status(200).send(data);
 });
