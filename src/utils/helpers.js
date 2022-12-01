@@ -62,6 +62,16 @@ const generateRandomChar = (length = 32, type = 'alpha-num') => {
   return result;
 };
 
+const firstLetterOfEachWord = (str) => {
+  const words = str.split(' ');
+  const result = [];
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < words.length; i++) {
+    result.push(words[i].charAt(0).toUpperCase());
+  }
+  return result.join('');
+};
+
 /**
  * Generate slug from string
  * @param {string} type e.g 'Nice Place To Be'
@@ -152,4 +162,5 @@ module.exports = {
   slugify,
   calculatePeriod,
   calculateProfit,
+  firstLetterOfEachWord,
 };

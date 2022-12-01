@@ -3,7 +3,7 @@ const moment = require('moment');
 const httpStatus = require('http-status');
 const { Invoice, Client, ReportIssue, PaymentLink, PaymentLinkClient } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { slugify } = require('../utils/helpers');
+const { slugify, firstLetterOfEachWord, generateRandomChar } = require('../utils/helpers');
 
 const getInvoiceById = async (id, eagerLoadFields = false) => {
   const filter = { _id: id, deletedBy: null };
@@ -141,8 +141,18 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
     deletedAt: null,
     creator: clientBody.creator,
   });
+  const getCreatorPaymentLink = await getPaymentLinkById(clientBody.creatorPaymentLinkId);
   if (clientExist && clientBody.paymentType === 'event') {
     const updateClientTicket = clientBody.eventMetaDetails.ticketType.map((event) => {
+      // depending on the event.quantity, create the ticketId
+      const ticketIds = [];
+      for (let i = 0; i < event.quantity; i += 1) {
+        const ticketId = `${firstLetterOfEachWord(
+          getCreatorPaymentLink.pageName
+        ).toUpperCase()}-${event.type.toUpperCase()}-${generateRandomChar(6, 'num')}`;
+        ticketIds.push(ticketId);
+      }
+      event.tickets = ticketIds;
       clientExist.eventMetaDetails.ticketType.push(event);
       return clientExist.toJSON();
     });
@@ -153,6 +163,22 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
     await PaymentLinkClient.updateOne({ _id: clientExist.id }, clientExist);
   }
   if (!clientExist) {
+    clientBody.eventMetaDetails.ticketType.forEach((event) => {
+      // depending on the event.quantity, create the ticketId
+      const ticketIds = [];
+      for (let i = 0; i < event.quantity; i += 1) {
+        const ticketId = `${firstLetterOfEachWord(
+          getCreatorPaymentLink.pageName
+        ).toUpperCase()}-${event.type.toUpperCase()}-${generateRandomChar(6, 'num')}`;
+        ticketIds.push(ticketId);
+      }
+      event.tickets = ticketIds;
+      clientBody.eventMetaDetails.ticketType.push(event);
+      // remove duplicate using type from client.eventMetaDetails.ticketType array
+      const unique = [...new Map(clientBody.eventMetaDetails.ticketType.map((item) => [item.type, item])).values()];
+      clientBody.eventMetaDetails.ticketType = unique;
+      return clientBody;
+    });
     const client = await PaymentLinkClient.create(clientBody);
     return client;
   }
