@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-param-reassign */
 const httpStatus = require('http-status');
@@ -45,6 +46,7 @@ const processInvoicePayment = catchAsync(async (req, res) => {
   if (validatePayment.data.status === 'successful') {
     const {
       amount,
+      tx_ref,
       meta: { creator, client, invoice },
     } = validatePayment.data;
     const filter = {
@@ -55,6 +57,9 @@ const processInvoicePayment = catchAsync(async (req, res) => {
     const creatorClient = await invoiceService.getCreatorClient(filter);
     const creatorDetails = await userService.getUserById(creator);
     const _invoice = await invoiceService.getInvoiceById(invoice);
+
+    const transactionExists = await paymentService.getTransactions({ reference: tx_ref }, {}, creatorDetails, false);
+    if (transactionExists.length > 0) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
 
     const charge = Number(((Number(config.paymentProcessing.invoiceProcessingCharge) / 100) * amount).toFixed(2));
     const amountToPayCreator = amount - charge;
@@ -68,7 +73,7 @@ const processInvoicePayment = catchAsync(async (req, res) => {
       amount: amountToPayCreator,
       purpose: `Payment for Invoice ${_invoice.invoiceCode}`,
       createdBy: creatorClient.id,
-      reference: `#PL_${generateRandomChar(5, 'num')}`,
+      reference: tx_ref,
       meta: {
         user: creatorClient._id,
         payerName: `Invoice ${_invoice.invoiceCode}/${creatorClient.name.toUpperCase()}`,
@@ -207,10 +212,16 @@ const paymentLinkPay = catchAsync(async (req, res) => {
     const {
       card,
       amount,
+      tx_ref,
       meta: { creator, creatorPaymentLink, paymentType, interval, frequency, clientInfo },
     } = validatePayment.data;
+
     const creatorClient = await invoiceService.createCreatorPaymentLinkClient(JSON.parse(clientInfo));
     const creatorDetails = await userService.getUserById(creator);
+    const creatorPage = await creatorPageService.queryCreatorPageById(creatorDetails.creatorPage);
+
+    const transactionExists = await paymentService.getTransactions({ reference: tx_ref }, {}, creatorDetails, false);
+    if (transactionExists.length > 0) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
     if (paymentType === PAYMENT_LINK_TYPES.SUBSCRIPTION) {
       // calculate next payment date
       const nextChargeDate = calculatePeriod(interval);
@@ -247,7 +258,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       };
       eventPayload.from = from;
       eventPayload.to = to;
-      eventPayload.ticketLink = `${config.frontendAppUrl}/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
+      eventPayload.ticketLink = `https://${creatorPage.slug}.merchro.page/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
       await emailService.sendUserEventPaymentLinkTicket(JSON.parse(clientInfo), eventPayload);
       await invoiceService.updatePaymentLink(creatorPaymentLink, {
         eventPayment: { ...paymentLink.eventPayment.toJSON(), tickets: updatedTickets },
@@ -265,7 +276,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       amount: amountToPayCreator,
       purpose: `Payment for ${paymentLink.pageName}`,
       createdBy: creatorClient.id,
-      reference: `#PL_${generateRandomChar(5, 'num')}`,
+      reference: tx_ref,
       meta: {
         user: creatorClient._id,
         payerName: `${paymentLink.pageName}/${creatorClient.clientFirstName} ${creatorClient.clientLastName}`,
