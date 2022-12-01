@@ -207,10 +207,17 @@ const paymentLinkPay = catchAsync(async (req, res) => {
     const {
       card,
       amount,
+      // eslint-disable-next-line camelcase
+      tx_ref,
       meta: { creator, creatorPaymentLink, paymentType, interval, frequency, clientInfo },
     } = validatePayment.data;
+
     const creatorClient = await invoiceService.createCreatorPaymentLinkClient(JSON.parse(clientInfo));
     const creatorDetails = await userService.getUserById(creator);
+    const creatorPage = await creatorPageService.queryCreatorPageById(creatorDetails.creatorPage);
+
+    const transactionExists = await paymentService.getTransactions({ reference: tx_ref }, {}, creatorDetails, false);
+    if (transactionExists.length > 0) throw new ApiError(httpStatus.BAD_REQUEST, 'Transaction already processed.');
     if (paymentType === PAYMENT_LINK_TYPES.SUBSCRIPTION) {
       // calculate next payment date
       const nextChargeDate = calculatePeriod(interval);
@@ -247,7 +254,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       };
       eventPayload.from = from;
       eventPayload.to = to;
-      eventPayload.ticketLink = `${config.frontendAppUrl}/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
+      eventPayload.ticketLink = `https://${creatorPage.slug}.merchro.page/ticket?creatorPaymentLink=${paymentLink._id}&client=${creatorClient._id}`;
       await emailService.sendUserEventPaymentLinkTicket(JSON.parse(clientInfo), eventPayload);
       await invoiceService.updatePaymentLink(creatorPaymentLink, {
         eventPayment: { ...paymentLink.eventPayment.toJSON(), tickets: updatedTickets },
@@ -265,7 +272,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
       amount: amountToPayCreator,
       purpose: `Payment for ${paymentLink.pageName}`,
       createdBy: creatorClient.id,
-      reference: `#PL_${generateRandomChar(5, 'num')}`,
+      reference: tx_ref,
       meta: {
         user: creatorClient._id,
         payerName: `${paymentLink.pageName}/${creatorClient.clientFirstName} ${creatorClient.clientLastName}`,
