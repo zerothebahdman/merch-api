@@ -246,6 +246,7 @@ const paymentLinkPay = catchAsync(async (req, res) => {
         eventMetaDetails.ticketType.map((ticketType) => {
           if (ticket.ticketType === ticketType.type) {
             ticket.ticketQuantity -= ticketType.quantity;
+            ticket.ticketQuantity = ticket.ticketQuantity < 0 ? 0 : ticket.ticketQuantity;
           }
           return ticket;
         });
@@ -327,7 +328,7 @@ const generateCheckoutLink = catchAsync(async (req, res) => {
     tickets.map((ticket) => {
       event.ticketType.map((ticketType) => {
         if (ticket.ticketType === ticketType.type) {
-          if (ticket.ticketQuantity < ticketType.quantity) {
+          if (ticket.ticketQuantity < ticketType.quantity && ticket.ticketQuantity - ticketType.quantity < 0) {
             throw new ApiError(
               httpStatus.BAD_REQUEST,
               `Oops!, these quantity of ${ticketType.type} tickets is not available`

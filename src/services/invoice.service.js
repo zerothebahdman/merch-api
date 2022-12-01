@@ -143,7 +143,7 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
   });
   const getCreatorPaymentLink = await getPaymentLinkById(clientBody.creatorPaymentLinkId);
   if (clientExist && clientBody.paymentType === 'event') {
-    const updateClientTicket = clientBody.eventMetaDetails.ticketType.map((event) => {
+    clientBody.eventMetaDetails.ticketType.forEach((event) => {
       // depending on the event.quantity, create the ticketId
       const ticketIds = [];
       for (let i = 0; i < event.quantity; i += 1) {
@@ -153,14 +153,14 @@ const createCreatorPaymentLinkClient = async (clientBody) => {
         ticketIds.push(ticketId);
       }
       event.tickets = ticketIds;
-      clientExist.eventMetaDetails.ticketType.push(event);
-      return clientExist.toJSON();
+      clientBody.eventMetaDetails.ticketType.push(event);
+      // remove duplicate using type from client.eventMetaDetails.ticketType array
+      const unique = [...new Map(clientBody.eventMetaDetails.ticketType.map((item) => [item.type, item])).values()];
+      clientBody.eventMetaDetails.ticketType = unique;
+      return clientBody;
     });
-    await Promise.all(updateClientTicket);
-    const flattenUpdateClientTicket = updateClientTicket.reduce((acc, val) => Object.assign(acc, val), {});
-    flattenUpdateClientTicket.amount += Number(clientBody.amount);
-    Object.assign(clientExist, flattenUpdateClientTicket);
-    await PaymentLinkClient.updateOne({ _id: clientExist.id }, clientExist);
+    const client = await PaymentLinkClient.create(clientBody);
+    return client;
   }
   if (!clientExist) {
     clientBody.eventMetaDetails.ticketType.forEach((event) => {

@@ -543,8 +543,8 @@ const getTransactionOverview = catchAsync(async (req, res) => {
         ? { $gte: moment().startOf('D').toDate(), $lte: moment().endOf('D').toDate() }
         : null,
   };
-  const transactions = await paymentService.getTransactions(filterForCurrentPeriod, {}, req.user, false);
-  if (!transactions) throw new ApiError(httpStatus.NOT_FOUND, 'No transactions found');
+  const currentTransactions = await paymentService.getTransactions(filterForCurrentPeriod, {}, req.user, false);
+  if (!currentTransactions) throw new ApiError(httpStatus.NOT_FOUND, 'No transactions found');
   const calculateTransaction = (previousPeriodTransaction, currentPeriodTransaction) => {
     const transactionOverview = {};
     const previousPeriodCreditTransactions = previousPeriodTransaction.filter(
@@ -575,11 +575,11 @@ const getTransactionOverview = catchAsync(async (req, res) => {
     const percentageChangeForMoneyIn = Math.round((currentPeriodCreditAmount / totalCreditAmountPreviousPeriod) * 100);
     const percentageChangeForMoneyOut = Math.round((currentPeriodDebitAmount / totalDebitAmountPreviousPeriod) * 100);
     const profit = currentPeriodCreditAmount - currentPeriodDebitAmount;
-    transactionOverview.moneyIn = currentPeriodCreditAmount;
-    transactionOverview.moneyOut = currentPeriodDebitAmount;
+    transactionOverview.moneyIn = Number(currentPeriodCreditAmount.toFixed(2));
+    transactionOverview.moneyOut = Number(currentPeriodDebitAmount.toFixed(2));
     transactionOverview.percentageChangeForMoneyIn = percentageChangeForMoneyIn;
     transactionOverview.percentageChangeForMoneyOut = percentageChangeForMoneyOut;
-    transactionOverview.profit = profit;
+    transactionOverview.profit = Number(profit.toFixed(2));
     return transactionOverview;
   };
   let duration;
@@ -588,7 +588,7 @@ const getTransactionOverview = catchAsync(async (req, res) => {
   if (req.query.period === 'month') duration = 30;
   if (req.query.period === 'year') duration = 365;
 
-  const filterForLastWeek = {
+  const previousTransaction = {
     createdAt: {
       $gte: moment()
         .subtract(duration * 2, 'days')
@@ -597,8 +597,8 @@ const getTransactionOverview = catchAsync(async (req, res) => {
       $lte: moment().subtract(duration, 'days').endOf('day').toDate(),
     },
   };
-  const transactionsThatHappenedLastWeek = await paymentService.getTransactions(filterForLastWeek, {}, req.user, false);
-  const transactionOverview = calculateTransaction(transactionsThatHappenedLastWeek, transactions);
+  const transactionsThatHappenedPreviously = await paymentService.getTransactions(previousTransaction, {}, req.user, false);
+  const transactionOverview = calculateTransaction(transactionsThatHappenedPreviously, currentTransactions);
   res.send(transactionOverview);
 });
 
