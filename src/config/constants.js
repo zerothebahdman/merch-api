@@ -86,6 +86,7 @@ const TRANSACTION_SOURCES = {
   PAYMENT_LINK: 'payment_link',
   SAVINGS: 'savings',
   STASH: 'stash',
+  REVERSAL: 'reversal',
 };
 
 const MERCH_PRODUCTION_DURATION = {

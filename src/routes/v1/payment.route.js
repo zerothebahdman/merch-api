@@ -49,6 +49,10 @@ router
   .route('/report/:reportId')
   .patch(auth('creator'), validate(paymentValidation.updateReport), paymentController.updateReport);
 
+router
+  .route('/revert-transaction')
+  .post(auth('admin'), validate(paymentValidation.revertTransaction), paymentController.revertTransaction);
+
 module.exports = router;
 
 /**

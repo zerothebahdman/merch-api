@@ -50,7 +50,7 @@ const Paga = {
     return accountInfo;
   },
   airtimeTopup: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const paga = await Paga.initPagaBusiness();
       const response = await paga.airtimePurchase(generateRandomChar(16, 'num'), data.amount, 'NGN', data.phoneNumber);
       return response;
@@ -73,7 +73,7 @@ const Paga = {
     return response;
   },
   withdraw: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const reference = generateRandomChar(16, 'num');
       const paga = await Paga.initPagaBusiness();
       const response = await paga.depositToBank(
@@ -131,7 +131,7 @@ const Paga = {
     return response.response.banks;
   },
   purchaseUtility: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const paga = await Paga.initPagaBusiness();
       const response = await paga.merchantPayment(
         data.merchantNumber,
@@ -199,7 +199,7 @@ const Paga = {
   },
 
   buyDataBundle: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const paga = await Paga.initPagaBusiness();
       data.currency = 'NGN';
       // data.merchantService = data.mobileOperatorServiceId;
