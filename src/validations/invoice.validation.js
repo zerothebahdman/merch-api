@@ -19,6 +19,7 @@ const createInvoiceValidation = {
     invoiceNote: Joi.string(),
     dueDate: Joi.date(),
     redirectUrl: Joi.string().required(),
+    sendInvoiceNow: Joi.boolean().default(true),
     reminder: Joi.object().keys({
       beforeDueDate: Joi.date(),
       onDueDate: Joi.date(),
