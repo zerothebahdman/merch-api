@@ -17,7 +17,7 @@ const ERROR_MESSAGES = {
   NOT_ALLOWED_TO_UPDATE_FIELDS: 'You are not allowed to update some of the fields here. Remove email',
   PAGE_NOT_FOUND: 'Creator page not found',
   PAGE_NAME_EXIST: 'Creator page with name already exist',
-  PAGE_CREATED_ALREADY: 'You have already created your landing page',
+  PAGE_CREATED_ALREADY: 'You have already created your page',
   CATEGORY_NOT_FOUND: 'Category not found',
   INVALID_NAME: 'Name should start with alphabets and should not contain special characters',
   TOKEN_NOT_FOUND: 'Token not found',

@@ -13,6 +13,10 @@ const { ERROR_MESSAGES } = require('../config/messages');
  */
 const createCreatorPage = async (creatorPageBody, actor) => {
   creatorPageBody.slug = `${slugify(creatorPageBody.name)}`;
+  const exist = await CreatorPage.findOne({ deletedAt: null, slug: creatorPageBody.slug });
+  if (exist) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Page name already taken, please try another name');
+  }
   creatorPageBody.createdBy = actor.id;
   const creatorPage = await CreatorPage.create(creatorPageBody);
   return creatorPage;
