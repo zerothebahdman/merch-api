@@ -28,7 +28,7 @@ const createCreatorPage = catchAsync(async (req, res) => {
   const creatorPages = await creatorPageService.queryCreatorPages({ owner: req.user.id }, {}, '', true);
   if (creatorPages.length > 0 && req.user.creatorPage) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_CREATED_ALREADY);
-  } else if (creatorPages[0].owner.toString() === req.user.id.toString()) {
+  } else if (creatorPages.length > 0 && creatorPages[0].owner.toString() === req.user.id.toString()) {
     await User.updateOne({ _id: req.user.id }, { creatorPage: creatorPages[0].id });
     return res.status(httpStatus.CREATED).send(creatorPages[0]);
   }
