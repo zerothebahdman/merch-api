@@ -25,7 +25,7 @@ const createCreatorPage = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not have permission to create page');
   }
 
-  const creatorPages = await creatorPageService.queryCreatorPages({ owner: req.user.id }, {}, '', false);
+  const creatorPages = await creatorPageService.queryCreatorPages({ owner: req.user.id }, {}, '', true);
   if (creatorPages.length > 0 && req.user.creatorPage) {
     throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_CREATED_ALREADY);
   } else if (creatorPages.length > 0 && creatorPages[0].owner.toString() === req.user.id.toString()) {

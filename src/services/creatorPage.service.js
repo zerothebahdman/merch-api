@@ -27,10 +27,10 @@ const createCreatorPage = async (creatorPageBody, actor) => {
  * @param {ObjectId} ids
  * @returns {Promise<CreatorPage>}
  */
-const queryCreatorPages = async (filter, options, eagerLoadFields = '', paginate = false) => {
+const queryCreatorPages = async (filter, options, eagerLoadFields = '', ignorePagination = false) => {
   filter.deletedBy = null;
   options.populate = eagerLoadFields;
-  const creatorPages = !paginate
+  const creatorPages = ignorePagination
     ? await CreatorPage.find(filter).populate(options.populate)
     : await CreatorPage.paginate(filter, options);
   return creatorPages;
