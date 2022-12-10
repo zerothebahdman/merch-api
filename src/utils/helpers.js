@@ -79,6 +79,7 @@ const firstLetterOfEachWord = (str) => {
  */
 const slugify = (str) => {
   let slug = str.trim().toLowerCase().replace(/ /g, '-');
+  slug = slug.replaceAll('.', '');
   if (slug[slug.length - 1] === '-') {
     const slug_ = slug.split('');
     slug_.pop();
