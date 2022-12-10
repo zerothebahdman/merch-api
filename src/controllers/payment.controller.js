@@ -104,7 +104,6 @@ const creditAccount = catchAsync(async (req, res) => {
         transactionType: 'Deposit',
       },
     });
-    mixPanel(EVENTS.DEPOSIT, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
@@ -127,6 +126,7 @@ const creditAccount = catchAsync(async (req, res) => {
     emailService.sendPaymentTrackingEmail(errorTracker.join(' <br> '));
 
     addNotification(message, accountInfo.user);
+    mixPanel(EVENTS.DEPOSIT, transaction);
     res.send({ status: 'SUCCESS' });
   } catch (error) {
     paymentService.logError({ status: errorTracker.join(' <br> ') });
@@ -155,7 +155,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
       user: accountInfo.user,
       source: TRANSACTION_SOURCES.SAVINGS,
       type: TRANSACTION_TYPES.DEBIT,
-      amount: Number(req.body.amount),
+      amount: Number((Number(req.body.amount) + charge).toFixed(2)),
       purpose: req.body.purpose || null,
       createdBy: accountInfo.user,
       transactionDump: transactionDump.id,
@@ -171,7 +171,6 @@ const withdrawMoney = catchAsync(async (req, res) => {
       },
     });
 
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo._id,
       source: TRANSACTION_SOURCES.SAVINGS,
@@ -187,6 +186,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
     emailService.debitEmail(user.email, user.firstName, message);
 
     addNotification(message, accountInfo.user);
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else
     throw new ApiError(
@@ -297,7 +297,6 @@ const buyAirtime = catchAsync(async (req, res) => {
         transactionType: 'Airtime Purchase',
       },
     });
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -307,6 +306,7 @@ const buyAirtime = catchAsync(async (req, res) => {
       transaction: transaction.id,
       amountSpent: 0,
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -406,7 +406,6 @@ const buyData = catchAsync(async (req, res) => {
         transactionType: 'Data Purchase',
       },
     });
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -416,6 +415,7 @@ const buyData = catchAsync(async (req, res) => {
       charge: 0,
       amountSpent: 0,
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -447,7 +447,6 @@ const purchaseUtilities = catchAsync(async (req, res) => {
         transactionType: 'Bill Payment',
       },
     });
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -457,6 +456,7 @@ const purchaseUtilities = catchAsync(async (req, res) => {
       transaction: transaction.id,
       amountSpent: 0,
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });

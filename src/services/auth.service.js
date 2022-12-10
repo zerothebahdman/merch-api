@@ -65,7 +65,7 @@ const refreshAuth = async (refreshToken) => {
  * @param {string} newPassword
  * @returns {Promise}
  */
-const resetPassword = async (resetPasswordToken, newPassword, email) => {
+const resetPassword = async (newPassword, email) => {
   try {
     // Get userId via email
     const user = await userService.getUserByEmail(email);

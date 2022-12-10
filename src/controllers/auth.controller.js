@@ -15,6 +15,7 @@ const config = require('../config/config');
 const { ERROR_MESSAGES } = require('../config/messages');
 const { ONBOARDING_STAGES, USER_STATUSES, EVENTS } = require('../config/constants');
 const mixPanel = require('../utils/mixpanel');
+const { tokenTypes } = require('../config/tokens');
 // const { backdoorAccess } = require('../config/config');
 
 const userSignUp = catchAsync(async (req, res) => {
@@ -121,8 +122,13 @@ const forgotPassword = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  await authService.resetPassword(req.body.password, req.body.email);
-  res.status(httpStatus.NO_CONTENT).send({ status: true, message: 'Account password was updated' });
+  const user = await userService.getUserByEmail(req.body.email);
+  const verifyToken = await tokenService.verifyToken(req.body.token, tokenTypes.RESET_PASSWORD, user.id);
+  if (verifyToken) {
+    await authService.resetPassword(req.body.password, req.body.email);
+    return res.status(httpStatus.NO_CONTENT).send({ status: true, message: 'Account password was updated' });
+  }
+  throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid token entered');
 });
 
 const googleAuthentication = catchAsync(async (req, res) => {
