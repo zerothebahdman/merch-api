@@ -248,7 +248,7 @@ const getUtilitiesProviders = async () => {
 
 const getUtilitiesProvidersServices = async (merchantId, referenceNumber) => {
   const utilities = await Paga.getUtilitiesProvidersServices(merchantId, referenceNumber);
-  if (utilities.error) throw new ApiError(httpStatus.BAD_REQUEST, utilities.response.errorMessage);
+  if (utilities.error) throw new ApiError(httpStatus.BAD_REQUEST, utilities.response.message);
   return utilities;
 };
 
@@ -372,7 +372,7 @@ const initiateRecurringPayment = async (paymentLink, client) => {
           nextChargeDate,
           frequency,
           interval,
-          timesBilled: frequency > 0 ? client.subscriptionDetails.timesBilled + 1 : 0,
+          timesBilled: frequency > 0 ? client.subscriptionDetails.timesBilled + 1 : 1,
         },
       };
       await invoiceService.updateCreatorClient(client._id, { ...updateBody });
@@ -380,6 +380,16 @@ const initiateRecurringPayment = async (paymentLink, client) => {
   } catch (error) {
     throw new ApiError(error.status, error.message);
   }
+};
+
+const generateInstantPaymentAccount = async (body) => {
+  body = { ...body.toJSON() };
+  const [lastName, ...firstName] = body.name.split(' ');
+  body.firstName = firstName.join(' ');
+  body.lastName = lastName;
+  const instantAccount = await Paga.generateInstantPaymentAccount(body);
+  if (instantAccount.error) throw new ApiError(httpStatus.BAD_REQUEST, instantAccount.response.message);
+  return instantAccount;
 };
 
 module.exports = {
@@ -406,4 +416,5 @@ module.exports = {
   buyData,
   initiateRecurringPayment,
   createMerchroEarningsRecord,
+  generateInstantPaymentAccount,
 };
