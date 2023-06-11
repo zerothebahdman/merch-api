@@ -144,7 +144,7 @@ const sendUserEventPaymentLinkTicket = (user, event) => {
 };
 
 const sendInvoiceReminderEmail = (invoice) => {
-  const subject = 'Invoice Reminder';
+  const subject = `${invoice.creator.firstName} ${invoice.creator.lastName} sent an invoice`;
   const html = renderFile('invoice-reminder', { invoice });
   return sendEmail(invoice.client.email, subject, null, html);
 };

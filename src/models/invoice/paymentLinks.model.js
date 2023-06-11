@@ -37,6 +37,7 @@ const paymentLinkSchema = new Schema(
       },
       tickets: [
         {
+          _id: false,
           ticketType: String,
           ticketPrice: Number,
           ticketQuantity: Number,

@@ -12,7 +12,7 @@ const Paga = {
       .setClientId(paymentData.paga_public_key)
       .setPassword(paymentData.paga_secret)
       .setApiKey(paymentData.paga_key)
-      .setTest(false)
+      .setTest(true)
       .build();
   },
   initPagaBusiness: async () => {
@@ -20,7 +20,7 @@ const Paga = {
       .setPrincipal(paymentData.paga_public_key)
       .setCredential(paymentData.paga_secret)
       .setApiKey(paymentData.paga_key)
-      .setIsTest(false)
+      .setIsTest(true)
       .build();
   },
   generatePermanentAccount: async (data) => {
@@ -33,16 +33,16 @@ const Paga = {
     if (!accountInfo.error) accountInfo.response.callbackUrl = data.callbackUrl;
     return accountInfo;
   },
-  generateInstantPaymentAccount: async () => {
+  generateInstantPaymentAccount: async (payload) => {
     const paga = await Paga.initPagaCollect();
     const data = {
       referenceNumber: generateRandomChar(16, 'num'),
       accountReference: generateRandomChar(24, 'num'),
-      phoneNumber: '+2348065348400',
-      firstName: 'Adebowale',
-      lastName: 'Adebusuyi',
-      accountName: 'Adebowale Adebusuyi',
-      email: 'heclassy@gmail.com',
+      phoneNumber: payload.phoneNumber,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      accountName: `${payload.lastName} ${payload.firstName}`,
+      email: payload.email,
       currency: 'NGN',
     };
     data.callbackUrl = `${baseApiUrl}/v1/payments/funding/${data.referenceNumber}`;
@@ -50,7 +50,7 @@ const Paga = {
     return accountInfo;
   },
   airtimeTopup: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const paga = await Paga.initPagaBusiness();
       const response = await paga.airtimePurchase(generateRandomChar(16, 'num'), data.amount, 'NGN', data.phoneNumber);
       return response;
@@ -73,7 +73,7 @@ const Paga = {
     return response;
   },
   withdraw: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const reference = generateRandomChar(16, 'num');
       const paga = await Paga.initPagaBusiness();
       const response = await paga.depositToBank(
@@ -131,7 +131,7 @@ const Paga = {
     return response.response.banks;
   },
   purchaseUtility: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const paga = await Paga.initPagaBusiness();
       const response = await paga.merchantPayment(
         data.merchantNumber,
@@ -199,7 +199,7 @@ const Paga = {
   },
 
   buyDataBundle: async (data) => {
-    if (config.enviroment === 'production') {
+    if (config.environment === 'production') {
       const paga = await Paga.initPagaBusiness();
       data.currency = 'NGN';
       // data.merchantService = data.mobileOperatorServiceId;

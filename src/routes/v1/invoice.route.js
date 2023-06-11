@@ -275,7 +275,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-link:
+ *  invoices/payment-link:
  *    post:
  *      summary: Create a payment link
  *      description: Allow creators to be able to payment links for their products
@@ -332,7 +332,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-link/{paymentCode}:
+ *  invoices/payment-link/{paymentCode}:
  *    get:
  *      summary: Get a payment link
  *      description: Get a payment link by the payment code
@@ -399,7 +399,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-link/s/{slug}:
+ *  invoices/payment-link/s/{slug}:
  *    get:
  *      summary: Get a payment link
  *      description: Get a payment link by slug
@@ -420,7 +420,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-link/checkout:
+ *  invoices/payment-link/checkout:
  *    post:
  *      summary: Create a payment link
  *      description: Allow creators to be able to payment links for their products
@@ -467,7 +467,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-link/validate-payment:
+ *  invoices/payment-link/validate-payment:
  *    post:
  *      summary:  Validate payment link payment
  *      description:  Validate payment link payment
@@ -502,7 +502,7 @@ module.exports = router;
 /**
  * @swagger
  * path:
- *  /payment-link/{paymentCode}/purchased:
+ *  invoices/payment-link/{paymentCode}/purchased:
  *    get:
  *      summary: Get insights for a payment link
  *      description: Get insights for a payment link

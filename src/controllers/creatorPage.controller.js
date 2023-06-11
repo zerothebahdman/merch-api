@@ -10,26 +10,30 @@ const pick = require('../utils/pick');
 const { storeNameValidator } = require('../utils/helpers');
 const { EVENTS } = require('../config/constants');
 const mixPanel = require('../utils/mixpanel');
+const { User } = require('../models');
 
 const createCreatorPage = catchAsync(async (req, res) => {
   req.body.owner = req.user.id;
   // Reserved names
-  if (RESERVED_NAMES.includes(req.body.name)) {
+  if (RESERVED_NAMES.includes(req.body.name.toLowerCase())) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Name unavailable, please choose another name');
   }
 
   storeNameValidator(req.body.name);
 
-  const creatorPages = await creatorPageService.queryCreatorPages({ owner: req.user.id }, {}, '', true);
-  if (creatorPages.length > 0) {
-    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_CREATED_ALREADY);
-  }
-  req.body.createdBy = req.user.id;
   if (req.user.role !== ROLES.CREATOR) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User does not have permission to create page');
   }
+
+  const creatorPages = await creatorPageService.queryCreatorPages({ owner: req.user.id }, {}, '', true);
+  if (creatorPages.length > 0 && req.user.creatorPage) {
+    throw new ApiError(httpStatus.NOT_FOUND, ERROR_MESSAGES.PAGE_CREATED_ALREADY);
+  } else if (creatorPages.length > 0 && creatorPages[0].owner.toString() === req.user.id.toString()) {
+    await User.updateOne({ _id: req.user.id }, { creatorPage: creatorPages[0].id });
+    return res.status(httpStatus.CREATED).send(creatorPages[0]);
+  }
   const creatorPage = await creatorPageService.createCreatorPage(req.body, req.user);
-  userService.updateUserById(req.user.id, { creatorPage: creatorPage.id });
+  await userService.updateUserById(req.user.id, { creatorPage: creatorPage.id });
   mixPanel(EVENTS.CREATOR_SETUP_PAGE, creatorPage);
   res.status(httpStatus.CREATED).send(creatorPage);
 });

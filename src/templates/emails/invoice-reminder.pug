@@ -12,7 +12,7 @@ head
   link(rel='preconnect' href='https://fonts.googleapis.com')
   link(rel='preconnect' href='https://fonts.gstatic.com' crossorigin='')
   link(href='https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600;700&display=swap' rel='stylesheet')
-  title Order
+  title Order 
   style(type='text/css').
     p {
     margin: 10px 0;
@@ -666,11 +666,6 @@ head
     line-height: 150% !important;
     }
     }
-// *|IF:MC_PREVIEW_TEXT|*
-// [if !gte mso 9] <!
-span.mcnPreviewText(style='display:none; font-size:0px; line-height:0px; max-height:0px; max-width:0px; opacity:0; overflow:hidden; visibility:hidden; mso-hide:all;') *|MC_PREVIEW_TEXT|*
-// <![endif]
-// *|END:IF|*
 center
   table#bodyTable(align='center' border='0' cellpadding='0' cellspacing='0' height='100%' width='100%')
     tr
@@ -729,10 +724,10 @@ center
                             table.mcnTextContentContainer(align='left' border='0' cellpadding='0' cellspacing='0' style='max-width:100%; min-width:100%; padding: 3rem 5%' width='100%')
                               tbody
                                 tr
-                                  h4(style='font-size: 16px; text-align: center; color: #000000;font-weight: 400; padding:1rem 0 1rem 0')
-                                    | #{invoice.creator.firstName} #{invoice.creator.lastName}
-                                  td.mcnTextContent(valign='top' style='padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px; border-top: 5px solid #c82b38;')
-                                    h4(style='font-size: 16px; text-align: center; color: #000000;font-weight: 400; padding:1rem 0 0 0')
+                                  td.mcnTextContent(valign='top' style='padding-top:0; padding-right:18px; padding-bottom:9px; padding-left:18px')
+                                    h4(style='font-size: 16px; text-align: center; color: #000000;font-weight: 400; padding:1rem 0 1rem 0')
+                                      | #{invoice.creator.firstName} #{invoice.creator.lastName}
+                                    h4(style='font-size: 16px; text-align: center; color: #000000;font-weight: 400; padding:1rem 0 0 0; border-top: 5px solid #c82b38;')
                                       | #{invoice.creator.firstName} #{invoice.creator.lastName} has sent you an invoice
                                     h1(style='font-size: 32px; text-align: center; color: #000000; font-weight: 700; padding:1rem 0 0 0')
                                       | &#x20A6;#{invoice.totalAmount}
@@ -741,35 +736,27 @@ center
                                     h4(style='font-size: 16px; text-align: center; color: #535456;font-weight: 400; padding:3rem 0 0 0')
                                       | INVOICE SUMMARY
                                     div(style='width: 90%; margin: 0 auto; margin-top: 1rem; padding: 1rem;  background: #f9f9f9;')
-                                    - for (let i = 0; i < invoice.items.length; i++) {
-                                      div(style='display: flex; align-items: flex-start; justify-content: space-between;')
-                                        p #{invoice.items[i].itemDetails} x #{invoice.items[i].quantity}
-                                        p &#x20A6;#{invoice.items[i].amount}
-                                    - }
-                                      div(style='display: flex; align-items: flex-start; justify-content: space-between;')
-                                        p Shipping
-                                        p &#x20A6;#{invoice.shipping}
-                                      div(style='display: flex; align-items: flex-start; justify-content: space-between;')
-                                        p Discount
-                                        p -&#x20A6;#{invoice.discount}
-                                      div(style='display: flex; align-items: flex-start; justify-content: space-between;')
-                                        p Tax
-                                        p &#x20A6;#{invoice.tax}
+                                      div
+                                      - for (let i = 0; i < invoice.items.length; i++) {
+                                        p
+                                        | #{invoice.items[i].itemDetails} x #{invoice.items[i].quantity}   - 
+                                        span(style='margin: 0 0 0 2rem')  &#x20A6;#{invoice.items[i].amount}
+                                      - }
                                       hr
-                                      div(style='display: flex; align-items: flex-start; justify-content: space-between;')
+                                      div
                                         p
-                                          b Total
-                                        p
-                                          b &#x20A6;#{invoice.totalAmount}
+                                          b
+                                            | Total - 
+                                            span(style='margin: 0 0 0 2rem') &#x20A6;#{invoice.totalAmount}
                                     - var url = invoice.paymentLink
                                     a(href=url style='text-decoration: none;')
                                       button(style='cursor:pointer; display: block; margin: 2rem auto 0 auto; font-family: Nunito, "sans-serif"; padding: 0.7rem 1rem; width: 10rem; background: #c82b38; color: white; font-weight: 600; border:none; border-radius:8px')
                                         | Make payment
                                     h4(style='font-size: 16px; text-align: left; color: #535456;font-weight: 400; padding:3rem 0 2rem 0; border-bottom: 5px solid #c82b38')
-                                      | If you&apos;re having trouble clicking the
-                                      | &quot;Make Payment&quot; button, copy and paste
-                                      | the URL below into your web browser <br/>
-                                      | #{invoice.paymentLink}
+                                      | If you&apos;re having trouble clicking the &quot;Make Payment&quot; button, copy and paste the URL below into your web browser <br /> #{invoice.paymentLink}
+                                    p(style='text-align: center; color: #7890C1; margin: 2rem 0 0 0') Download ticket as PDF
+                                    p(style='text-align: center; margin:3rem 0 1rem 0; font-weight: 400; font-size: 12px; line-height: 16px; letter-spacing: 0.150769px; color: #474747;') Invoice powered by Merchro!
+                                    img(src='https://www.merchro.com/logo-black.svg' alt='Merchro Logo' style='width:7rem; display: block; margin: 0 auto; padding:0 0 3rem 0')
                             //if mso
                             //if mso
                     table.mcnCaptionBlock(border='0' cellpadding='0' cellspacing='0' width='100%')
@@ -791,13 +778,6 @@ center
                       table(border='0' cellpadding='0' cellspacing='0' width='100%' style='padding: 3rem 3%; margin: 2rem 0 0 0')
                         tbody
                           tr
-                            td
-                              p(style='text-align: center; color: #7890C1;')
-                                | Download
-                                | ticket as PDF
-                              p(style='text-align: center; margin:3rem 0 1rem 0; font-weight: 400; font-size: 12px; line-height: 16px; letter-spacing: 0.150769px; color: #474747;')
-                                | Invoice powered by Merchro!
-                              img(src='https://www.merchro.com/logo-black.svg' alt='Merchro Logo' style='width:7rem; display: block; margin: 0 auto; padding:0 0 3rem 0')
               //if (gte mso 9)|(IE)
               //if (gte mso 9)|(IE)
               // // END TEMPLATE

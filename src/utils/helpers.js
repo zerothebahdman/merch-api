@@ -78,7 +78,13 @@ const firstLetterOfEachWord = (str) => {
  * @returns {string} e.g 'nice-place-to-be';
  */
 const slugify = (str) => {
-  return str.toLowerCase().replace(/ /g, '-');
+  let slug = str.trim().toLowerCase().replace(/ /g, '-');
+  if (slug[slug.length - 1] === '-') {
+    const slug_ = slug.split('');
+    slug_.pop();
+    slug = slug_.join('');
+  }
+  return slug;
 };
 
 const calculatePeriod = (interval) => {

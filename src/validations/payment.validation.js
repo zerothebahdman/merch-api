@@ -90,6 +90,16 @@ const updateReport = {
   }),
 };
 
+const revertTransaction = {
+  query: {
+    transactionId: Joi.string(),
+    startDate: Joi.date(),
+    endDate: Joi.date(),
+    user: Joi.custom(objectId),
+    amount: Joi.number(),
+  },
+};
+
 module.exports = {
   validateAccount,
   withdrawal,
@@ -101,4 +111,5 @@ module.exports = {
   buyData,
   submitReport,
   updateReport,
+  revertTransaction,
 };

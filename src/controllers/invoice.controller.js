@@ -35,6 +35,13 @@ const createInvoice = catchAsync(async (req, res) => {
     req.body.redirectUrl
   );
   invoice = await invoiceService.updateInvoiceById(invoice.id, { paymentLink });
+  if (req.body.sendInvoiceNow) {
+    const options = ['client', 'creator'];
+    invoice = await invoiceService.getInvoiceById(invoice._id, options);
+    const data = { ...invoice.toJSON() };
+    data.dueDate = moment(data.dueDate).format('Do MMM, YYYY');
+    await emailService.sendInvoiceReminderEmail(data);
+  }
   mixPanel(EVENTS.CREATE_INVOICE, invoice);
   res.status(201).send(invoice);
 });

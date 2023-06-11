@@ -8,7 +8,7 @@ const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
     PORT: Joi.number().default(3000),
-    ENVIROMENT: Joi.string().default('staging'),
+    ENVIRONMENT: Joi.string().default('staging'),
     USE_PORT: Joi.bool().default(false).description('This is to determine whether to use the PORT value'),
     API_DOMAIN: Joi.string().description('API Domain'),
     FRONT_END_APP_URL: Joi.string().description('Frontend App Domain'),
@@ -97,7 +97,7 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
-  enviroment: envVars.ENVIROMENT,
+  environment: envVars.ENVIRONMENT,
   baseApiUrl: `${envVars.ENFORCE_SSL ? 'https' : 'http'}://${envVars.API_DOMAIN}${
     envVars.USE_PORT ? `:${envVars.PORT}` : ''
   }`,

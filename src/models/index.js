@@ -23,3 +23,4 @@ module.exports.ReportIssue = require('./invoice/report-issues.model');
 module.exports.PaymentLink = require('./invoice/paymentLinks.model');
 module.exports.PaymentLinkClient = require('./invoice/paymentLinkClient.model');
 module.exports.MerchroEarnings = require('./merchroEarnings.model');
+module.exports.TempBankAccount = require('./invoice/tempBankAccounts.model');

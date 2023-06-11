@@ -86,6 +86,7 @@ const TRANSACTION_SOURCES = {
   PAYMENT_LINK: 'payment_link',
   SAVINGS: 'savings',
   STASH: 'stash',
+  REVERSAL: 'reversal',
 };
 
 const MERCH_PRODUCTION_DURATION = {
@@ -135,6 +136,13 @@ const EVENTS = {
   PAID_FROM_INVOICE: 'Creator got paid via invoice',
 };
 
+const PAYMENT_TYPES = {
+  INVOICE: 'invoice',
+  EVENT: 'event',
+  PAYMENT_LINK: 'payment_link',
+  STORE: 'store',
+};
+
 module.exports = {
   USER_STATUSES,
   UserStatusMapping,
@@ -152,4 +160,5 @@ module.exports = {
   PAYMENT_LINK_TYPES,
   RECURRING_PAYMENT,
   EVENTS,
+  PAYMENT_TYPES,
 };

@@ -13,7 +13,7 @@ const {
   merchService,
 } = require('../services');
 const { TRANSACTION_TYPES, TRANSACTION_SOURCES, CURRENCIES, ORDER_STATUSES, EVENTS } = require('../config/constants');
-const { TransactionDump, Report } = require('../models');
+const { TransactionDump, Report, Account } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { Paga } = require('../utils/paga');
 const pick = require('../utils/pick');
@@ -67,14 +67,6 @@ const creditAccount = catchAsync(async (req, res) => {
     const updatedBalance = Number((accountInfo.balance.naira + Number(data.amount)).toFixed(2));
     errorTracker.push(`New balance calculated successfully (${updatedBalance})`);
 
-    emailService.sendPaymentTrackingEmail(`
-        Balance updated for transaction with reference ${data.transactionReference}
-        <br>
-        User: ${accountInfo.user || null}
-        <br>
-        Amount: New: ${data.amount}, Updated balance: ${updatedBalance}
-      `);
-
     // Confirm that there is no prior log of this particular transaction
     const getTransactions = await paymentService.getTransactions(
       {
@@ -109,9 +101,9 @@ const creditAccount = catchAsync(async (req, res) => {
         fundingPaymentReference: data.fundingPaymentReference,
         accountNumber: accountInfo.accountInfo.accountNumber,
         accountName: accountInfo.accountInfo.accountName,
+        transactionType: 'Deposit',
       },
     });
-    mixPanel(EVENTS.DEPOSIT, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       source: TRANSACTION_SOURCES.PAYMENT_LINK,
@@ -134,6 +126,7 @@ const creditAccount = catchAsync(async (req, res) => {
     emailService.sendPaymentTrackingEmail(errorTracker.join(' <br> '));
 
     addNotification(message, accountInfo.user);
+    mixPanel(EVENTS.DEPOSIT, transaction);
     res.send({ status: 'SUCCESS' });
   } catch (error) {
     paymentService.logError({ status: errorTracker.join(' <br> ') });
@@ -155,14 +148,14 @@ const withdrawMoney = catchAsync(async (req, res) => {
     const updatedBalance = Number((accountInfo.balance.naira - Number(req.body.amount)).toFixed(2));
     const withdrawResponse = await paymentService.withdrawMoney(req.body, req.user);
     charge = withdrawResponse.response.fee && withdrawResponse.response.fee === 0 ? 0 : charge;
-    await paymentService.updateBalance(updatedBalance + charge, accountInfo.user);
+    await paymentService.updateBalance(updatedBalance - charge, accountInfo.user);
     const transactionDump = await TransactionDump.create({ data: withdrawResponse, user: accountInfo.user });
     // Store transaction
     const transaction = await paymentService.createTransactionRecord({
       user: accountInfo.user,
       source: TRANSACTION_SOURCES.SAVINGS,
       type: TRANSACTION_TYPES.DEBIT,
-      amount: Number(req.body.amount),
+      amount: Number((Number(req.body.amount) + charge).toFixed(2)),
       purpose: req.body.purpose || null,
       createdBy: accountInfo.user,
       transactionDump: transactionDump.id,
@@ -174,10 +167,10 @@ const withdrawMoney = catchAsync(async (req, res) => {
         fee: charge,
         message: withdrawResponse.response.message,
         reference: withdrawResponse.response.reference,
+        transactionType: 'Withdrawal',
       },
     });
 
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo._id,
       source: TRANSACTION_SOURCES.SAVINGS,
@@ -193,6 +186,7 @@ const withdrawMoney = catchAsync(async (req, res) => {
     emailService.debitEmail(user.email, user.firstName, message);
 
     addNotification(message, accountInfo.user);
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else
     throw new ApiError(
@@ -231,6 +225,7 @@ const transferMoney = catchAsync(async (req, res) => {
         fee: withdrawResponse.response.fee,
         message: withdrawResponse.response.message,
         reference: withdrawResponse.response.reference,
+        transactionType: 'Transfer',
       },
     });
 
@@ -299,9 +294,9 @@ const buyAirtime = catchAsync(async (req, res) => {
         phoneNumber: req.body.phoneNumber,
         message: airtimeResponse.response.message,
         reference: airtimeResponse.response.reference,
+        transactionType: 'Airtime Purchase',
       },
     });
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -311,6 +306,7 @@ const buyAirtime = catchAsync(async (req, res) => {
       transaction: transaction.id,
       amountSpent: 0,
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -346,6 +342,7 @@ const validatePaymentCallback = catchAsync(async (req, res) => {
             payerName: `${purchaser.firstName} ${purchaser.lastName}`,
             email: purchaser.email,
             currency: CURRENCIES.NAIRA,
+            transactionType: 'Payment Link',
           },
         });
         await paymentService.addToBalance(amount, creator.id);
@@ -406,9 +403,9 @@ const buyData = catchAsync(async (req, res) => {
         message: dataResponse.message,
         reference: dataResponse.referenceNumber,
         payerName: `Data Sub/${req.body.destinationPhoneNumber}`,
+        transactionType: 'Data Purchase',
       },
     });
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -418,6 +415,7 @@ const buyData = catchAsync(async (req, res) => {
       charge: 0,
       amountSpent: 0,
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -446,9 +444,9 @@ const purchaseUtilities = catchAsync(async (req, res) => {
         phoneNumber: req.body.phoneNumber,
         message: utilitiesResponse.response.message,
         reference: utilitiesResponse.response.reference,
+        transactionType: 'Bill Payment',
       },
     });
-    mixPanel(EVENTS.WITHDRAW, transaction);
     await paymentService.createMerchroEarningsRecord({
       user: accountInfo.user,
       amount: req.body.amount,
@@ -458,6 +456,7 @@ const purchaseUtilities = catchAsync(async (req, res) => {
       transaction: transaction.id,
       amountSpent: 0,
     });
+    mixPanel(EVENTS.WITHDRAW, transaction);
     res.send(transaction);
   } else throw new ApiError(httpStatus.BAD_REQUEST, 'Insufficient balance');
 });
@@ -634,6 +633,57 @@ const updateReport = catchAsync(async (req, res) => {
   res.send(report);
 });
 
+const revertTransaction = catchAsync(async (req, res) => {
+  const filter = pick(req.query, ['startDate', 'endDate', 'transactionId', 'user', 'amount']);
+  filter.type = TRANSACTION_TYPES.DEBIT;
+  filter.locked = false;
+  if ((filter.startDate && req.query.endDate) || filter.startDate) {
+    filter.createdAt = {
+      $gte: moment(filter.startDate).utc().startOf('D').toDate(),
+      $lte: filter.endDate ? moment(filter.endDate).utc().endOf('D').toDate() : moment().utc().endOf('D').toDate(),
+    };
+    delete filter.startDate;
+    delete filter.endDate;
+  }
+  if (req.query.transactionId) filter._id = req.query.transactionId;
+  delete filter.transactionId;
+  const transactions = await paymentService.getTransactions(filter, {}, false, false);
+  transactions.forEach(async (transaction) => {
+    const accountInfo = await Account.findOne({ user: transaction.user });
+    const user = await userService.getUserById(transaction.user);
+    const updatedBalance = Number((accountInfo.balance.naira + Number(transaction.amount)).toFixed(2));
+    const charge = Number(Number(config.paymentProcessing.withdrawalCharge).toFixed(2));
+    await paymentService.updateBalance(updatedBalance + charge, accountInfo.user);
+
+    const _transaction = await paymentService.createTransactionRecord({
+      amount: Number(transaction.amount) + charge,
+      type: TRANSACTION_TYPES.CREDIT,
+      source: TRANSACTION_SOURCES.REVERSAL,
+      user: accountInfo.user,
+      createdBy: accountInfo.user,
+      reference: transaction.transactionReference,
+      meta: {
+        payerName: accountInfo.accountInfo.accountName,
+        bankName: accountInfo.accountInfo.bankName,
+        accountNumber: accountInfo.accountInfo.accountNumber,
+        accountName: accountInfo.accountInfo.accountName,
+        reversedTransaction: transaction._id,
+        transactionType: 'Transaction Reversal',
+      },
+    });
+    mixPanel(EVENTS.DEPOSIT, _transaction);
+
+    const message = `NGN${transaction.amount} was reversed to your account`;
+
+    emailService.creditEmail(user.email, user.firstName, message);
+
+    addNotification(message, accountInfo.user);
+    transaction.locked = true;
+    await transaction.save();
+  });
+  res.send({ status: 'SUCCESS' });
+});
+
 module.exports = {
   getAccountInfo,
   getBanks,
@@ -654,4 +704,5 @@ module.exports = {
   submitReport,
   getReports,
   updateReport,
+  revertTransaction,
 };
